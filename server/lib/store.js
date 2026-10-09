@@ -95,6 +95,22 @@ export class Store {
     this.count(lot, detail ? `${type}_${detail}` : type);
   }
 
+  /**
+   * Réserve un numéro pour l'affiche : création exclusive d'un fichier, sûre même si plusieurs
+   * processus du serveur répondent en même temps. false si le numéro est déjà pris.
+   */
+  async claimNumber(lot, n) {
+    await fs.mkdir(path.join(this.ticketsDir, String(lot)), { recursive: true, mode: 0o700 });
+    try {
+      const handle = await fs.open(path.join(this.ticketsDir, String(lot), `${n}.claim`), 'wx', 0o600);
+      await handle.close();
+      return true;
+    } catch (err) {
+      if (err.code === 'EEXIST') return false;
+      throw err;
+    }
+  }
+
   async isActive(lot, n) {
     try {
       await fs.access(this.logFile(lot, n));
@@ -124,6 +140,7 @@ export class Store {
   /** Fin de vie d'un ticket : journal, inscriptions, appel et fichier d'état disparaissent. */
   async forgetTicket(lot, n) {
     await fs.rm(this.logFile(lot, n), { force: true });
+    await fs.rm(path.join(this.ticketsDir, String(lot), `${n}.claim`), { force: true }); // numéro d'affiche libéré
     await fs.rm(this.subsPath(lot, n), { recursive: true, force: true });
     await fs.rm(this.callFile(lot, n), { force: true });
     await fs.rm(this.statusFile(this.statusId(lot, n)), { force: true });

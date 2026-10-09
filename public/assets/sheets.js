@@ -250,6 +250,47 @@ export function keySheet({ lang, domain, brand, lot, name, secret, from, to, mon
   return sheet;
 }
 
+/** Adresse imprimée dans le QR de l'affiche (majuscules : QR plus compact). */
+export const posterUrl = (domain, token) => `HTTPS://${domain.toUpperCase()}/A/${token}`;
+
+/**
+ * Affiche à poser au comptoir : chaque client qui la scanne reçoit le numéro suivant.
+ * whiteLabel (Pro) : seul le nom du commerce apparaît.
+ */
+export function posterSheet({ lang, domain, brand, name, token, logo = null, whiteLabel = false, design = {} }) {
+  const page = keyPage(design);
+  const other = lang === 'fr' ? 'en' : 'fr';
+  const steps = [
+    ['qr-code', 'poster_s1'],
+    ['bell-ringing', 'poster_s2'],
+    ['megaphone', 'poster_s3'],
+  ];
+  const sheet = h(
+    'section',
+    { class: 'sheet sheet-key sheet-doc sheet-poster' },
+    whiteLabel ? h('header', { class: 'doc-band' }, h('div', { class: 'doc-brand grow' }, name)) : docBand({ brand, kind: tl(lang, 'poster_kind'), aside: name }),
+    h(
+      'div',
+      { class: 'poster-main' },
+      logo && h('img', { class: 'poster-logo', src: logo, alt: '' }),
+      h('h1', {}, tl(lang, 'poster_title')),
+      h('p', { class: 'poster-other' }, tl(other, 'poster_title')),
+      h('div', { class: 'poster-qr' }, qrSvg(posterUrl(domain, token), 'M')),
+      h('p', { class: 'poster-cta' }, tl(lang, 'poster_cta')),
+    ),
+    h(
+      'ol',
+      { class: 'k-steps' },
+      steps.map(([glyph, text], i) => h('li', {}, h('div', { class: 'k-step-head' }, h('span', { class: 'k-num' }, String(i + 1)), icon(glyph), h('b', {}, tl(lang, `${text}_t`))), h('p', {}, tl(lang, text)))),
+    ),
+    h('p', { class: 'k-privacy' }, icon('lock-key'), h('span', {}, tl(lang, 'poster_privacy'))),
+    !whiteLabel && docFoot(lang, domain),
+  );
+  sheet.style.setProperty('--page-w', mm(page.w));
+  sheet.style.setProperty('--page-h', mm(page.h));
+  return sheet;
+}
+
 /** Remplit la zone d'impression (invisible à l'écran) et renvoie ses pages. */
 export function fillPrintRoot(pages) {
   let root = document.querySelector('.print-root');

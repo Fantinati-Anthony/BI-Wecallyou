@@ -4,7 +4,7 @@
 // restent donc gratuits pour tous.
 import { h, t, LANG, render, icon } from './common.js';
 import { PAPERS, LIMITS, QR_WARN_MM, normalizeDesign, fitDesign, fitGrid, gridLimits, presetGrids, pageOf, gridOf, contentKey } from './layout.js';
-import { contentOf, ticketSheets, keySheet, labelOf } from './sheets.js';
+import { contentOf, ticketSheets, keySheet, labelOf, posterSheet } from './sheets.js';
 import { readLogo, pagesFor } from './print.js';
 import { base32, randomBytes } from './crypto.js';
 
@@ -418,16 +418,17 @@ export function livePreview() {
   const tabs = h(
     'div',
     { class: 'segmented', role: 'group' },
-    ['tickets', 'key'].map((name) => {
-      const button = h('button', { type: 'button', 'aria-pressed': String(name === tab) }, t(name === 'tickets' ? 'pv_tickets' : 'pv_key'));
-      button.addEventListener('click', () => {
-        tab = name;
-        for (const b of tabs.children) b.setAttribute('aria-pressed', String(b === button));
-        if (last) update(last);
-      });
+    ['tickets', 'key', 'poster'].map((name) => {
+      const button = h('button', { type: 'button', 'data-tab': name, 'aria-pressed': String(name === tab) }, t(`pv_${name}`));
+      button.addEventListener('click', () => setTab(name));
       return button;
     }),
   );
+  function setTab(name) {
+    tab = name;
+    for (const b of tabs.children) b.setAttribute('aria-pressed', String(b.dataset.tab === name));
+    if (last) update(last);
+  }
   const close = h('button', { type: 'button', class: 'btn btn-ghost pv-close' }, icon('x'), t('pv_close'));
   const panel = h('aside', { class: 'studio-preview card', 'aria-label': t('pv_title') }, h('div', { class: 'row' }, h('h3', { class: 'grow' }, t('pv_title')), tabs, close), info, alert, frame, h('p', { class: 'small muted' }, t('pv_sample')));
   const fab = h('button', { type: 'button', class: 'btn pv-fab' }, icon('eye'), t('pv_open'));
@@ -455,6 +456,9 @@ export function livePreview() {
    */
   function update(ctx) {
     last = ctx;
+    // Onglet « Affiche » seulement quand le lot en utilise une ; l'onglet « Tickets » disparaît pour un lot « affiche seule ».
+    tabs.querySelector('[data-tab="poster"]').hidden = !ctx.poster;
+    if (tab === 'poster' && !ctx.poster) setTab('tickets');
     const design = normalizeDesign(ctx.design);
     const from = ctx.from || 1;
     const lastNumber = from + Math.max(1, ctx.count || 1) - 1;
@@ -484,12 +488,14 @@ export function livePreview() {
     timer = setTimeout(() => {
       const count = Math.min(layout.perPage, Math.max(1, ctx.count || layout.perPage));
       const tickets = sampleCodes(count).map((codes, i) => ({ ...codes, label: labelOf(from + i) }));
-      const sheet = tab === 'key' && ctx.key ? keySheet({ ...ctx.key, design }) : ticketSheets(tickets, { ...design, lang: ctx.lang, domain: ctx.domain, name: ctx.name, whiteLabel: ctx.whiteLabel, last: lastNumber })[0];
+      const sheet = tab === 'poster' && ctx.poster
+        ? posterSheet({ lang: ctx.lang, domain: ctx.domain, brand: ctx.key?.brand ?? 'WeCallYou', name: ctx.name || '…', token: ctx.poster.token, logo: design.logo, whiteLabel: ctx.whiteLabel, design })
+        : tab === 'key' && ctx.key ? keySheet({ ...ctx.key, design }) : ticketSheets(tickets, { ...design, lang: ctx.lang, domain: ctx.domain, name: ctx.name, whiteLabel: ctx.whiteLabel, last: lastNumber })[0];
       render(frame, sheet);
       requestAnimationFrame(fit);
     }, 60);
     return true;
   }
 
-  return { element: panel, fab, update };
+  return { element: panel, fab, update, setTab };
 }

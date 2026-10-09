@@ -40,14 +40,23 @@
             <div id="activity-slot"></div>
             <p class="act-sent small" id="activity-sent" hidden></p>
           </details>
-          <details class="card" open>
+          <details class="card">
             <summary data-i18n="studio_lot">Votre lot</summary>
+            <fieldset class="field" id="mode-field">
+              <legend><label data-i18n="mode_title">Comment vos clients obtiennent-ils leur numéro ?</label></legend>
+              <div class="checks">
+                <label class="check"><input type="radio" name="mode" value="tickets" checked><span data-icon="ticket"></span><span data-i18n="mode_tickets">Tickets imprimés</span></label>
+                <label class="check"><input type="radio" name="mode" value="poster"><span data-icon="qr-code"></span><span data-i18n="mode_poster">Affiche à scanner</span></label>
+                <label class="check"><input type="radio" name="mode" value="both"><span data-icon="squares-four"></span><span data-i18n="mode_both">Les deux</span></label>
+              </div>
+              <p class="small muted" id="mode-hint"></p>
+            </fieldset>
             <div class="field">
               <label for="name" data-i18n="create_name">Nom affiché aux clients</label>
               <input id="name" name="name" type="text" maxlength="60" required autocomplete="organization" data-i18n-placeholder="create_name_ph">
             </div>
             <div class="inline-fields field">
-              <div>
+              <div id="count-field">
                 <label for="count" data-i18n="create_count">Nombre de tickets</label>
                 <input id="count" name="count" type="number" min="1" max="999999" value="120" inputmode="numeric" required>
               </div>
@@ -80,15 +89,15 @@
               <p class="small muted" data-i18n="create_password_hint"></p>
             </div>
           </details>
-          <details class="card" open>
+          <details class="card" id="layout-card">
             <summary data-i18n="studio_layout">Papier et mise en page</summary>
             <div id="design-layout"></div>
           </details>
-          <details class="card" open>
+          <details class="card">
             <summary data-i18n="studio_colors">Couleurs et logo</summary>
             <div id="design-colors"></div>
           </details>
-          <details class="card pro-tools" id="pro-tools" open>
+          <details class="card pro-tools" id="pro-tools">
             <summary><span data-i18n="pro_tools_title">Options Pro</span><span class="badge pro-badge"><span data-icon="star"></span>Pro</span></summary>
             <div id="pro-slot"></div>
           </details>

@@ -1,10 +1,10 @@
 // Page d'accueil : création d'un lot de tickets, entièrement dans le navigateur.
 // À gauche les réglages, à droite l'aperçu A4 en direct (studio d'impression).
 // Les options Pro sont visibles par tous, grisées tant que le compte connecté n'est pas Pro.
-import { h, t, LANG, api, render, translatePage, errorText, lots, local, icon } from './common.js';
+import { h, t, LANG, api, render, translatePage, errorText, lots, local, icon, oneOpen } from './common.js';
 import { createLot, secretToText, b64u, randomBytes } from './crypto.js';
 import { printPlan, printOptions } from './print.js';
-import { contentOf } from './sheets.js';
+import { contentOf, keySheet, posterSheet, fillPrintRoot, keyPage, setPrintPage } from './sheets.js';
 import { designControls, livePreview } from './studio.js';
 import { supportCard, nudgeAfterPrint, loadSupport } from './donate.js';
 import { session, sync } from './account.js';
@@ -16,8 +16,11 @@ const DEFAULT_LIFETIME = 6;
 const MAX_FREE_LIFETIME = 48;
 const DRAFT = 'wcy:design-draft'; // derniers réglages d'impression, repris à la prochaine création
 const ACTIVITY = 'wcy:activity'; // dernière activité choisie
+const MODE = 'wcy:mode'; // tickets imprimés, affiche à scanner, ou les deux
+const SAMPLE_POSTER = 'A'.repeat(23); // aperçu : la vraie affiche reçoit son lien à la création
 
 translatePage();
+oneOpen(document.getElementById('create-form')); // un seul volet ouvert à la fois
 
 const form = document.getElementById('create-form');
 const errorBox = document.getElementById('create-error');
@@ -111,6 +114,7 @@ const refresh = () => {
     from,
     count: total,
     whiteLabel: pro && whiteLabel.checked,
+    poster: modeOf() === 'tickets' ? null : { token: SAMPLE_POSTER },
     key: { lang: LANG, domain, brand, lot: '…', name: name || '…', secret: sampleSecret, from, to, monthlyCost, password: Boolean(password.value), pro },
   });
 };
@@ -137,7 +141,27 @@ for (const el of [form.elements.name, count, first, whiteLabel]) {
   });
 }
 password.addEventListener('input', refresh);
-refresh();
+
+/* ---------------------------------------- comment les clients ont leur numéro */
+
+// Tickets imprimés, affiche à scanner (numéro attribué à l'arrivée), ou les deux.
+const modeInputs = [...form.querySelectorAll('input[name=mode]')];
+function modeOf() {
+  return modeInputs.find((input) => input.checked)?.value ?? 'tickets';
+}
+const savedMode = local.get(MODE);
+if (savedMode) for (const input of modeInputs) input.checked = input.value === savedMode;
+function applyMode() {
+  const mode = modeOf();
+  local.set(MODE, mode);
+  document.getElementById('mode-hint').textContent = t(`mode_hint_${mode}`);
+  document.getElementById('count-field').hidden = mode === 'poster';
+  document.getElementById('layout-card').hidden = mode === 'poster';
+  refresh();
+  preview.setTab(mode === 'poster' ? 'poster' : 'tickets');
+}
+for (const input of modeInputs) input.addEventListener('change', applyMode);
+applyMode();
 
 password.addEventListener('input', () => {
   document.getElementById('password2-field').hidden = password.value === '';
@@ -154,7 +178,8 @@ form.addEventListener('submit', async (event) => {
   event.preventDefault();
   errorBox.hidden = true;
   const name = form.elements.name.value.trim();
-  const total = Number(count.value);
+  const mode = modeOf();
+  const total = mode === 'poster' ? 1 : Number(count.value);
   const from = Number(first.value);
   const to = from + total - 1;
   const channels = [...form.querySelectorAll('input[name=channels]:checked')].map((c) => c.value);
@@ -166,7 +191,7 @@ form.addEventListener('submit', async (event) => {
   if (link && !/^https:\/\//i.test(link)) return showError('link');
   if (password.value && password.value.length < 8) return showError('password_short');
   if (password.value !== password2.value && password.value) return showError('password_match');
-  if (!printable) return showError('qr_small');
+  if (!printable && mode !== 'poster') return showError('qr_small');
 
   const button = form.querySelector('button[type=submit]');
   button.disabled = true;
@@ -181,7 +206,7 @@ form.addEventListener('submit', async (event) => {
     // Un lot neuf n'a pas encore de compte : il naît avec une durée gratuite, les options Pro
     // s'appliquent une fois qu'il a rejoint le compte Pro.
     const proTtl = PRO_LIFETIMES.includes(ttl);
-    const res = await api('/lots', { body: { name, from, to, ttl: proTtl && !info.allPro ? MAX_FREE_LIFETIME : ttl, channels, promo, link, ...lot.request } });
+    const res = await api('/lots', { body: { name, from, to, ttl: proTtl && !info.allPro ? MAX_FREE_LIFETIME : ttl, channels, promo, link, poster: mode === 'poster' ? 'only' : undefined, ...lot.request } });
     if (!res.ok) return showError(res.error);
     lots.save(res.lot, { key: secretToText(lot.secret), material: b64u.encode(lot.material), name, password: Boolean(password.value) });
     if (session.get()) await sync(); // connecté : le lot rejoint le compte
@@ -205,14 +230,14 @@ form.addEventListener('submit', async (event) => {
     }
     printOptions.set(res.lot, design.get());
     password.value = password2.value = '';
-    await showCreated({ res: result, lot, options: design.get(), hasPassword: lot.material.length > 16, proError });
+    await showCreated({ res: result, lot, options: design.get(), hasPassword: lot.material.length > 16, proError, mode });
   } finally {
     button.disabled = false;
     button.textContent = t('create_btn');
   }
 });
 
-async function showCreated({ res, lot, options, hasPassword, proError }) {
+async function showCreated({ res, lot, options, hasPassword, proError, mode }) {
   const key = { lang: LANG, domain, brand, lot: res.lot, name: res.name, secret: lot.secret, from: res.from, to: res.to, monthlyCost, password: hasPassword, pro: pro && !proError };
   const donation = await supportCard({ context: 'create', count: res.to - res.from + 1, brand });
   nudgeAfterPrint(donation);
@@ -225,7 +250,8 @@ async function showCreated({ res, lot, options, hasPassword, proError }) {
       h('p', {}, t('created_text')),
       hasPassword && h('p', { class: 'banner-warn' }, icon('lock-key'), t('created_password')),
       proError && h('p', { class: 'banner-warn' }, icon('warning'), t('pro_apply_failed', { error: errorText(proError) })),
-      printPlan({ lot: res, auth: lot.authToken, from: res.from, to: res.to, options, domain, lang: LANG, key }),
+      mode !== 'poster' && printPlan({ lot: res, auth: lot.authToken, from: res.from, to: res.to, options, domain, lang: LANG, key }),
+      mode !== 'tickets' && (await posterButton({ res, lot, options, key, withKey: mode === 'poster' })),
       h('a', { class: 'btn btn-ghost btn-block', href: '/m' }, t('open_space')),
     ),
     donation,
@@ -234,4 +260,19 @@ async function showCreated({ res, lot, options, hasPassword, proError }) {
   form.closest('section').hidden = true;
   preview.fab.remove();
   created.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/** Impression de l'affiche (avec la page clé pour un lot « affiche seule », sur la même feuille A4). */
+async function posterButton({ res, lot, options, key, withKey }) {
+  const state = await api('/lot', { auth: lot.authToken });
+  if (!state.ok) return null;
+  const button = h('button', { type: 'button', class: `btn btn-block ${withKey ? 'btn-big' : 'btn-soft'}`, id: 'print-poster' }, icon('qr-code'), t(withKey ? 'poster_print_key' : 'poster_print'));
+  button.addEventListener('click', () => {
+    const poster = posterSheet({ lang: LANG, domain, brand, name: res.name, token: state.poster, logo: options.logo, whiteLabel: Boolean(state.whiteLabel), design: options });
+    setPrintPage(keyPage(options));
+    fillPrintRoot(withKey ? [keySheet({ ...key, design: options }), poster] : [poster]);
+    window.print();
+    button.classList.add('done');
+  });
+  return button;
 }

@@ -73,8 +73,11 @@ try {
   assert.match(await m.locator('#activity-sent').textContent(), /c’est à vous/);
   assert.equal(await m.locator('#c-wl').isDisabled(), true);
   assert.equal(await m.locator('#ttl option[value="720"]').isDisabled(), true);
+  await m.click('#pro-tools summary');
   assert.equal(await m.locator('#pro-tools .pro-lock').isVisible(), true);
+  assert.equal(await m.locator('#activity-card').getAttribute('open'), null); // un seul volet ouvert à la fois
   step('accueil : comparatif Gratuit / Pro ; page « Créer » : activités, options Pro grisées sans compte Pro');
+  await m.click('summary[data-i18n=studio_lot]');
   await m.fill('#name', 'Snack Tony');
   await m.fill('#count', '30');
   await m.fill('#password', 'motdepasse-tres-long');
@@ -233,6 +236,36 @@ try {
   await waitText(tab.locator('.s-number'), '009');
   step('souche avec message personnalisé, annoncée sur l’écran');
 
+  // Affiche à scanner : chaque client reçoit le numéro suivant ; file d'arrivée ; tout le monde appelé d'un coup.
+  await m.goto(`${BASE}/m`);
+  await m.getByRole('button', { name: 'Imprimer' }).click();
+  await m.waitForSelector('#poster-card .p-qr');
+  const posterPath = new URL(await decode(m.locator('#poster-card .p-qr'))).pathname;
+  assert.match(posterPath, /^\/A\/[A-Z2-7]{23}$/);
+  const walkIn = await client.newPage();
+  walkIn.on('pageerror', (err) => errors.push(err.message));
+  await walkIn.goto(`${BASE}${posterPath}`);
+  await walkIn.waitForSelector('.ticket-head .number');
+  assert.equal(await walkIn.locator('.ticket-head .number').textContent(), '031'); // après les tickets imprimés 001 à 030
+  assert.equal(await walkIn.locator('.poster-hint').isVisible(), true);
+  await walkIn.goto(`${BASE}${posterPath}`); // rescanner l'affiche : même numéro
+  await walkIn.waitForSelector('.ticket-head .number');
+  assert.equal(await walkIn.locator('.ticket-head .number').textContent(), '031');
+  const second = await (await browser.newContext({ locale: 'fr-FR' })).newPage();
+  await second.goto(`${BASE}${posterPath}`);
+  await second.waitForSelector('.ticket-head .number');
+  assert.equal(await second.locator('.ticket-head .number').textContent(), '032');
+  await walkIn.getByRole('button', { name: /wait to be called/ }).click();
+  await m.getByRole('button', { name: 'Appels' }).click();
+  await m.waitForSelector('#arrivals li:has-text("031")');
+  assert.match(await m.locator('#arrivals').textContent(), /032/);
+  await shot(m, '26-file-arrivee');
+  m.once('dialog', (dialog) => dialog.accept());
+  await m.click('#call-all');
+  await m.waitForSelector('#arrivals:has-text("Personne en attente")');
+  await walkIn.waitForSelector('.ready', { timeout: 15_000 });
+  step('affiche : 031 puis 032 dans l’ordre d’arrivée, même numéro au rescan, tout le monde appelé d’un coup');
+
   /* ------------------------------ autre téléphone : page 1 + mot de passe */
   const lotsSaved = await m.evaluate(() => JSON.parse(localStorage.getItem('wcy:lots')));
   const key = Object.values(lotsSaved)[0].key;
@@ -363,11 +396,13 @@ try {
 
   // Compte Pro : les options Pro du générateur s'ouvrent et s'appliquent au nouveau lot.
   await p4.goto(`${BASE}/creer`);
-  await p4.waitForSelector('#c-wl:not([disabled])');
+  await p4.waitForSelector('#c-wl:not([disabled])', { state: 'attached' });
   await p4.click('.activity[data-id="pressing"]');
+  await p4.click('summary[data-i18n=studio_lot]');
   await p4.fill('#name', 'Pressing Lumière');
   await p4.fill('#count', '20');
   await p4.selectOption('#ttl', '720');
+  await p4.click('#pro-tools summary');
   await p4.check('#c-wl');
   await p4.fill('#th-screenNumber', '#2b7fff');
   await p4.click('#create-form button[type=submit]');

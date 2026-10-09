@@ -38,6 +38,19 @@ export function h(tag, attrs = {}, ...children) {
   return el;
 }
 
+/** Volets dépliants frères : un seul ouvert à la fois (ouvrir l'un referme les autres). */
+export function oneOpen(root) {
+  root.addEventListener(
+    'toggle',
+    (event) => {
+      const opened = event.target;
+      if (!(opened instanceof HTMLDetailsElement) || !opened.open) return;
+      for (const other of opened.parentElement.children) if (other !== opened && other instanceof HTMLDetailsElement) other.open = false;
+    },
+    true, // l'événement « toggle » ne remonte pas : on l'écoute à la descente
+  );
+}
+
 /** Remplace le contenu d'un conteneur. */
 export function render(container, ...children) {
   container.replaceChildren(...children.flat(Infinity).filter(Boolean));

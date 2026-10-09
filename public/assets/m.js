@@ -1,10 +1,10 @@
 // Espace commerçant : connexion par la page 1 du PDF (et le mot de passe du lot s'il y en a un),
 // appels, suivi des tickets, statistiques, impression, réglages et écran d'affichage.
-import { h, t, LANG, api, render, translatePage, errorText, lots, local, fmtTime, qrSvg, icon } from './common.js';
+import { h, t, LANG, api, render, translatePage, errorText, lots, local, fmtTime, qrSvg, icon, oneOpen } from './common.js';
 import { textToSecret, secretToText, lotMaterial, authTokenOf, openLot, b64u, openFromClient } from './crypto.js';
 import { unlock, callTickets } from './call.js';
 import { composer, needsComposer, groupOf, parseNumbers, variableChips, builtinNames } from './message.js';
-import { keySheet, fillPrintRoot, contentOf, keyPage, setPrintPage } from './sheets.js';
+import { keySheet, fillPrintRoot, contentOf, keyPage, setPrintPage, posterSheet, posterUrl, labelOf as ticketLabel } from './sheets.js';
 import { printPlan, printOptions } from './print.js';
 import { designControls, livePreview } from './studio.js';
 import { PRO_LIFETIMES, themeFields, proLock } from './protools.js';
@@ -332,6 +332,46 @@ async function callTab(panel, { lot, access, reload }) {
   const stats = h('div');
   const list = h('ul', { class: 'waiting-list' });
   let current = lot;
+
+  // File d'arrivée : tickets scannés (affiche ou tickets imprimés) pas encore appelés, dans l'ordre.
+  // On appelle le suivant, tout le monde d'un coup, ou au cas par cas.
+  const arrivalsBox = h('section', { class: 'card stack', id: 'arrivals' });
+  const callAll = async () => {
+    const numbers = (current.arrivals ?? []).map((a) => a.n);
+    if (!numbers.length || !confirm(t('m_call_all_confirm', { count: numbers.length }))) return;
+    render(result, h('p', { class: 'muted' }, t('calling', { n: numbers.length })));
+    for (let i = 0; i < numbers.length; i += 200) show(await send({ numbers: numbers.slice(i, i + 200).join(',') }));
+  };
+  const drawArrivals = () => {
+    const arrived = current.arrivals ?? [];
+    render(
+      arrivalsBox,
+      h('div', { class: 'row' }, h('h2', { class: 'grow' }, t('m_arrivals')), h('span', { class: 'badge' }, String(arrived.length))),
+      h('p', { class: 'small muted' }, t('m_arrivals_hint')),
+      arrived.length
+        ? h(
+            'div',
+            { class: 'row' },
+            h('button', { type: 'button', class: 'btn', id: 'call-next', onclick: () => doCall(arrived[0].n) }, icon('megaphone'), t('m_call_next', { n: arrived[0].label })),
+            arrived.length > 1 && h('button', { type: 'button', class: 'btn btn-soft', id: 'call-all', onclick: callAll }, icon('users'), t('m_call_all', { count: arrived.length })),
+          )
+        : h('p', { class: 'muted' }, t('m_arrivals_none')),
+      arrived.length > 0 &&
+        h(
+          'ul',
+          { class: 'waiting-list' },
+          arrived.map((a) =>
+            h(
+              'li',
+              {},
+              h('span', { class: 'num' }, a.label),
+              h('span', { class: 'grow small muted' }, t('m_arrived_at', { time: fmtTime(a.at) }), ' ', h('span', { class: `badge${a.subscribed ? ' notif-count' : ''}` }, a.subscribed && icon('bell-ringing'), t(a.subscribed ? 'm_arr_notified' : 'm_arr_onsite'))),
+              h('button', { type: 'button', class: 'btn btn-soft', onclick: () => doCall(a.n) }, t('m_call_btn')),
+            ),
+          ),
+        ),
+    );
+  };
   const drawList = async () => {
     const items = await waitingItems(current, access, doCall, filter?.value ?? '');
     render(list, items.length ? items : h('li', { class: 'muted' }, t('m_none')));
@@ -342,6 +382,7 @@ async function callTab(panel, { lot, access, reload }) {
     if (!fresh.ok) return;
     current = fresh;
     render(stats, statsRow(fresh.queue));
+    drawArrivals();
     await drawList();
   };
 
@@ -350,11 +391,13 @@ async function callTab(panel, { lot, access, reload }) {
     stats,
     screenCard(lot, access),
     h('section', { class: 'card stack' }, h('h2', {}, t('m_call_title')), h('p', { class: 'small muted' }, t('m_call_hint')), box?.element, form),
+    arrivalsBox,
     groupSection,
     result,
     h('section', { class: 'card stack' }, h('h2', {}, t('m_waiting')), filter, list),
   );
   render(stats, statsRow(lot.queue));
+  drawArrivals();
   render(list, h('li', { class: 'muted' }, t('loading')));
   await drawList();
   refreshTimer = setInterval(() => !document.hidden && refresh(), 10_000);
@@ -478,7 +521,7 @@ async function printTab(panel, { lot, access }) {
   const support = await loadSupport();
   const monthlyCost = support ? support.costs.reduce((sum, c) => sum + c.month, 0) : 20;
   const from = h('input', { id: 'pf', type: 'number', min: 1, max: 999999, value: lot.from ?? 1 });
-  const to = h('input', { id: 'pt', type: 'number', min: 1, max: 999999, value: lot.to ?? 120 });
+  const to = h('input', { id: 'pt', type: 'number', min: 1, max: 999999, value: lot.printTo ?? lot.to ?? 120 });
   const plan = h('div');
   const preview = livePreview();
   preview.fab.classList.add('near');
@@ -512,30 +555,73 @@ async function printTab(panel, { lot, access }) {
     window.print();
   });
 
-  render(
-    panel,
+  // Lot « affiche seule » : pas de tickets à imprimer, seulement l'affiche et la page clé.
+  if ((lot.printTo ?? lot.to) < lot.from) {
+    render(panel, h('div', { class: 'stack' }, posterCard(lot, access), h('section', { class: 'card stack' }, h('p', { class: 'small muted' }, t('poster_only_note')), reprintKey)));
+    return;
+  }
+
+  const form = h(
+    'div',
+    { class: 'studio-form' },
     h(
-      'div',
-      { class: 'studio' },
-      h(
-        'div',
-        { class: 'studio-form' },
-        h(
-          'section',
-          { class: 'card stack' },
-          h('h2', {}, t('m_print_title')),
-          h('p', { class: 'small muted' }, t('m_print_hint')),
-          h('div', { class: 'inline-fields' }, h('div', {}, h('label', { for: 'pf' }, t('create_first')), from), h('div', {}, h('label', { for: 'pt' }, t('create_to')), to)),
-        ),
-        h('details', { class: 'card', open: true }, h('summary', {}, t('m_print_layout')), controls.layout),
-        h('details', { class: 'card' }, h('summary', {}, t('m_print_colors')), controls.colors),
-        h('section', { class: 'card stack' }, plan, reprintKey),
-      ),
-      preview.element,
+      'section',
+      { class: 'card stack' },
+      h('h2', {}, t('m_print_title')),
+      h('p', { class: 'small muted' }, t('m_print_hint')),
+      h('div', { class: 'inline-fields' }, h('div', {}, h('label', { for: 'pf' }, t('create_first')), from), h('div', {}, h('label', { for: 'pt' }, t('create_to')), to)),
     ),
-    preview.fab,
+    h('details', { class: 'card', open: true }, h('summary', {}, t('m_print_layout')), controls.layout),
+    h('details', { class: 'card' }, h('summary', {}, t('m_print_colors')), controls.colors),
+    h('section', { class: 'card stack' }, plan, reprintKey),
+    posterCard(lot, access),
   );
+  oneOpen(form); // un seul volet ouvert à la fois
+  render(panel, h('div', { class: 'studio' }, form, preview.element), preview.fab);
   draw();
+}
+
+/* ------------------------------------------------------------------ affiche */
+
+/** Affiche à scanner : QR à l'écran, impression A4, numérotation reprise au début, lien renouvelé. */
+function posterCard(lot, access) {
+  const status = h('p', { class: 'small', role: 'status' });
+  const qr = h('div', { class: 'poster-mini' }, qrSvg(posterUrl(info.domain, lot.poster)));
+  const print = h('button', { type: 'button', class: 'btn btn-block', id: 'print-poster' }, icon('printer'), t('poster_print'));
+  print.addEventListener('click', () => {
+    const design = printOptions.get(lot.lot);
+    setPrintPage(keyPage(design));
+    fillPrintRoot([posterSheet({ lang: LANG, domain: info.domain, brand: info.brand, name: lot.name, token: lot.poster, logo: design.logo, whiteLabel: Boolean(lot.whiteLabel), design })]);
+    window.print();
+  });
+  const restart = h('button', { type: 'button', class: 'btn btn-soft' }, icon('arrows-clockwise'), t('poster_restart'));
+  restart.addEventListener('click', async () => {
+    const res = await api('/lot/poster/restart', { body: {}, auth: access.auth });
+    status.className = res.ok ? 'small ok' : 'small error';
+    status.textContent = res.ok ? t('poster_restarted', { n: ticketLabel(lot.posterFrom ?? lot.printTo + 1) }) : errorText(res.error);
+  });
+  const reset = h('button', { type: 'button', class: 'linklike small' }, t('poster_reset'));
+  reset.addEventListener('click', async () => {
+    if (!confirm(t('poster_reset_confirm'))) return;
+    const res = await api('/lot/poster/reset', { body: {}, auth: access.auth });
+    if (!res.ok) {
+      status.textContent = errorText(res.error);
+      return;
+    }
+    lot.poster = res.poster;
+    render(qr, qrSvg(posterUrl(info.domain, lot.poster)));
+    status.className = 'small ok';
+    status.textContent = t('poster_reset_done');
+  });
+  return h(
+    'section',
+    { class: 'card stack', id: 'poster-card' },
+    h('h2', { class: 'row' }, icon('qr-code'), t('poster_card_title')),
+    h('p', { class: 'small muted' }, t('poster_card_hint', { n: ticketLabel(lot.posterFrom ?? lot.printTo + 1) })),
+    h('div', { class: 'poster-row' }, qr, h('div', { class: 'stack grow' }, print, restart)),
+    reset,
+    status,
+  );
 }
 
 /* ----------------------------------------------------------------- réglages */

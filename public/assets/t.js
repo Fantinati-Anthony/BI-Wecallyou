@@ -11,6 +11,8 @@ const app = document.getElementById('app');
 const token = (location.pathname.split('/')[1] || '').toUpperCase();
 const ICON = { push: 'bell-ringing', sms: 'chat-circle-text', wa: 'whatsapp-logo', mail: 'envelope-simple' };
 const storageKey = `wcy:t:${token}`;
+// Numéro pris sur l'affiche du comptoir : le client le donne en commandant.
+const fromPoster = new URLSearchParams(location.search).has('affiche');
 
 // Manifeste propre à ce ticket : l'icône ajoutée à l'écran d'accueil (iPhone) rouvre ce ticket.
 document.head.append(h('link', { rel: 'manifest', href: `/${token}/manifest.webmanifest` }));
@@ -50,6 +52,7 @@ function ring() {
 
 function header() {
   const box = h('div', { class: 'ticket-head' }, h('div', { class: 'merchant' }, data.name), h('div', { class: 'number' }, data.label));
+  if (fromPoster && data.role === 'client') box.append(h('p', { class: 'poster-hint' }, icon('storefront'), t('poster_show')));
   const q = data.queue;
   if (q && data.role === 'client') {
     const place = q.position === 1 ? t('queue_next') : t('queue_pos', { pos: ordinal(q.position) });

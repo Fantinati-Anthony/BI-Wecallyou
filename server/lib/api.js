@@ -263,6 +263,10 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
       lists: lot.lists ?? [],
       groups: lot.groups ?? [],
       screen: screenToken(lot),
+      poster: posterToken(lot),
+      posterFrom: lot.posterFrom ?? null,
+      // Tickets imprimables : avant la plage de l'affiche (aucun pour un lot « affiche seule »).
+      printTo: lot.posterFrom === undefined ? lot.to : Math.min(lot.to, lot.posterFrom - 1),
       whiteLabelSetting: Boolean(lot.whiteLabel),
       themeSetting: cleanTheme(lot.theme),
       pro: status.pro,
@@ -281,6 +285,33 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
     id.writeUInt32BE(lot.id);
     const tag = createHmac('sha256', config.statusKey).update(`screen|${lot.id}|${lot.screenGen ?? 0}`).digest().subarray(0, 10);
     return base32.encode(Buffer.concat([id, tag]));
+  }
+
+  /** Lien de l'affiche (même principe que l'écran public, signature distincte, révocable à part). */
+  function posterToken(lot) {
+    const id = Buffer.alloc(4);
+    id.writeUInt32BE(lot.id);
+    const tag = createHmac('sha256', config.statusKey).update(`poster|${lot.id}|${lot.posterGen ?? 0}`).digest().subarray(0, 10);
+    return base32.encode(Buffer.concat([id, tag]));
+  }
+
+  async function lotOfPoster(token) {
+    const bin = /^[A-Z2-7]{23}$/.test(token) ? base32.decode(token) : null;
+    const lot = bin?.length === 14 ? await store.lot(bin.readUInt32BE(0)) : null;
+    const expected = lot ? Buffer.from(posterToken(lot)) : null;
+    return expected && timingSafeEqual(expected, Buffer.from(token)) ? lot : fail(404, 'invalid');
+  }
+
+  /** File d'arrivée : tickets actifs pas encore appelés, dans l'ordre de leur premier scan. */
+  async function arrivals(lot) {
+    const list = [];
+    for (const { n, events: log } of await store.history(lot.id)) {
+      if (log.some(([, type]) => type === 'call' || type === 'recall')) continue;
+      const first = log[0]?.[0];
+      const subs = log.filter(([, type]) => type === 'sub').length - log.filter(([, type]) => type === 'unsub').length;
+      if (first) list.push({ n, label: label(n), at: first, subscribed: subs > 0 });
+    }
+    return list.sort((a, b) => a.at - b.at);
   }
 
   async function lotOfScreen(token) {
@@ -335,6 +366,11 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
         from,
         to,
       });
+      // Lot « affiche seule » : les numéros sont attribués au scan de l'affiche, dès le premier.
+      if (body.poster === 'only') {
+        lot.posterFrom = from;
+        await store.saveLot(lot);
+      }
       await store.countLot(to - from + 1);
       // Les tickets eux-mêmes sont demandés ensuite, cahier par cahier (POST /lot/tickets).
       return { ok: true, ...(await publicLot(lot)) };
@@ -343,6 +379,7 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
     ['GET', /^\/lot$/, async (req) => {
       const lot = await lotOf(req);
       const waiting = await store.waiting(lot.id);
+      const arrived = await arrivals(lot);
       return {
         ok: true,
         ...(await privateLot(lot)),
@@ -350,8 +387,40 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
         owned: Boolean(lot.owner),
         pro: await lotIsPro(lot.id),
         waiting: waiting.map((w) => ({ n: w.n, label: label(w.n), calledAt: w.calledAt, subs: w.subs })),
-        queue: queueView(await store.queue(lot.id), waiting.filter((w) => w.calledAt === null).length),
+        arrivals: arrived,
+        // En attente : tous ceux qui ont scanné (affiche ou ticket) et n'ont pas encore été appelés.
+        queue: queueView(await store.queue(lot.id), arrived.length),
       };
+    }],
+
+    // Affiche : chaque scan reçoit le numéro suivant (ordre d'arrivée), sans ticket imprimé.
+    ['POST', /^\/poster\/([A-Za-z2-7]{23})$/, async (req, [token]) => {
+      limits.check(`poster:${clientIp(req)}`, 30, 10 * MINUTE);
+      const lot = await lotOfPoster(token.toUpperCase());
+      limits.check(`poster-lot:${lot.id}`, 5000, 24 * HOUR);
+      lot.posterFrom ??= lot.to + 1; // lot à tickets imprimés : l'affiche prend la suite
+      let n = Math.max(lot.posterNext ?? lot.posterFrom, lot.posterFrom);
+      for (let tries = 0; ; n++, tries++) {
+        if (n > MAX_NUMBER || tries > 5000) fail(409, 'poster_full');
+        if (!(await store.isActive(lot.id, n)) && (await store.claimNumber(lot.id, n))) break;
+      }
+      await store.event(lot.id, n, 'scan'); // le ticket vit dès maintenant, comme un ticket scanné
+      lot.posterNext = n + 1;
+      if (n > lot.to) {
+        await store.countTickets(n - lot.to);
+        lot.to = n;
+      }
+      await store.saveLot(lot);
+      return { ok: true, code: tokens.encode(lot.id, n, Role.CLIENT), label: label(n) };
+    }],
+
+    // Nouveau lien d'affiche (l'ancienne affiche cesse de donner des numéros) ou numérotation reprise au début.
+    ['POST', /^\/lot\/poster\/(reset|restart)$/, async (req, [action]) => {
+      const lot = await lotOf(req);
+      if (action === 'reset') lot.posterGen = (lot.posterGen ?? 0) + 1;
+      else lot.posterNext = lot.posterFrom ?? lot.to + 1; // les numéros encore en cours sont sautés
+      await store.saveLot(lot);
+      return { ok: true, ...(await privateLot(lot)) };
     }],
 
     // Nouveau lien d'écran public : l'ancien cesse aussitôt de fonctionner.
@@ -381,6 +450,8 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
       const lot = await lotOf(req);
       const body = await readJson(req);
       const [from, to] = range(body.from, body.to, MAX_TICKETS_PER_REQUEST);
+      // Les numéros de l'affiche ne s'impriment pas : deux clients auraient le même ticket.
+      if (lot.posterFrom !== undefined && to >= lot.posterFrom) fail(409, 'poster_range');
       if (from < (lot.from ?? 1) || to > (lot.to ?? MAX_NUMBER)) {
         // Numéros en dehors du lot initial : le lot s'agrandit (et les statistiques le comptent).
         await store.countTickets(Math.max(0, (lot.from ?? from) - from) + Math.max(0, to - (lot.to ?? to)));
