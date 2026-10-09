@@ -1,0 +1,67 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+
+// Service des pages en local (en production, c'est Apache qui s'en charge avec public/.htaccess).
+// Les règles ci-dessous reproduisent exactement celles du .htaccess.
+
+const TYPES = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.webmanifest': 'application/manifest+json',
+  '.png': 'image/png',
+  '.svg': 'image/svg+xml',
+  '.txt': 'text/plain; charset=utf-8',
+};
+
+export const SECURITY_HEADERS = {
+  'Content-Security-Policy':
+    "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'; " +
+    "worker-src 'self'; manifest-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
+  'Referrer-Policy': 'no-referrer',
+  'X-Content-Type-Options': 'nosniff',
+  'Permissions-Policy': 'geolocation=(), microphone=(), camera=()',
+};
+
+const REWRITES = [
+  [/^\/$/, 'index.html'],
+  [/^\/m\/?$/, 'm.html'],
+  [/^\/soutenir\/?$/i, 'soutenir.html'],
+  [/^\/merci\/?$/, 'merci.html'],
+  [/^\/confidentialite\/?$/, 'confidentialite.html'],
+  [/^\/[A-Za-z2-7]{26}\/?$/, 't.html'],
+  [/^\/[A-Za-z2-7]{26}\/manifest\.webmanifest$/, 'manifest.webmanifest'],
+];
+
+export function createStatic(publicDir) {
+  return async function serve(req, res, pathname) {
+    if (req.method !== 'GET' && req.method !== 'HEAD') return false;
+    let rel = REWRITES.find(([pattern]) => pattern.test(pathname))?.[1];
+    if (!rel) {
+      rel = decodeURIComponent(pathname).replace(/^\/+/, '');
+      if (rel.split('/').some((part) => part === '..' || part.startsWith('.'))) return false;
+    }
+    const file = path.join(publicDir, rel);
+    let body;
+    try {
+      body = await fs.readFile(file);
+    } catch {
+      if (pathname.startsWith('/etat/')) {
+        // Ticket pas encore appelé : réponse courte, gardée 2 s en cache (comme etat/.htaccess).
+        res.writeHead(404, { 'Content-Type': 'text/plain', 'Cache-Control': 'public, max-age=2' });
+        res.end('attente');
+        return true;
+      }
+      return false;
+    }
+    const ext = path.extname(file);
+    const headers = { 'Content-Type': TYPES[ext] ?? 'application/octet-stream', ...SECURITY_HEADERS };
+    if (pathname.startsWith('/etat/')) headers['Cache-Control'] = 'public, max-age=2';
+    else if (ext === '.html' || rel === 'sw.js' || rel === 'soutien.json') headers['Cache-Control'] = 'no-cache';
+    else headers['Cache-Control'] = 'public, max-age=3600';
+    res.writeHead(200, headers);
+    res.end(req.method === 'HEAD' ? undefined : body);
+    return true;
+  };
+}

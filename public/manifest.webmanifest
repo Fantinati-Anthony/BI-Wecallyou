@@ -1,0 +1,15 @@
+{
+  "name": "WeCallYou · ticket",
+  "short_name": "Ticket",
+  "description": "Votre ticket : prévenu quand c'est votre tour.",
+  "start_url": ".",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#faf7f2",
+  "theme_color": "#e8572a",
+  "icons": [
+    { "src": "/assets/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/assets/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/assets/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

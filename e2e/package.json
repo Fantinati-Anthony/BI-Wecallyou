@@ -1,0 +1,14 @@
+{
+  "name": "wecallyou-e2e",
+  "private": true,
+  "type": "module",
+  "description": "Parcours complet dans un vrai navigateur (Playwright).",
+  "scripts": {
+    "test": "node run.mjs"
+  },
+  "devDependencies": {
+    "jsqr": "1.4.0",
+    "playwright": "1.52.0",
+    "pngjs": "7.0.0"
+  }
+}

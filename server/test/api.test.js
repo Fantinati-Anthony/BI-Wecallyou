@@ -1,0 +1,282 @@
+// Parcours complet contre un vrai serveur : création de lot, inscription chiffrée,
+// appel par la souche, temps réel, relais des notifications, annulation et purge.
+import { test, before, after } from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtempSync, rmSync, existsSync, utimesSync, readdirSync, readFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { randomBytes } from 'node:crypto';
+import { createServer } from '../lib/server.js';
+import { purge } from '../lib/purge.js';
+import * as wc from '../../public/assets/crypto.js';
+
+let base;
+let server;
+let store;
+let tmp;
+
+before(async () => {
+  tmp = mkdtempSync(path.join(tmpdir(), 'wecallyou-'));
+  const config = {
+    domain: 'wecall.you',
+    brand: 'WeCallYou',
+    contact: 'mailto:contact@wecall.you',
+    dataDir: path.join(tmp, 'data'),
+    publicDir: path.join(tmp, 'public'),
+    serveStatic: false,
+    basePath: '/api',
+    tokenKey: randomBytes(16),
+    statusKey: randomBytes(32),
+  };
+  ({ server, store } = await createServer(config));
+  await new Promise((resolve) => server.listen(0, resolve));
+  base = `http://127.0.0.1:${server.address().port}/api`;
+});
+
+after(() => {
+  server.closeAllConnections();
+  server.close();
+  rmSync(tmp, { recursive: true, force: true });
+});
+
+async function call(method, route, body, authToken) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (authToken) headers.Authorization = `Lot ${authToken}`;
+  const res = await fetch(base + route, { method, headers, body: body && JSON.stringify(body) });
+  return { status: res.status, ...(await res.json()) };
+}
+
+async function newLot(extra = {}) {
+  const lot = await wc.createLot();
+  const res = await call('POST', '/lots', { name: 'Snack Tony', channels: ['push', 'sms', 'wa', 'mail'], from: 1, to: 20, ...lot.request, ...extra });
+  if (res.ok) res.tickets = (await call('POST', '/lot/tickets', { from: 1, to: 20 }, lot.authToken)).tickets;
+  return { ...lot, res };
+}
+
+test('un lot peut compter 999 999 tickets, imprimés cahier par cahier, sans rien stocker', async () => {
+  const lot = await newLot({ from: 1, to: 999_999 });
+  assert.equal(lot.res.to, 999_999);
+  const batch = await call('POST', '/lot/tickets', { from: 998_800, to: 999_999 }, lot.authToken);
+  assert.equal(batch.tickets.length, 1200);
+  assert.equal(batch.tickets.at(-1).label, '999999');
+  assert.equal((await call('GET', `/t/${batch.tickets.at(-1).c}`)).n, 999_999);
+  assert.equal((await call('POST', '/lot/tickets', { from: 1, to: 1201 }, lot.authToken)).status, 400);
+  assert.equal((await call('POST', '/lots', { ...lot.request, name: 'x', from: 1, to: 1_000_000 })).status, 400);
+});
+
+test('création d’un lot et lecture publique d’un ticket', async () => {
+  const lot = await newLot();
+  assert.equal(lot.res.status, 200);
+  assert.equal(lot.res.tickets.length, 20);
+  const [first] = lot.res.tickets;
+  assert.equal(first.label, '001');
+
+  const client = await call('GET', `/t/${first.c}`);
+  assert.equal(client.role, 'client');
+  assert.equal(client.name, 'Snack Tony');
+  assert.equal(client.pubEcdh, lot.request.pubEcdh);
+  assert.equal(client.called, false);
+  assert.equal('wrapped' in client, false);
+
+  const stub = await call('GET', `/t/${first.s.toLowerCase()}`);
+  assert.equal(stub.role, 'stub');
+  assert.equal((await call('GET', `/t/${'A'.repeat(26)}`)).status, 404);
+});
+
+test('le serveur ne stocke que des blocs illisibles', async () => {
+  const lot = await newLot();
+  const ticket = lot.res.tickets[4];
+  const blob = await wc.sealForLot(lot.request.pubEcdh, { c: 'sms', v: '+33612345678', l: 'fr' });
+  const sub = await call('POST', '/sub', { t: ticket.c, blob, kind: 'sms' });
+  assert.equal(sub.status, 200);
+  const dir = path.join(tmp, 'data', 'subs', String(lot.res.lot), '5');
+  const stored = readFileSync(path.join(dir, readdirSync(dir)[0]), 'utf8');
+  assert.equal(stored, blob);
+  for (const entry of readdirSync(path.join(tmp, 'data'), { recursive: true, withFileTypes: true })) {
+    if (entry.isFile()) assert.ok(!readFileSync(path.join(entry.parentPath, entry.name), 'utf8').includes('612345678'));
+  }
+});
+
+test('parcours complet : inscription, temps réel, appel par la souche, relais', async () => {
+  const lot = await newLot();
+  const ticket = lot.res.tickets[1];
+  const info = await call('GET', `/t/${ticket.c}`);
+
+  const blob = await wc.sealForLot(info.pubEcdh, { c: 'mail', v: 'client@example.com', l: 'en' });
+  const { rid } = await call('POST', '/sub', { t: ticket.c, blob, kind: 'mail' });
+  assert.ok(rid);
+
+  // Page client ouverte : connexion temps réel.
+  const sse = await fetch(`${base}/events/${info.status}`);
+  assert.equal(sse.headers.get('content-type'), 'text/event-stream; charset=utf-8');
+  const reader = sse.body.getReader();
+
+  // Sans la clé du lot, impossible d'appeler.
+  assert.equal((await call('POST', '/call', { t: ticket.s })).status, 401);
+  assert.equal((await call('POST', '/call', { t: ticket.c }, lot.authToken)).status, 404);
+
+  const called = await call('POST', '/call', { t: ticket.s }, lot.authToken);
+  assert.equal(called.status, 200);
+  assert.equal(called.previousAt, null);
+  assert.equal(called.clientToken, ticket.c);
+  assert.equal(called.subs.length, 1);
+
+  // Le téléphone du commerçant déchiffre localement.
+  const lotInfo = await call('GET', '/lot', undefined, lot.authToken);
+  const keys = await wc.openLot(lot.secret, lotInfo.wrapped);
+  assert.deepEqual(await wc.openFromClient(keys.ecdh, called.subs[0].blob), { c: 'mail', v: 'client@example.com', l: 'en' });
+
+  let received = '';
+  while (!received.includes('event: ready')) received += new TextDecoder().decode((await reader.read()).value);
+  await reader.cancel();
+
+  assert.equal((await call('GET', `/t/${ticket.c}`)).called, true);
+  const again = await call('POST', '/call', { n: 2 }, lot.authToken);
+  assert.ok(again.previousAt > 0);
+
+  // Le relais refuse ce qui ne vient pas de ce lot ou ne vise pas un service de notification.
+  const ua = (await wc.createLot()).request.pubEcdh;
+  const subscription = { endpoint: 'https://fcm.googleapis.com/fcm/send/x', keys: { p256dh: ua, auth: wc.b64u.encode(wc.randomBytes(16)) } };
+  const good = await wc.buildPush({ subscription, payload: { t: 1 }, vapidKey: keys.vapid, vapidPublic: lot.request.pubVapid, subject: 'mailto:a@b.c' });
+  const evil = { ...good, endpoint: 'https://example.com/steal' };
+  assert.equal((await call('POST', '/relay', { n: 2, messages: [evil] }, lot.authToken)).status, 400);
+  const other = await newLot();
+  assert.equal((await call('POST', '/relay', { n: 2, messages: [good] }, other.authToken)).status, 400);
+
+  assert.equal((await call('POST', '/unsub', { t: ticket.c, rid })).ok, true);
+  assert.equal((await call('POST', '/call', { n: 2 }, lot.authToken)).subs.length, 0);
+});
+
+test('3 inscriptions maximum par ticket', async () => {
+  const lot = await newLot();
+  const ticket = lot.res.tickets[2];
+  const blob = await wc.sealForLot(lot.request.pubEcdh, { c: 'sms', v: '+33600000000', l: 'fr' });
+  for (let i = 0; i < 3; i++) assert.equal((await call('POST', '/sub', { t: ticket.c, blob, kind: 'sms' })).status, 200);
+  assert.equal((await call('POST', '/sub', { t: ticket.c, blob, kind: 'sms' })).status, 409);
+  assert.equal((await call('POST', '/sub', { t: ticket.s, blob, kind: 'sms' })).status, 404);
+});
+
+test('réglages et tickets supplémentaires réservés au lot', async () => {
+  const lot = await newLot();
+  const more = await call('POST', '/lot/tickets', { from: 21, to: 30 }, lot.authToken);
+  assert.equal(more.tickets.length, 10);
+  assert.equal((await call('POST', '/lot/tickets', { from: 1, to: 1300 }, lot.authToken)).status, 400);
+  const settings = await call(
+    'POST',
+    '/lot/settings',
+    { name: 'Tournoi U11', channels: ['sms'], promo: 'Merci à la Boulangerie Martin\n', link: 'https://instagram.com/club' },
+    lot.authToken,
+  );
+  assert.deepEqual(settings.channels, ['sms']);
+  const page = await call('GET', `/t/${more.tickets[0].c}`);
+  assert.equal(page.name, 'Tournoi U11');
+  assert.equal(page.promo, 'Merci à la Boulangerie Martin');
+  assert.equal(page.link, 'https://instagram.com/club');
+  for (const link of ['javascript:alert(1)', 'http://insecure.example', 'https://user:pw@example.com']) {
+    assert.equal((await call('POST', '/lot/settings', { name: 'x', channels: [], link }, lot.authToken)).status, 400);
+  }
+  assert.equal((await call('GET', '/lot', undefined, 'x'.repeat(43))).status, 401);
+});
+
+test('cycle de vie : rien avant le scan, journal pendant, tout s’efface à la fin sauf les statistiques', async () => {
+  const lot = await newLot({ ttl: 1 });
+  const id = lot.res.lot;
+  const ticket = lot.res.tickets[9];
+  assert.equal((await call('POST', '/lots', { ...lot.request, name: 'x', from: 1, to: 2, ttl: 5 })).status, 400);
+
+  // Imprimé, puis souche consultée : toujours rien sur le serveur.
+  assert.equal(await store.isActive(id, 10), false);
+  await call('GET', `/t/${ticket.s}`);
+  assert.equal(await store.isActive(id, 10), false);
+
+  // Premier scan du client : le ticket s'active.
+  await call('GET', `/t/${ticket.c}`);
+  await call('GET', `/t/${ticket.c}`);
+  const blob = await wc.sealForLot(lot.request.pubEcdh, { c: 'wa', v: '+33611111111', l: 'fr' });
+  await call('POST', '/sub', { t: ticket.c, blob, kind: 'wa' });
+  await call('POST', '/call', { t: ticket.s }, lot.authToken);
+  await call('POST', '/seen', { t: ticket.c });
+  await call('POST', '/seen', { t: ticket.c });
+  await call('POST', '/lot/event', { n: 10, type: 'send', detail: 'wa' }, lot.authToken);
+  assert.equal((await call('POST', '/lot/event', { n: 11, type: 'send', detail: 'wa' }, lot.authToken)).status, 404);
+
+  const history = await call('GET', '/lot/history', undefined, lot.authToken);
+  const entry = history.tickets.find((t) => t.n === 10);
+  assert.deepEqual(entry.events.map(([, type, detail]) => (detail ? `${type}:${detail}` : type)), ['scan', 'sub:wa', 'call', 'seen', 'send:wa']);
+  assert.ok(!JSON.stringify(history).includes('611111111'));
+
+  // 30 min après l'appel : la coordonnée chiffrée disparaît, le journal (anonyme) reste.
+  const subDir = store.subsPath(id, 10);
+  const before = new Date(Date.now() - 40 * 60_000);
+  for (const f of readdirSync(subDir)) utimesSync(path.join(subDir, f), before, before);
+  const calledAt = new Date(Date.now() - 35 * 60_000);
+  utimesSync(store.callFile(id, 10), calledAt, calledAt);
+  await purge(store);
+  assert.equal(existsSync(subDir), false);
+  assert.equal(await store.isActive(id, 10), true);
+
+  // Fin de vie (1 h après le premier scan) : plus rien sur ce ticket, sauf des compteurs.
+  const statusFile = store.statusFile(store.statusId(id, 10));
+  assert.ok(existsSync(statusFile));
+  const done = await purge(store, Date.now() + 61 * 60_000);
+  assert.ok(done.tickets >= 1);
+  assert.equal(await store.isActive(id, 10), false);
+  assert.equal(existsSync(statusFile), false);
+  assert.equal(existsSync(store.callFile(id, 10)), false);
+
+  const [day] = (await call('GET', '/lot/stats', undefined, lot.authToken)).days;
+  assert.equal(day.scan, 1);
+  assert.equal(day.sub_wa, 1);
+  assert.equal(day.call, 1);
+  assert.equal(day.seen, 1);
+  assert.equal(day.send_wa, 1);
+  assert.equal(day.waits, 1);
+});
+
+test('file d’attente : position et attente estimée, calculées sur le rythme des appels', async () => {
+  const lot = await newLot();
+  const id = lot.res.lot;
+  const sixth = lot.res.tickets[5];
+  assert.equal((await call('GET', `/t/${sixth.c}`)).queue, null); // aucun appel : pas d'estimation
+
+  for (const n of [1, 2, 3]) await call('POST', '/call', { n }, lot.authToken);
+  const now = Date.now();
+  for (const [n, minutesAgo] of [[1, 6], [2, 3], [3, 0]]) {
+    const at = new Date(now - minutesAgo * 60_000);
+    utimesSync(store.callFile(id, n), at, at);
+  }
+  store.forgetQueue(id);
+
+  const info = await call('GET', `/t/${sixth.c}`);
+  assert.deepEqual(info.queue, { position: 3, last: '003', waitMin: 9 });
+  assert.equal((await call('GET', `/t/${lot.res.tickets[1].c}`)).queue, null); // déjà appelé
+
+  const screen = await call('GET', '/lot/queue', undefined, lot.authToken);
+  assert.equal(screen.last, '003');
+  assert.deepEqual(screen.recent, ['003', '002', '001']);
+  assert.equal(screen.avgMs, 180_000);
+  assert.equal((await call('GET', '/lot/queue')).status, 401);
+});
+
+test('sécurité : requêtes malformées, essais de clés au hasard, relais verrouillé', async () => {
+  for (const bad of ['/t/%E0%A4%A', '/t/../../etc/passwd', '/events/..%2F..%2Fx', '/%00']) {
+    const res = await fetch(base + bad);
+    assert.ok(res.status >= 400 && res.status < 500, `${bad} → ${res.status}`);
+  }
+  const raw = await fetch(`${base}/sub`, { method: 'POST', body: '{"t":' });
+  assert.equal(raw.status, 400);
+  const big = await fetch(`${base}/sub`, { method: 'POST', body: JSON.stringify({ blob: 'x'.repeat(70_000) }) });
+  assert.equal(big.status, 413);
+
+  let status = 0;
+  for (let i = 0; i < 70 && status !== 429; i++) status = (await call('GET', '/lot', undefined, wc.b64u.encode(wc.randomBytes(32)))).status;
+  assert.equal(status, 429);
+  assert.equal((await call('GET', '/info')).ok, true); // le serveur tient
+});
+
+test('statistiques anonymes du mois', async () => {
+  const info = await call('GET', '/info');
+  assert.ok(info.stats.lots >= 1);
+  assert.ok(info.stats.tickets >= 20);
+  assert.equal(info.brand, 'WeCallYou');
+});

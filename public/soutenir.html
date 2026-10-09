@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="WeCallYou est gratuit, sans pub et open source. Il vit uniquement des dons de ses utilisateurs.">
+  <meta name="theme-color" content="#e8572a">
+  <title>Soutenir WeCallYou</title>
+  <link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <link rel="stylesheet" href="/assets/style.css">
+  <script type="module" src="/assets/support.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/"><img src="/assets/icon.svg" alt="" width="28" height="28">WeCallYou</a>
+    <a class="btn btn-ghost" href="/" data-i18n="create_title">Créer mes tickets</a>
+  </header>
+
+  <main class="wrap">
+    <article data-lang="fr">
+      <h1>Un service gratuit, qui le reste grâce à vous</h1>
+      <p class="lead">WeCallYou n’affiche aucune publicité, ne revend aucune donnée et ne pourrait de toute façon pas : les coordonnées de vos clients sont chiffrées sur leur téléphone, illisibles pour nous. Le code est ouvert, chacun peut le vérifier.</p>
+      <p>Il reste des frais bien réels : le serveur, les noms de domaine, et le temps passé à améliorer l’outil. Vos dons les couvrent, rien d’autre.</p>
+    </article>
+    <article data-lang="en" hidden>
+      <h1>A free service that stays free thanks to you</h1>
+      <p class="lead">WeCallYou shows no ads, sells no data, and couldn’t anyway: your customers’ contact details are encrypted on their phones, unreadable to us. The code is open, anyone can check it.</p>
+      <p>Some costs are very real: the server, the domain names, and the time spent improving the tool. Your donations cover them, nothing else.</p>
+    </article>
+
+    <div id="card"></div>
+
+    <section class="card">
+      <h2 data-lang="fr">Où va l’argent</h2>
+      <h2 data-lang="en" hidden>Where the money goes</h2>
+      <table class="cost-table" id="costs"></table>
+      <p class="small muted" id="updated"></p>
+    </section>
+
+    <section class="card" data-lang="fr">
+      <h2>Questions fréquentes</h2>
+      <h3>Est-ce que je dois donner pour utiliser le service ?</h3>
+      <p>Non. Tout est gratuit, sans limite et sans compte. Le don est libre, et le restera.</p>
+      <h3>Le don est-il déductible des impôts ?</h3>
+      <p id="tax-fr"></p>
+      <h3>Puis-je arrêter un don mensuel ?</h3>
+      <p>Oui, à tout moment, depuis le lien reçu par e-mail de Stripe après votre premier don.</p>
+      <h3>Et si les dons ne suffisent pas ?</h3>
+      <p>Le service reste gratuit. Le développement avance simplement moins vite. Et comme le code est open source, n’importe qui peut l’héberger : il ne disparaîtra pas.</p>
+      <h3>Que voyez-vous de mon paiement ?</h3>
+      <p>Le paiement est entièrement géré par Stripe. Notre serveur ne voit ni votre carte, ni votre identité.</p>
+    </section>
+    <section class="card" data-lang="en" hidden>
+      <h2>Frequently asked questions</h2>
+      <h3>Do I have to donate to use the service?</h3>
+      <p>No. Everything is free, unlimited and account-free. Giving is optional, and will stay so.</p>
+      <h3>Is the donation tax-deductible?</h3>
+      <p id="tax-en"></p>
+      <h3>Can I stop a monthly donation?</h3>
+      <p>Yes, at any time, from the link Stripe emails you after your first donation.</p>
+      <h3>What if donations aren’t enough?</h3>
+      <p>The service stays free. Development just moves more slowly. And since the code is open source, anyone can host it: it won’t disappear.</p>
+      <h3>What do you see of my payment?</h3>
+      <p>Payment is handled entirely by Stripe. Our server sees neither your card nor your identity.</p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <a href="/confidentialite" data-i18n="privacy">Confidentialité</a> ·
+    <a href="https://github.com/Fantinati-Anthony/BI-Wecallyou" data-i18n="open_source">Code source</a>
+  </footer>
+</body>
+</html>

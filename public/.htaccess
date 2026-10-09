@@ -1,0 +1,48 @@
+# WeCallYou : pages publiques servies par Apache (o2switch).
+# L'API (/api/...) est l'application Node.js déclarée dans cPanel > Setup Node.js App,
+# qui ajoute ses propres règles dans api/.htaccess : rien à faire ici pour elle.
+
+Options -Indexes -MultiViews
+DirectoryIndex index.html
+AddDefaultCharset utf-8
+AddType application/manifest+json .webmanifest
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Tout en HTTPS (Cloudflare transmet X-Forwarded-Proto)
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+  # Pages
+  RewriteRule ^m/?$ m.html [L]
+  RewriteRule ^soutenir/?$ soutenir.html [L,NC]
+  RewriteRule ^merci/?$ merci.html [L]
+  RewriteRule ^confidentialite/?$ confidentialite.html [L]
+
+  # Ticket : /<code de 26 caractères>, et son manifeste (installation sur iPhone)
+  RewriteRule ^[A-Za-z2-7]{26}/?$ t.html [L]
+  RewriteRule ^[A-Za-z2-7]{26}/manifest\.webmanifest$ manifest.webmanifest [L]
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header always set Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'; worker-src 'self'; manifest-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
+  Header always set Referrer-Policy "no-referrer"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+  Header always set Strict-Transport-Security "max-age=31536000"
+
+  <FilesMatch "\.(html|webmanifest)$|^(sw\.js|soutien\.json)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+  <FilesMatch "\.(css|js|png|svg)$">
+    Header set Cache-Control "public, max-age=3600"
+  </FilesMatch>
+  <Files "sw.js">
+    Header set Cache-Control "no-cache"
+  </Files>
+</IfModule>
+
+# Le temps réel (Server-Sent Events) ne doit pas être compressé ni mis en tampon
+SetEnvIfNoCase Request_URI "^/api/events/" no-gzip dont-vary

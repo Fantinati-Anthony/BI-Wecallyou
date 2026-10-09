@@ -1,0 +1,10 @@
+# Secrets et données : jamais dans le dépôt
+server/config.json
+server/data/
+public/etat/*.txt
+
+# Outils de test
+e2e/node_modules/
+e2e/out/
+node_modules/
+public/api/

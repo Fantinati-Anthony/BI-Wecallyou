@@ -1,0 +1,25 @@
+{
+  "updated": "2026-10",
+  "goal_month": 21,
+  "raised_month": 0,
+  "tax_deductible": false,
+  "fee_percent": 1.5,
+  "fee_fixed": 0.25,
+  "costs": [
+    { "fr": "Hébergement (o2switch Cloud, prix normal)", "en": "Hosting (o2switch Cloud, regular price)", "month": 16 },
+    { "fr": "Noms de domaine", "en": "Domain names", "month": 5 },
+    { "fr": "Développement (bénévole pour l’instant)", "en": "Development (volunteer for now)", "month": 0 }
+  ],
+  "once": [
+    { "amount": 3, "url": "" },
+    { "amount": 5, "url": "", "preferred": true },
+    { "amount": 10, "url": "" },
+    { "amount": 20, "url": "" },
+    { "amount": null, "url": "" }
+  ],
+  "monthly": [
+    { "amount": 2, "url": "" },
+    { "amount": 5, "url": "", "preferred": true },
+    { "amount": 10, "url": "" }
+  ]
+}

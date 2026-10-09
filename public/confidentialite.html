@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#e8572a">
+  <title>Confidentialité · WeCallYou</title>
+  <link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/assets/style.css">
+  <script type="module" src="/assets/static-page.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/"><img src="/assets/icon.svg" alt="" width="28" height="28">WeCallYou</a>
+  </header>
+  <main class="wrap">
+    <article class="card" data-lang="fr">
+      <h1>Confidentialité</h1>
+      <p class="lead">En bref : nous ne pouvons pas lire vos coordonnées, nous ne gardons que le strict nécessaire, et tout s’efface tout seul.</p>
+
+      <h2>Ce que le serveur ne voit jamais</h2>
+      <p>Quand vous demandez à être prévenu, votre numéro, votre adresse e-mail ou votre abonnement aux notifications sont <strong>chiffrés sur votre téléphone</strong>, avant l’envoi, avec la clé publique du commerçant. Seul le commerçant, avec la clé de son lot (et son mot de passe s’il en a mis un), peut les déchiffrer, au moment de vous prévenir. Notre serveur ne stocke que des blocs illisibles. Le code est open source : chacun peut le vérifier.</p>
+
+      <h2>Ce qui est conservé, et combien de temps</h2>
+      <ul>
+        <li><strong>Tant que personne ne scanne un ticket</strong> : rien. Un ticket imprimé n’existe pas sur le serveur.</li>
+        <li><strong>Vos coordonnées chiffrées</strong> : effacées 30 minutes après l’appel de votre ticket, et au plus tard à la fin de sa durée de vie (6 h par défaut, 48 h au maximum).</li>
+        <li><strong>Le journal du ticket</strong> (scanné, inscrit, appelé, notification remise, vu) : sans aucune donnée personnelle, effacé à la fin de la durée de vie du ticket.</li>
+        <li><strong>Des statistiques</strong> : uniquement des compteurs par jour et par lot (nombre de scans, d’appels…), gardés 90 jours.</li>
+        <li><strong>Votre adresse IP</strong> : jamais enregistrée. Elle sert seulement, en mémoire et quelques minutes, à freiner les abus.</li>
+      </ul>
+
+      <h2>Qui voit quoi</h2>
+      <ul>
+        <li><strong>Le commerçant</strong> découvre votre numéro ou votre adresse uniquement au moment de vous écrire, depuis son téléphone. Son outil ne les affiche pas, ne les liste pas et ne permet pas de les exporter.</li>
+        <li><strong>Google, Apple ou Mozilla</strong> acheminent les notifications, sans pouvoir en lire le contenu (chiffré de bout en bout).</li>
+        <li><strong>Votre opérateur, WhatsApp (Meta) ou votre messagerie</strong> transportent le SMS, le message ou l’e-mail envoyé par le commerçant, selon le moyen que vous avez choisi.</li>
+        <li><strong>Stripe</strong> traite les dons, pour son propre compte ; notre serveur ne voit ni carte ni identité.</li>
+      </ul>
+
+      <h2>Cookies et traceurs</h2>
+      <p>Aucun. Ni publicité, ni mesure d’audience, ni script tiers. Le site garde seulement, dans votre navigateur, ce qui lui sert à fonctionner (par exemple la clé de votre lot sur le téléphone du commerçant).</p>
+
+      <h2>Vos droits</h2>
+      <p>Vous pouvez annuler votre inscription à tout moment depuis la page de votre ticket : elle est effacée immédiatement. Le commerçant qui vous a remis le ticket est responsable de son usage ; WeCallYou agit comme prestataire technique (sous-traitant). Pour toute question : <span class="muted">[adresse de contact à compléter]</span>.</p>
+      <p class="small muted">Hébergement : o2switch, Clermont-Ferrand, France.</p>
+    </article>
+
+    <article class="card" data-lang="en" hidden>
+      <h1>Privacy</h1>
+      <p class="lead">In short: we cannot read your contact details, we keep only what is strictly needed, and everything deletes itself.</p>
+
+      <h2>What the server never sees</h2>
+      <p>When you ask to be notified, your phone number, email address or notification subscription are <strong>encrypted on your phone</strong>, before being sent, with the merchant’s public key. Only the merchant, with their batch key (and password, if set), can decrypt them, at the moment of notifying you. Our server stores only unreadable blocks. The code is open source: anyone can check it.</p>
+
+      <h2>What is kept, and for how long</h2>
+      <ul>
+        <li><strong>Until someone scans a ticket</strong>: nothing. A printed ticket does not exist on the server.</li>
+        <li><strong>Your encrypted contact details</strong>: deleted 30 minutes after your ticket is called, and at the latest when the ticket’s lifetime ends (6 h by default, 48 h maximum).</li>
+        <li><strong>The ticket log</strong> (scanned, signed up, called, notification delivered, seen): no personal data, deleted when the ticket’s lifetime ends.</li>
+        <li><strong>Statistics</strong>: daily counters per batch only (number of scans, calls…), kept for 90 days.</li>
+        <li><strong>Your IP address</strong>: never recorded. It is used only, in memory and for a few minutes, to slow down abuse.</li>
+      </ul>
+
+      <h2>Who sees what</h2>
+      <ul>
+        <li><strong>The merchant</strong> sees your number or address only when messaging you, from their phone. Their tool does not display, list or export them.</li>
+        <li><strong>Google, Apple or Mozilla</strong> carry notifications without being able to read them (end-to-end encrypted).</li>
+        <li><strong>Your carrier, WhatsApp (Meta) or your mail provider</strong> carry the text, message or email sent by the merchant, depending on what you chose.</li>
+        <li><strong>Stripe</strong> processes donations on its own behalf; our server sees neither card nor identity.</li>
+      </ul>
+
+      <h2>Cookies and trackers</h2>
+      <p>None. No ads, no analytics, no third-party scripts. The site keeps in your browser only what it needs to work (for example the batch key on the merchant’s phone).</p>
+
+      <h2>Your rights</h2>
+      <p>You can cancel your sign-up at any time from your ticket page: it is deleted immediately. The merchant who gave you the ticket is responsible for its use; WeCallYou acts as a technical provider (processor). Questions: <span class="muted">[contact address to be completed]</span>.</p>
+      <p class="small muted">Hosting: o2switch, Clermont-Ferrand, France.</p>
+    </article>
+  </main>
+  <footer class="footer"><a href="/soutenir" data-i18n="support_link">Soutenir le projet</a></footer>
+</body>
+</html>
