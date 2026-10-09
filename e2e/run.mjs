@@ -678,6 +678,24 @@ try {
   }
   step('langue : menu drapeau (allemand) ; recto-verso : dos en miroir avec le mode d’emploi, sans débordement');
 
+  // « Les deux » (tickets + affiche) : numéros mélangés dès les tickets imprimés, plus de « premier numéro ».
+  {
+    const ctx = await browser.newContext({ locale: 'fr-FR', viewport: { width: 1280, height: 900 } });
+    const p = await ctx.newPage();
+    p.on('pageerror', (err) => errors.push(err.message));
+    await p.goto(`${BASE}/creer`);
+    await p.waitForSelector('#c-act', { state: 'attached' });
+    assert.equal(await p.locator('#first-field').isHidden(), false);
+    await p.check('input[name=mode][value=both]', { force: true }); // le bouton entier est la case (invisible) du choix
+    assert.equal(await p.locator('#first-field').isHidden(), true);
+    await p.locator('.pv-frame .part.client .p-num').first().filter({ hasNotText: '001' }).waitFor();
+    const labels = (await p.locator('.pv-frame .part.client .p-num').allTextContents()).map(Number);
+    assert.equal(new Set(labels).size, labels.length);
+    assert.ok(labels.some((n, i) => i > 0 && n < labels[i - 1]), labels.join(',')); // pas dans l'ordre
+    await ctx.close();
+  }
+  step('« les deux » : numéros des tickets mélangés dans l’aperçu, pas de premier numéro');
+
   // Barre du haut : le logo et le menu ne se chevauchent jamais, quelle que soit la page (étroite ou large) et l'écran.
   {
     const ctx = await browser.newContext({ locale: 'fr-FR' });

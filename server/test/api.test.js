@@ -351,8 +351,8 @@ test('affiche : un numéro unique tiré au hasard par scan, ordre d’arrivée g
   assert.equal(page.label, first.label);
   assert.equal(page.role, 'client');
   const drawn = [first.label, second.label];
-  for (let i = 0; i < 20; i++) drawn.push((await call('POST', `/poster/${poster}`, {})).label); // sous la limite de 30 scans par adresse
-  assert.equal(new Set(drawn).size, 22); // 22 scans, 22 numéros différents
+  for (let i = 0; i < 10; i++) drawn.push((await call('POST', `/poster/${poster}`, {})).label); // sous la limite de 30 scans par adresse (pour tout le fichier)
+  assert.equal(new Set(drawn).size, 12); // 12 scans, 12 numéros différents
   assert.ok(drawn.some((l, i) => i > 0 && Number(l) < Number(drawn[i - 1]))); // aucun ordre croissant imposé
 
   // File d'arrivée : dans l'ordre des scans ; les numéros de l'affiche ne s'impriment pas.
@@ -381,4 +381,38 @@ test('affiche : un numéro unique tiré au hasard par scan, ordre d’arrivée g
   assert.match((await call('POST', `/poster/${onlyPoster}`, {})).label, /^\d{3}$/);
   assert.equal((await call('POST', '/lot/tickets', { from: 1, to: 10 }, only.authToken)).status, 409);
   assert.equal((await call('POST', '/lot/poster/restart', {}, only.authToken)).status, 404);
+});
+
+test('numéros mélangés (« les deux », affiche seule) : tickets imprimés compris, uniques, sans ordre, affiche à part', async () => {
+  const lot = await wc.createLot();
+  const created = await call('POST', '/lots', { name: 'Snack mélangé', channels: ['sms'], from: 1, to: 40, numbering: 'random', ...lot.request });
+  assert.equal(created.numbering, 'random');
+  assert.equal(created.span, 999); // 3 chiffres : de la place pour les tickets et l'affiche
+  const printed = (await call('POST', '/lot/tickets', { from: 1, to: 40 }, lot.authToken)).tickets;
+  const numbers = printed.map((t) => t.n);
+  assert.equal(new Set(numbers).size, 40);
+  assert.ok(numbers.every((n) => n >= 1 && n <= 999));
+  assert.ok(numbers.some((n, i) => i > 0 && n < numbers[i - 1])); // aucun ordre
+  assert.notDeepEqual(numbers, Array.from({ length: 40 }, (_, i) => i + 1));
+  // Le même ticket garde son numéro (réimpression) ; la page du client affiche ce numéro.
+  assert.deepEqual((await call('POST', '/lot/tickets', { from: 5, to: 6 }, lot.authToken)).tickets.map((t) => t.n), numbers.slice(4, 6));
+  assert.equal((await call('GET', `/t/${printed[0].c}`)).label, printed[0].label);
+  // Au-delà des tickets prévus, ce sont les numéros de l'affiche : pas d'impression.
+  assert.equal((await call('POST', '/lot/tickets', { from: 30, to: 41 }, lot.authToken)).status, 409);
+  // L'affiche ne redonne jamais un numéro imprimé.
+  const { poster } = await call('GET', '/lot', undefined, lot.authToken);
+  const scans = [];
+  for (let i = 0; i < 6; i++) scans.push((await call('POST', `/poster/${poster}`, {})).label);
+  assert.equal(new Set(scans).size, 6);
+  assert.ok(scans.every((l) => !printed.some((t) => t.label === l)));
+  // Appel par le numéro imprimé, comme pour un lot ordinaire.
+  assert.equal((await call('POST', '/call', { n: printed[3].n }, lot.authToken)).label, printed[3].label);
+
+  // Affiche seule : numéros mélangés dès le premier scan.
+  const only = await wc.createLot();
+  const solo = await call('POST', '/lots', { name: 'Fournil mélangé', channels: ['sms'], from: 1, to: 1, poster: 'only', numbering: 'random', ...only.request });
+  assert.equal(solo.to, 0); // aucun ticket à imprimer
+  const soloPoster = (await call('GET', '/lot', undefined, only.authToken)).poster;
+  const first = await call('POST', `/poster/${soloPoster}`, {});
+  assert.match(first.label, /^\d{3}$/);
 });

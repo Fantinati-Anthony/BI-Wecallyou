@@ -213,9 +213,9 @@ export default {
   mode_tickets: 'Tichete imprimate',
   mode_poster: 'Afiș de scanat',
   mode_both: 'Ambele',
-  mode_hint_tickets: 'Dați un tichet de hârtie; clientul îl scanează dacă vrea să fie anunțat.',
+  mode_hint_tickets: 'Dați un tichet de hârtie, numerotat în ordine: ordinea distribuirii este coada. Clientul îl scanează dacă vrea să fie anunțat.',
   mode_hint_poster: 'Un singur afiș la tejghea: fiecare client îl scanează și primește un număr unic, ales la întâmplare. Ordinea sosirii apare în spațiul dumneavoastră. Nimic de decupat.',
-  mode_hint_both: 'Tichete imprimate, plus un afiș care dă numere unice alese la întâmplare, dincolo de numerele tichetelor: nicio ordine înșelătoare între cele două. Ordinea sosirii apare în spațiul dumneavoastră.',
+  mode_hint_both: 'Tichete imprimate și un afiș. Toate numerele, inclusiv ale tichetelor, sunt unice și aleatorii: locul la coadă vine din ora scanării, nu din număr. Ordinea sosirii apare în spațiul dumneavoastră.',
   m_arrivals: 'Lista sosirilor',
   m_arrivals_hint: 'În ordinea scanărilor (afiș sau tichete), încă nechemați.',
   m_arrivals_none: 'Nimeni în așteptare momentan.',
@@ -714,4 +714,9 @@ export default {
   // Téléphoner au client depuis la liste des tickets en cours
   m_tel: 'Sunați la {to}',
   c_tel: 'Telefon',
+
+  // Numéros mélangés (les deux, affiche seule)
+  k_range_random: 'Tichete: {count} · numere aleatorii',
+  k_range_poster: 'Numere date la scanarea afișului, aleatoriu',
+  plan_random: 'Numere aleatorii: „tichetele de la 1 la 50” numără tichetele în ordinea imprimării, nu numerele lor. Un tichet își păstrează mereu numărul.',
 };

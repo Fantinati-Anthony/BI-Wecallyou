@@ -213,9 +213,9 @@ export default {
   mode_tickets: 'Geprinte tickets',
   mode_poster: 'Poster om te scannen',
   mode_both: 'Allebei',
-  mode_hint_tickets: 'U geeft een papieren ticket; de klant scant het als hij gewaarschuwd wil worden.',
+  mode_hint_tickets: 'U geeft een papieren ticket, op volgorde genummerd: de volgorde van uitdelen is de rij. De klant scant het als hij gewaarschuwd wil worden.',
   mode_hint_poster: 'Eén poster aan de balie: elke klant scant hem en krijgt een uniek, willekeurig nummer. De volgorde van aankomst verschijnt in uw beheeromgeving. Niets uit te knippen.',
-  mode_hint_both: 'Geprinte tickets, plus een poster die unieke willekeurige nummers geeft boven die van de tickets: zo ontstaat er geen misleidende volgorde tussen beide. De volgorde van aankomst verschijnt in uw beheeromgeving.',
+  mode_hint_both: 'Geprinte tickets en een poster. Alle nummers, ook die van de tickets, zijn uniek en willekeurig: de plaats in de rij volgt uit het scantijdstip, niet uit het nummer. De volgorde van aankomst ziet u in uw beheeromgeving.',
   m_arrivals: 'Aankomstrij',
   m_arrivals_hint: 'In volgorde van scannen (poster of tickets), nog niet opgeroepen.',
   m_arrivals_none: 'Op dit moment wacht er niemand.',
@@ -714,4 +714,9 @@ export default {
   // Téléphoner au client depuis la liste des tickets en cours
   m_tel: 'Bellen: {to}',
   c_tel: 'Telefoon',
+
+  // Numéros mélangés (les deux, affiche seule)
+  k_range_random: '{count} tickets · willekeurige nummers',
+  k_range_poster: 'Nummers bij het scannen van de poster, willekeurig',
+  plan_random: 'Willekeurige nummers: “tickets 1 tot 50” telt de tickets in printvolgorde, niet hun nummers. Een ticket houdt altijd zijn nummer.',
 };

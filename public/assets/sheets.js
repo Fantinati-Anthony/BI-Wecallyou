@@ -283,7 +283,9 @@ export function docBand({ brand, kind, aside = '', logo = null }) {
 export const docFoot = (lang, domain, brand = 'WeCall.You') => h('footer', { class: 'doc-foot' }, wordmark(brand), h('span', {}, tl(lang, 'k_foot', { date: new Date().toLocaleDateString(lang) })), h('span', {}, `https://${domain}`));
 
 /** Page 1 : la clé du lot (QR vers l'espace commerçant), le mode d'emploi et l'appel aux dons. */
-export function keySheet({ lang, domain, brand, lot, name, secret, from, to, monthlyCost, password = false, pro = false, design = {}, screen = null }) {
+export function keySheet({ lang, domain, brand, lot, name, secret, from, to, monthlyCost, password = false, pro = false, design = {}, screen = null, random = false }) {
+  // Numéros mélangés : le nombre de tickets (ou l'affiche seule), pas une plage de numéros.
+  const range = !random ? tl(lang, 'k_range', { from: labelOf(from), to: labelOf(to) }) : to >= from ? tl(lang, 'k_range_random', { count: to - from + 1 }) : tl(lang, 'k_range_poster');
   const key = secretToText(secret);
   // « ! » final : l'espace commerçant demandera directement le mot de passe du lot.
   const spaceUrl = `https://${domain}/m#${key}${password ? '!' : ''}`;
@@ -302,7 +304,7 @@ export function keySheet({ lang, domain, brand, lot, name, secret, from, to, mon
       'div',
       { class: 'doc-title' },
       // Nom long : plus petit, pour que la page tienne toujours sur une feuille.
-      h('div', { class: 'grow' }, h('h1', { class: name.length > 40 ? 'long' : name.length > 24 ? 'mid' : null }, name), h('p', {}, tl(lang, 'k_range', { from: labelOf(from), to: labelOf(to) }))),
+      h('div', { class: 'grow' }, h('h1', { class: name.length > 40 ? 'long' : name.length > 24 ? 'mid' : null }, name), h('p', {}, range)),
     ),
     h(
       'div',

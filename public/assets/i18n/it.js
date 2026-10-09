@@ -213,9 +213,9 @@ export default {
   mode_tickets: 'Biglietti stampati',
   mode_poster: 'Locandina da scansionare',
   mode_both: 'Entrambi',
-  mode_hint_tickets: 'Lei consegna un biglietto di carta; il cliente lo scansiona se vuole essere avvisato.',
+  mode_hint_tickets: 'Lei consegna un biglietto di carta, numerato in ordine: l’ordine di consegna è la coda. Il cliente lo scansiona se vuole essere avvisato.',
   mode_hint_poster: 'Una sola locandina al banco: ogni cliente la scansiona e riceve un numero unico, estratto a caso. L’ordine di arrivo compare nella sua area. Niente da ritagliare.',
-  mode_hint_both: 'Biglietti stampati, più una locandina che assegna numeri unici estratti a caso, oltre quelli dei biglietti: nessun ordine fuorviante tra i due. L’ordine di arrivo compare nella sua area.',
+  mode_hint_both: 'Biglietti stampati e una locandina. Tutti i numeri, biglietti compresi, sono unici e casuali: il posto in coda dipende dall’ora della scansione, non dal numero. L’ordine di arrivo compare nella sua area.',
   m_arrivals: 'Coda di arrivo',
   m_arrivals_hint: 'Nell’ordine delle scansioni (locandina o biglietti), non ancora chiamati.',
   m_arrivals_none: 'Nessuno in attesa per ora.',
@@ -714,4 +714,9 @@ export default {
   // Téléphoner au client depuis la liste des tickets en cours
   m_tel: 'Telefona al {to}',
   c_tel: 'Telefono',
+
+  // Numéros mélangés (les deux, affiche seule)
+  k_range_random: '{count} biglietti · numeri casuali',
+  k_range_poster: 'Numeri assegnati alla scansione della locandina, a caso',
+  plan_random: 'Numeri casuali: «biglietti da 1 a 50» conta i biglietti in ordine di stampa, non i loro numeri. Un biglietto mantiene sempre il suo numero.',
 };

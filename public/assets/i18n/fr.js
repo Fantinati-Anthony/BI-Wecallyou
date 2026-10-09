@@ -213,9 +213,9 @@ export default {
   mode_tickets: 'Tickets imprimés',
   mode_poster: 'Affiche à scanner',
   mode_both: 'Les deux',
-  mode_hint_tickets: 'Vous donnez un ticket papier ; le client le scanne s’il veut être prévenu.',
+  mode_hint_tickets: 'Vous donnez un ticket papier, numéroté dans l’ordre : l’ordre de distribution fait la file. Le client le scanne s’il veut être prévenu.',
   mode_hint_poster: 'Une seule affiche au comptoir : chaque client la scanne et reçoit un numéro unique, tiré au hasard. L’ordre d’arrivée s’affiche dans votre espace. Rien à découper.',
-  mode_hint_both: 'Des tickets imprimés, et une affiche qui donne des numéros uniques tirés au hasard, au-delà des tickets : aucun ordre trompeur entre les deux. L’ordre d’arrivée s’affiche dans votre espace.',
+  mode_hint_both: 'Des tickets imprimés et une affiche. Tous les numéros, tickets compris, sont uniques et tirés au hasard : la place dans la file vient de l’heure du scan, pas du numéro. L’ordre d’arrivée s’affiche dans votre espace.',
   m_arrivals: 'File d’arrivée',
   m_arrivals_hint: 'Dans l’ordre des scans (affiche ou tickets), pas encore appelés.',
   m_arrivals_none: 'Personne en attente pour l’instant.',
@@ -714,4 +714,9 @@ export default {
   // Téléphoner au client depuis la liste des tickets en cours
   m_tel: 'Téléphoner au {to}',
   c_tel: 'téléphone',
+
+  // Numéros mélangés (les deux, affiche seule)
+  k_range_random: 'Lot de {count} tickets · numéros tirés au hasard',
+  k_range_poster: 'Numéros donnés au scan de l’affiche, tirés au hasard',
+  plan_random: 'Numéros tirés au hasard : « tickets 1 à 50 » compte les tickets dans l’ordre d’impression, pas leurs numéros. Un même ticket garde toujours son numéro.',
 };

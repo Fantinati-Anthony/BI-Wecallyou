@@ -498,14 +498,14 @@ const sampleCodes = (n) => {
 /* ------------------------------------------------- aperçus : écran public, téléphone du client */
 
 /** Écran public (tablette, TV) tel qu'il s'affichera : nom, numéro appelé, derniers appels, aux couleurs du lot. */
-function screenView({ name, from, promo, theme }) {
+function screenView({ name, numbers, promo, theme }) {
   const colors = { ...THEME_DEFAULTS, ...(theme ?? {}) };
-  const now = from + 3; // quelques appels déjà passés
+  const [now, ...before] = numbers; // le numéro appelé, puis les précédents
   const tv = h(
     'div',
     { class: 'lq-tv pv-tv' },
     h('div', { class: 'lq-head' }, h('span', { class: 'lq-name' }, name || '…'), h('span', { class: 'lq-clock' }, fmtTime(Date.now()))),
-    h('div', { class: 'lq-main' }, h('span', { class: 'lq-label' }, t('e_now')), h('div', { class: 'lq-number' }, labelOf(now)), h('div', { class: 'lq-prev' }, [1, 2, 3].map((k) => h('b', {}, labelOf(now - k))))),
+    h('div', { class: 'lq-main' }, h('span', { class: 'lq-label' }, t('e_now')), h('div', { class: 'lq-number' }, labelOf(now)), h('div', { class: 'lq-prev' }, before.map((n) => h('b', {}, labelOf(n))))),
     h('div', { class: 'lq-foot pv-tv-foot' }, h('span', { class: 's-live' }, t('e_live')), promo && h('span', { class: 'pv-tv-promo' }, promo)),
   );
   tv.style.background = colors.screenBg;
@@ -629,7 +629,9 @@ export function livePreview() {
     for (const b of tabs.children) b.hidden = !shown[b.dataset.tab];
     if (!shown[tab]) mark('tickets');
     const from = ctx.from || 1;
-    const lastNumber = from + Math.max(1, ctx.count || 1) - 1;
+    const lastNumber = ctx.last ?? from + Math.max(1, ctx.count || 1) - 1;
+    // Numéros d'exemple : dans l'ordre, ou mélangés (« les deux », affiche seule) comme le seront les vrais.
+    const nth = (i) => (ctx.random ? ((i * 389 + 117) % lastNumber) + 1 : from + i);
     const layout = fitDesign(design, contentOf(design, { ...ctx, last: lastNumber }));
     const page = pageOf(design);
     if (!layout.ok) {
@@ -657,11 +659,11 @@ export function livePreview() {
       let sheets = null;
       const ticketPages = () => {
         const count = Math.min(layout.perPage, Math.max(1, ctx.count || layout.perPage));
-        const tickets = sampleCodes(count).map((codes, i) => ({ ...codes, label: labelOf(from + i) }));
+        const tickets = sampleCodes(count).map((codes, i) => ({ ...codes, label: labelOf(nth(i)) }));
         sheets ??= ticketSheets(tickets, { ...design, lang: ctx.lang, domain: ctx.domain, name: ctx.name, whiteLabel: ctx.whiteLabel, last: lastNumber });
         return sheets;
       };
-      const client = ctx.client && { name: ctx.name, from, label: labelOf(from), ...ctx.client };
+      const client = ctx.client && { name: ctx.name, label: labelOf(nth(0)), numbers: [nth(3), nth(2), nth(1), nth(0)], ...ctx.client };
       const build = (name) => {
         switch (name) {
           case 'back':

@@ -222,10 +222,35 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
     return fail(401, 'login');
   };
 
+  /**
+   * Lot à numéros mélangés (« les deux », « affiche seule ») : le rang d'un ticket (1er imprimé, 2e…,
+   * puis les scans de l'affiche) donne un numéro par une permutation secrète de 1 à span. Chaque numéro
+   * est unique, et rien ne dit l'ordre : la place dans la file vient de l'heure du scan. Feistel à
+   * 4 tours sur 2^(2·half) valeurs, ramené à [0, span) par « cycle-walking » : une vraie bijection.
+   */
+  const shuffled = (lot) => lot.numbering === 'random';
+  function numberAt(lot, rank) {
+    const key = createHmac('sha256', config.statusKey).update(`order|${lot.id}`).digest();
+    const half = Math.max(1, Math.ceil(Math.ceil(Math.log2(lot.span)) / 2));
+    const mask = (1 << half) - 1;
+    const round = (i, x) => createHmac('sha256', key).update(`${i}|${x}`).digest().readUInt32BE(0) & mask;
+    let x = rank - 1;
+    do {
+      let left = x >>> half;
+      let right = x & mask;
+      for (let i = 0; i < 4; i++) [left, right] = [right, left ^ round(i, right)];
+      x = (left << half) | right;
+    } while (x >= lot.span);
+    return x + 1;
+  }
+  /** Étendue des numéros d'un lot mélangé : 3 chiffres tant que la place suffit (tickets imprimés, plus l'affiche). */
+  const spanFor = (printed) => [999, 9999, 99999, MAX_NUMBER].find((span) => span >= 2 * printed + 100) ?? MAX_NUMBER;
+
   const mint = (lot, from, to) => {
     const tickets = [];
-    for (let n = from; n <= to; n++) {
-      tickets.push({ n, label: label(n), c: tokens.encode(lot, n, Role.CLIENT), s: tokens.encode(lot, n, Role.STUB) });
+    for (let rank = from; rank <= to; rank++) {
+      const n = shuffled(lot) ? numberAt(lot, rank) : rank;
+      tickets.push({ n, label: label(n), c: tokens.encode(lot.id, n, Role.CLIENT), s: tokens.encode(lot.id, n, Role.STUB) });
     }
     return tickets;
   };
@@ -241,6 +266,9 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
       ttl: lot.ttl ?? DEFAULT_LIFETIME,
       from: lot.from,
       to: lot.to,
+      // Numéros mélangés : « from » et « to » comptent alors les tickets imprimés (rangs), pas leurs numéros.
+      numbering: shuffled(lot) ? 'random' : 'order',
+      span: lot.span ?? null,
       channels: lot.channels,
       pubEcdh: lot.pubEcdh,
       pubVapid: lot.pubVapid,
@@ -332,6 +360,24 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
     }
   }
 
+  /**
+   * Affiche d'un lot mélangé : les rangs après les tickets imprimés, en boucle (un numéro revient quand
+   * son ticket a expiré) ; réservation exclusive, sûre même avec plusieurs processus.
+   */
+  async function nextShuffled(lot) {
+    const printed = Math.max(0, lot.to - lot.from + 1);
+    const pool = lot.span - printed;
+    let idx = lot.posterIdx ?? 0;
+    for (let tries = 0; tries < Math.min(pool, 400); tries++, idx++) {
+      const n = numberAt(lot, printed + 1 + (idx % pool));
+      if (!(await store.isActive(lot.id, n)) && (await store.claimNumber(lot.id, n))) {
+        lot.posterIdx = idx + 1;
+        return n;
+      }
+    }
+    return fail(409, 'poster_full');
+  }
+
   async function lotOfScreen(token) {
     const bin = /^[A-Z2-7]{23}$/.test(token) ? base32.decode(token) : null;
     const lot = bin?.length === 14 ? await store.lot(bin.readUInt32BE(0)) : null;
@@ -384,12 +430,17 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
         from,
         to,
       });
-      // Lot « affiche seule » : les numéros sont attribués au scan de l'affiche, dès le premier.
-      if (body.poster === 'only') {
+      if (body.numbering === 'random') {
+        // Les deux (tickets + affiche) ou affiche seule : numéros mélangés, tickets imprimés compris.
+        const printed = body.poster === 'only' ? 0 : to - from + 1;
+        Object.assign(lot, { numbering: 'random', from: 1, to: printed, span: spanFor(printed), posterIdx: 0 });
+        await store.saveLot(lot);
+      } else if (body.poster === 'only') {
+        // Ancien lot « affiche seule » : les numéros sont attribués au scan de l'affiche, dès le premier.
         lot.posterFrom = from;
         await store.saveLot(lot);
       }
-      await store.countLot(to - from + 1);
+      await store.countLot(Math.max(0, lot.to - lot.from + 1));
       // Les tickets eux-mêmes sont demandés ensuite, cahier par cahier (POST /lot/tickets).
       // Lien de l'écran public : imprimé en QR code sur la page clé.
       return { ok: true, ...(await publicLot(lot)), screen: screenToken(lot) };
@@ -419,13 +470,19 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
       limits.check(`poster:${clientIp(req)}`, 30, 10 * MINUTE);
       const lot = await lotOfPoster(token.toUpperCase());
       limits.check(`poster-lot:${lot.id}`, 5000, 24 * HOUR);
-      lot.posterFrom ??= lot.to + 1; // lot à tickets imprimés : l'affiche prend les numéros au-delà
-      const n = await drawPosterNumber(lot);
-      await store.event(lot.id, n, 'scan'); // le ticket vit dès maintenant, comme un ticket scanné
-      if (n > lot.to) {
+      let n;
+      if (shuffled(lot)) {
+        n = await nextShuffled(lot);
         await store.countTickets(1);
-        lot.to = n;
+      } else {
+        lot.posterFrom ??= lot.to + 1; // lot à tickets imprimés : l'affiche prend les numéros au-delà
+        n = await drawPosterNumber(lot);
+        if (n > lot.to) {
+          await store.countTickets(1);
+          lot.to = n;
+        }
       }
+      await store.event(lot.id, n, 'scan'); // le ticket vit dès maintenant, comme un ticket scanné
       await store.saveLot(lot);
       return { ok: true, code: tokens.encode(lot.id, n, Role.CLIENT), label: label(n) };
     }],
@@ -465,6 +522,8 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
       const lot = await lotOf(req);
       const body = await readJson(req);
       const [from, to] = range(body.from, body.to, MAX_TICKETS_PER_REQUEST);
+      // Numéros mélangés : on imprime les rangs prévus à la création (au-delà, ce sont ceux de l'affiche).
+      if (shuffled(lot)) return to > lot.to ? fail(409, 'poster_range') : { ok: true, tickets: mint(lot, from, to) };
       // Les numéros de l'affiche ne s'impriment pas : deux clients auraient le même ticket.
       if (lot.posterFrom !== undefined && to >= lot.posterFrom) fail(409, 'poster_range');
       if (from < (lot.from ?? 1) || to > (lot.to ?? MAX_NUMBER)) {
@@ -474,7 +533,7 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
         lot.to = Math.max(lot.to ?? to, to);
         await store.saveLot(lot);
       }
-      return { ok: true, tickets: mint(lot.id, from, to) };
+      return { ok: true, tickets: mint(lot, from, to) };
     }],
 
     ['POST', /^\/lot\/settings$/, async (req) => {

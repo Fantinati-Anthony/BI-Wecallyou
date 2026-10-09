@@ -213,9 +213,9 @@ export default {
   mode_tickets: 'Tickets impresos',
   mode_poster: 'Cartel para escanear',
   mode_both: 'Ambos',
-  mode_hint_tickets: 'Usted entrega un ticket de papel; el cliente lo escanea si quiere recibir aviso.',
+  mode_hint_tickets: 'Usted entrega un ticket de papel, numerado en orden: el orden de entrega es la cola. El cliente lo escanea si quiere que le avisen.',
   mode_hint_poster: 'Un solo cartel en el mostrador: cada cliente lo escanea y recibe un número único, al azar. El orden de llegada aparece en su panel. Nada que recortar.',
-  mode_hint_both: 'Tickets impresos y un cartel que da números únicos al azar, más allá de los tickets: ningún orden engañoso entre ambos. El orden de llegada aparece en su panel.',
+  mode_hint_both: 'Tickets impresos y un cartel. Todos los números, tickets incluidos, son únicos y al azar: el puesto en la cola lo da la hora del escaneo, no el número. El orden de llegada aparece en su panel.',
   m_arrivals: 'Cola de llegada',
   m_arrivals_hint: 'Por orden de escaneo (cartel o tickets), aún sin llamar.',
   m_arrivals_none: 'Nadie en espera por ahora.',
@@ -714,4 +714,9 @@ export default {
   // Téléphoner au client depuis la liste des tickets en cours
   m_tel: 'Llamar al {to}',
   c_tel: 'Teléfono',
+
+  // Numéros mélangés (les deux, affiche seule)
+  k_range_random: '{count} tickets · números al azar',
+  k_range_poster: 'Números dados al escanear el cartel, al azar',
+  plan_random: 'Números al azar: «tickets 1 a 50» cuenta los tickets en orden de impresión, no sus números. Un ticket conserva siempre su número.',
 };

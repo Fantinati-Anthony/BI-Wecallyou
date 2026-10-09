@@ -213,9 +213,9 @@ export default {
   mode_tickets: 'Printed tickets',
   mode_poster: 'Poster to scan',
   mode_both: 'Both',
-  mode_hint_tickets: 'You hand out a paper ticket; customers scan it if they want to be notified.',
+  mode_hint_tickets: 'You hand out a paper ticket, numbered in order: the order you hand them out is the queue. Customers scan it if they want to be notified.',
   mode_hint_poster: 'One poster at the counter: each customer scans it and gets a unique, random number. The order of arrival shows in your space. Nothing to cut.',
-  mode_hint_both: 'Printed tickets, plus a poster that gives unique random numbers beyond the tickets: no misleading order between the two. The order of arrival shows in your space.',
+  mode_hint_both: 'Printed tickets plus a poster. Every number, tickets included, is unique and random: the place in the queue comes from the scan time, not the number. The order of arrival shows in your space.',
   m_arrivals: 'Arrival queue',
   m_arrivals_hint: 'In scan order (poster or tickets), not called yet.',
   m_arrivals_none: 'Nobody waiting right now.',
@@ -714,4 +714,9 @@ export default {
   // Téléphoner au client depuis la liste des tickets en cours
   m_tel: 'Phone {to}',
   c_tel: 'phone call',
+
+  // Numéros mélangés (les deux, affiche seule)
+  k_range_random: '{count} tickets · random numbers',
+  k_range_poster: 'Numbers given when the poster is scanned, at random',
+  plan_random: 'Random numbers: “tickets 1 to 50” counts tickets in print order, not their numbers. A ticket always keeps its number.',
 };

@@ -538,7 +538,7 @@ async function printTab(panel, { lot, access }) {
   const preview = livePreview();
   preview.fab.classList.add('near');
   const secret = textToSecret(saved.key);
-  const keyCtx = { lang: LANG, domain: info.domain, brand: info.brand, lot: lot.lot, name: lot.name, secret, from: lot.from, to: lot.to, monthlyCost, password: saved.password, pro: lot.pro, screen: lot.screen };
+  const keyCtx = { lang: LANG, domain: info.domain, brand: info.brand, lot: lot.lot, name: lot.name, secret, from: lot.from, to: lot.to, monthlyCost, password: saved.password, pro: lot.pro, screen: lot.screen, random: lot.numbering === 'random' };
 
   const range = () => [Number(from.value), Number(to.value)];
   const draw = () => {
@@ -549,7 +549,7 @@ async function printTab(panel, { lot, access }) {
     render(plan, ok && printPlan({ lot, auth: access.auth, from: a, to: b, options: controls.get(), domain: info.domain, lang: LANG }));
   };
   // Mise en page commune à tout le lot : calculée pour son plus grand numéro.
-  const contentFor = (design) => contentOf(design, { lang: LANG, domain: info.domain, name: lot.name, whiteLabel: Boolean(lot.whiteLabel), last: lot.to });
+  const contentFor = (design) => contentOf(design, { lang: LANG, domain: info.domain, name: lot.name, whiteLabel: Boolean(lot.whiteLabel), last: lot.numbering === 'random' ? lot.span : lot.to });
   const controls = designControls(
     options,
     (design) => {
@@ -582,6 +582,7 @@ async function printTab(panel, { lot, access }) {
       { class: 'card stack' },
       h('h2', {}, t('m_print_title')),
       h('p', { class: 'small muted' }, t('m_print_hint')),
+      lot.numbering === 'random' && h('p', { class: 'small muted' }, t('plan_random')),
       h('div', { class: 'inline-fields' }, h('div', {}, h('label', { for: 'pf' }, t('create_first')), from), h('div', {}, h('label', { for: 'pt' }, t('create_to')), to)),
     ),
     h('details', { class: 'card', open: true }, h('summary', {}, t('m_print_layout')), controls.layout),

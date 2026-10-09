@@ -213,9 +213,9 @@ export default {
   mode_tickets: 'Gedruckte Tickets',
   mode_poster: 'Aushang zum Scannen',
   mode_both: 'Beides',
-  mode_hint_tickets: 'Sie geben ein Papierticket aus; der Kunde scannt es, wenn er benachrichtigt werden möchte.',
+  mode_hint_tickets: 'Sie geben ein Papierticket aus, fortlaufend nummeriert: Die Reihenfolge der Ausgabe ist die Warteschlange. Der Kunde scannt es, wenn er benachrichtigt werden möchte.',
   mode_hint_poster: 'Ein einziger Aushang an der Theke: Jeder Kunde scannt ihn und erhält eine eindeutige Zufallsnummer. Die Ankunftsreihenfolge erscheint in Ihrem Bereich. Nichts auszuschneiden.',
-  mode_hint_both: 'Gedruckte Tickets und dazu ein Aushang, der eindeutige Zufallsnummern jenseits der Ticketnummern vergibt: keine irreführende Reihenfolge zwischen beiden. Die Ankunftsreihenfolge erscheint in Ihrem Bereich.',
+  mode_hint_both: 'Gedruckte Tickets und ein Aushang. Alle Nummern, auch die der Tickets, sind einmalig und zufällig: Der Platz in der Warteschlange ergibt sich aus der Scanzeit, nicht aus der Nummer. Die Ankunftsreihenfolge sehen Sie in Ihrem Händlerbereich.',
   m_arrivals: 'Ankunftsliste',
   m_arrivals_hint: 'In Scan-Reihenfolge (Aushang oder Tickets), noch nicht aufgerufen.',
   m_arrivals_none: 'Derzeit wartet niemand.',
@@ -714,4 +714,9 @@ export default {
   // Téléphoner au client depuis la liste des tickets en cours
   m_tel: 'Anrufen: {to}',
   c_tel: 'Telefon',
+
+  // Numéros mélangés (les deux, affiche seule)
+  k_range_random: '{count} Tickets · zufällige Nummern',
+  k_range_poster: 'Nummern beim Scannen des Aushangs, zufällig vergeben',
+  plan_random: 'Zufällige Nummern: „Tickets 1 bis 50“ zählt die Tickets in Druckreihenfolge, nicht ihre Nummern. Ein Ticket behält immer seine Nummer.',
 };

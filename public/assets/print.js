@@ -38,7 +38,8 @@ function printPages(pages, page) {
  * clé part avec le premier cahier si elle est sur le même papier, sinon elle s'imprime à part.
  */
 export function printPlan({ lot, auth, from, to, options, domain, lang, key = null, onPrint }) {
-  const ctx = { ...options, lang, domain, name: lot.name, whiteLabel: Boolean(lot.whiteLabel), last: lot.to ?? to };
+  // Numéros mélangés : la mise en page prévoit leur plus grand numéro possible.
+  const ctx = { ...options, lang, domain, name: lot.name, whiteLabel: Boolean(lot.whiteLabel), last: lot.numbering === 'random' ? lot.span : (lot.to ?? to) };
   const { design, fit } = layoutFor(ctx);
   const box = h('div', { class: 'stack' });
   if (!fit.ok) {
@@ -94,6 +95,7 @@ export function printPlan({ lot, auth, from, to, options, domain, lang, key = nu
   }
 
   box.append(h('p', { class: 'small muted' }, PAPERS[design.paper].roll ? t('plan_tip_roll', { w: PAPERS[design.paper].w }) : t('plan_tip')));
+  if (lot.numbering === 'random') box.append(h('p', { class: 'small muted' }, t('plan_random')));
   if (design.verso) box.append(h('p', { class: 'banner-warn' }, icon('printer'), t('plan_tip_verso')));
   if (key && withKey) {
     const only = h('button', { type: 'button', class: 'linklike small' }, t('plan_key_only'));

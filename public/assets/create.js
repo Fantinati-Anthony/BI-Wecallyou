@@ -122,14 +122,19 @@ form.elements.name.addEventListener('input', message.refresh);
 
 const preview = livePreview();
 const sampleSecret = randomBytes(16); // page clé d'exemple : la vraie clé est créée avec le lot
+// Les deux (tickets + affiche) ou affiche seule : numéros mélangés, tickets compris (la file suit l'heure
+// du scan) ; tickets seuls : numéros dans l'ordre (l'ordre de distribution fait la file).
+const spanFor = (printed) => [999, 9999, 99999, 999999].find((span) => span >= 2 * printed + 100) ?? 999999;
 const draft = () => {
-  const from = Number(first.value) || 1;
+  const random = modeOf() !== 'tickets';
+  const from = random ? 1 : Number(first.value) || 1;
   const total = Math.max(1, Number(count.value) || 1);
-  return { name: form.elements.name.value.trim(), from, total, to: from + total - 1 };
+  const to = from + total - 1;
+  return { name: form.elements.name.value.trim(), from, total, to, random, last: random ? spanFor(total) : to };
 };
 let printable = true;
 const refresh = () => {
-  const { name, from, total, to } = draft();
+  const { name, from, total, to, random, last } = draft();
   theme.setName(name);
   printable = preview.update({
     design: design.get(),
@@ -138,9 +143,11 @@ const refresh = () => {
     name,
     from,
     count: total,
+    random,
+    last,
     whiteLabel: pro && whiteLabel.checked,
     poster: modeOf() === 'tickets' ? null : { token: SAMPLE_POSTER },
-    key: { lang: LANG, domain, brand, lot: '…', name: name || '…', secret: sampleSecret, from, to, monthlyCost, password: Boolean(password.value), pro, screen: SAMPLE_SCREEN },
+    key: { lang: LANG, domain, brand, lot: '…', name: name || '…', secret: sampleSecret, from, to: modeOf() === 'poster' ? 0 : to, random, monthlyCost, password: Boolean(password.value), pro, screen: SAMPLE_SCREEN },
     // Écran public et téléphone du client (après son scan), avec ce qui est réglé ici.
     client: {
       channels: [...form.querySelectorAll('input[name=channels]:checked')].map((c) => c.value),
@@ -152,7 +159,7 @@ const refresh = () => {
   });
 };
 // Ce qui tient sur le papier dépend du nom et du plus grand numéro du lot.
-const contentFor = (value) => contentOf(value, { lang: LANG, domain, name: draft().name, last: draft().to, whiteLabel: pro && whiteLabel.checked });
+const contentFor = (value) => contentOf(value, { lang: LANG, domain, name: draft().name, last: draft().last, whiteLabel: pro && whiteLabel.checked });
 design = designControls(
   local.get(DRAFT, {}),
   (value) => {
@@ -185,7 +192,8 @@ form.addEventListener('change', refresh);
 // Tickets imprimés, affiche à scanner (numéro attribué à l'arrivée), ou les deux.
 const modeInputs = [...form.querySelectorAll('input[name=mode]')];
 function modeOf() {
-  return modeInputs.find((input) => input.checked)?.value ?? 'tickets';
+  // Lu dans la page : utilisable dès le début (aperçu, mise en page), avant même la section des modes.
+  return form.querySelector('input[name=mode]:checked')?.value ?? 'tickets';
 }
 const savedMode = local.get(MODE);
 if (savedMode) for (const input of modeInputs) input.checked = input.value === savedMode;
@@ -193,6 +201,8 @@ function applyMode() {
   const mode = modeOf();
   local.set(MODE, mode);
   document.getElementById('count-field').hidden = mode === 'poster';
+  document.getElementById('first-field').hidden = mode !== 'tickets'; // numéros mélangés : pas de premier numéro
+  design.refresh(); // le plus grand numéro possible change (mélangés : jusqu'à 999…) : limites de la grille à jour
   document.getElementById('layout-section').hidden = mode === 'poster';
   refresh();
   preview.setTab(mode === 'poster' ? 'poster' : 'tickets');
@@ -260,7 +270,7 @@ form.addEventListener('submit', async (event) => {
     // Un lot neuf n'a pas encore de compte : il naît avec une durée gratuite, les options Pro
     // s'appliquent une fois qu'il a rejoint le compte Pro.
     const proTtl = PRO_LIFETIMES.includes(ttl);
-    const res = await api('/lots', { body: { name, from, to, ttl: proTtl && !info.allPro ? MAX_FREE_LIFETIME : ttl, channels, promo, link, poster: mode === 'poster' ? 'only' : undefined, ...lot.request } });
+    const res = await api('/lots', { body: { name, from, to, ttl: proTtl && !info.allPro ? MAX_FREE_LIFETIME : ttl, channels, promo, link, poster: mode === 'poster' ? 'only' : undefined, numbering: mode === 'tickets' ? undefined : 'random', ...lot.request } });
     if (!res.ok) return showError(res.error);
     lots.save(res.lot, { key: secretToText(lot.secret), material: b64u.encode(lot.material), name, password: Boolean(password.value) });
     if (session.get()) await sync(); // connecté : le lot rejoint le compte
@@ -291,7 +301,7 @@ form.addEventListener('submit', async (event) => {
 });
 
 async function showCreated({ res, lot, options, hasPassword, proError, mode }) {
-  const key = { lang: LANG, domain, brand, lot: res.lot, name: res.name, secret: lot.secret, from: res.from, to: res.to, monthlyCost, password: hasPassword, pro: pro && !proError, screen: res.screen };
+  const key = { lang: LANG, domain, brand, lot: res.lot, name: res.name, secret: lot.secret, from: res.from, to: res.to, monthlyCost, password: hasPassword, pro: pro && !proError, screen: res.screen, random: res.numbering === 'random' };
   const donation = await supportCard({ context: 'create', count: res.to - res.from + 1, brand });
   nudgeAfterPrint(donation);
   render(

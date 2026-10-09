@@ -213,9 +213,9 @@ export default {
   mode_tickets: 'Drukowane bilety',
   mode_poster: 'Plakat do skanowania',
   mode_both: 'Oba sposoby',
-  mode_hint_tickets: 'Dajesz papierowy bilet; klient skanuje go, jeśli chce dostać powiadomienie.',
+  mode_hint_tickets: 'Wydajesz papierowy bilet z numerem po kolei: kolejność wydawania to kolejka. Klient skanuje go, jeśli chce dostać powiadomienie.',
   mode_hint_poster: 'Jeden plakat przy ladzie: każdy klient skanuje go i dostaje unikalny, losowy numer. Kolejność przybycia widać w Twoim panelu. Nic do wycinania.',
-  mode_hint_both: 'Drukowane bilety oraz plakat, który wydaje unikalne losowe numery spoza zakresu biletów: bez mylącej kolejności między nimi. Kolejność przybycia widać w Twoim panelu.',
+  mode_hint_both: 'Drukowane bilety i plakat. Wszystkie numery, także na biletach, są unikalne i losowe: miejsce w kolejce wynika z godziny skanu, nie z numeru. Kolejność przybycia widać w Twoim panelu.',
   m_arrivals: 'Kolejka przybyć',
   m_arrivals_hint: 'W kolejności skanowania (plakat lub bilety), przed wywołaniem.',
   m_arrivals_none: 'Na razie nikt nie czeka.',
@@ -714,4 +714,9 @@ export default {
   // Téléphoner au client depuis la liste des tickets en cours
   m_tel: 'Zadzwoń: {to}',
   c_tel: 'Telefon',
+
+  // Numéros mélangés (les deux, affiche seule)
+  k_range_random: 'Bilety: {count} · numery losowe',
+  k_range_poster: 'Numery nadawane przy skanowaniu plakatu, losowo',
+  plan_random: 'Numery losowe: „bilety 1 do 50” liczy bilety w kolejności druku, a nie ich numery. Bilet zawsze zachowuje swój numer.',
 };
