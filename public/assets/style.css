@@ -165,6 +165,7 @@ p { margin: 0 0 0.8em; }
 }
 .stack > * + * { margin-top: 12px; }
 .stack > label + * { margin-top: 0; }
+#app > * + * { margin-top: 14px; } /* pages produit : un peu d'air entre les blocs */
 .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 .grow { flex: 1 1 auto; }
 
