@@ -101,6 +101,12 @@ Stockage : de simples fichiers (`server/data/`), pas de base de données. Un tic
    Puis redémarrez l’application dans cPanel.
 6. **Vérification** : `https://votre-domaine/api/info` doit répondre `{"ok":true,…}`.
 7. **Sauvegarde** : copiez `server/config.json` en lieu sûr. **Ne régénérez jamais `tokenKey`** : tous les tickets déjà imprimés deviendraient invalides.
+8. **Purge garantie** : l’application purge seule toutes les 10 min, mais l’hébergeur l’endort quand personne ne l’utilise. Ajoutez une tâche cron (cPanel > Tâches cron, toutes les 15 min) :
+
+   ```sh
+   /home/VOTRE_COMPTE/nodevenv/wecallyou/server/24/bin/node /home/VOTRE_COMPTE/wecallyou/server/purge.js >/dev/null 2>&1
+   ```
+9. **Mises à jour** : `cd ~/wecallyou && git pull`, puis *Redémarrer* l’application dans cPanel. `config.json` et `data/` ne sont jamais touchés.
 
 ### Activer les dons (Stripe)
 

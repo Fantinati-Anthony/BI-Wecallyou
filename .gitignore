@@ -8,3 +8,8 @@ e2e/node_modules/
 e2e/out/
 node_modules/
 public/api/
+
+# Créés par cPanel / Passenger sur le serveur
+server/tmp/
+server/public/
+server/*.log
