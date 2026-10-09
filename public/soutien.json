@@ -22,6 +22,8 @@
   },
   "roadmap": [
     {
+      "act_fr": "Acte 1 · Le service",
+      "act_en": "Act 1 · The service",
       "month": 21,
       "fr": "Chapitre 1 · Aujourd’hui : un serveur mutualisé en France (o2switch)",
       "en": "Chapter 1 · Today: a shared server in France (o2switch)",
@@ -38,55 +40,98 @@
     },
     {
       "month": 150,
-      "fr": "Chapitre 3 · Un secours, et du temps pour l’outil",
-      "en": "Chapter 3 · A backup, and time for the tool",
-      "detail_fr": "Le service tient même si un centre de données tombe, et du temps rémunéré fait évoluer l’outil (nouvelles fonctions, nouvelles langues).",
-      "detail_en": "The service keeps running even if a data centre fails, and paid time keeps improving the tool (new features, new languages)."
+      "approx": true,
+      "fr": "Chapitre 3 · Un secours, et l’entretien",
+      "en": "Chapter 3 · A backup, and upkeep",
+      "detail_fr": "Une copie du service dans une seconde zone, des sauvegardes et une surveillance : il tient même si un centre de données tombe. Et quelques heures payées chaque mois pour l’entretien.",
+      "detail_en": "A copy of the service in a second zone, backups and monitoring: it keeps running even if a data centre fails. And a few paid hours each month for upkeep."
     },
     {
-      "month": null,
-      "when_fr": "Ensuite",
-      "when_en": "Next",
+      "when_fr": "Sans surcoût",
+      "when_en": "No extra cost",
       "fr": "Chapitre 4 · Les vrais chiffres, en direct",
       "en": "Chapter 4 · The real numbers, live",
       "detail_fr": "Une liaison directe avec Scaleway : le coût réel du mois et le nombre de copies du service en marche s’affichent ici, sans retouche.",
       "detail_en": "A direct link with Scaleway: the real cost of the month and the number of running copies of the service show up here, untouched."
     },
     {
-      "month": null,
-      "when_fr": "Défis suivants",
-      "when_en": "Next challenges",
-      "fr": "Chapitre 5 · Des défis plus grands, des fonctions en plus",
-      "en": "Chapter 5 · Bigger challenges, more features",
-      "detail_fr": "Chaque nouveau palier débloque une fonction choisie avec vous : fiche ticket au scan, relances automatiques, plusieurs guichets, message de fin…",
-      "detail_en": "Each new step unlocks a feature chosen with you: ticket card on scan, automatic reminders, several counters, end-of-service message…"
+      "month": 500,
+      "approx": true,
+      "fr": "Chapitre 5 · Des fonctions en plus, choisies avec vous",
+      "en": "Chapter 5 · More features, chosen with you",
+      "detail_fr": "Un à deux jours de développement payés chaque mois. Chaque défi atteint débloque une fonction votée par la communauté : fiche ticket au scan, relances automatiques, plusieurs guichets, message de fin…",
+      "detail_en": "One to two paid development days each month. Each challenge met unlocks a feature voted by the community: ticket card on scan, automatic reminders, several counters, end-of-service message…"
     },
     {
-      "month": null,
-      "when_fr": "Soyons fous",
-      "when_en": "Let’s go wild",
-      "fr": "Chapitre 6 · La boutique",
-      "en": "Chapter 6 · The shop",
-      "detail_fr": "Papiers, rouleaux et étiquettes compatibles, prêts à imprimer, et des kits pour démarrer en dix minutes.",
-      "detail_en": "Compatible paper, rolls and labels, ready to print, and kits to get started in ten minutes."
+      "act_fr": "Acte 2 · L’entreprise",
+      "act_en": "Act 2 · The company",
+      "once": 500,
+      "month": 150,
+      "approx": true,
+      "fr": "Chapitre 6 · Une structure dédiée",
+      "en": "Chapter 6 · A dedicated company",
+      "detail_fr": "Une société créée pour porter WeCall.You, ses services et ses emplois : statuts, annonce légale et immatriculation pour démarrer, puis comptable, banque et assurance chaque mois. Le fondateur reste fondateur ; la gestion peut être confiée à d’autres.",
+      "detail_en": "A company created to run WeCall.You, its services and its jobs: articles, legal notice and registration to start, then an accountant, a bank and insurance each month. The founder stays the founder; management can be handed to others."
     },
     {
-      "month": null,
-      "when_fr": "Soyons fous",
-      "when_en": "Let’s go wild",
-      "fr": "Chapitre 7 · Impression et packs événement",
-      "en": "Chapter 7 · Printing and event packs",
-      "detail_fr": "Vos tickets imprimés et livrés, et des packs clés en main pour un tournoi, une fête de village ou un salon : tickets, affiches, écran prêt à brancher.",
-      "detail_en": "Your tickets printed and delivered, and ready-made packs for a tournament, a village fair or a trade show: tickets, posters, a screen ready to plug in."
+      "once": 800,
+      "approx": true,
+      "by_fr": "puis financé par les ventes",
+      "by_en": "then funded by sales",
+      "fr": "Chapitre 7 · La boutique",
+      "en": "Chapter 7 · The shop",
+      "detail_fr": "Papiers, rouleaux et étiquettes compatibles, prêts à imprimer, et des kits pour démarrer en dix minutes. Le stock de départ, puis chaque vente finance la suivante.",
+      "detail_en": "Compatible paper, rolls and labels, ready to print, and kits to get started in ten minutes. The starting stock, then each sale funds the next."
     },
     {
-      "month": null,
-      "when_fr": "Le rêve",
-      "when_en": "The dream",
-      "fr": "Chapitre 8 · Tout gratuit, pour tout le monde",
-      "en": "Chapter 8 · Everything free, for everyone",
-      "detail_fr": "Si la boutique et les services couvrent les frais, l’offre Pro devient gratuite pour tous. Les dons restent possibles, mais plus nécessaires.",
-      "detail_en": "If the shop and services cover the costs, Pro becomes free for everyone. Donations stay possible, but no longer necessary."
+      "once": 1200,
+      "approx": true,
+      "by_fr": "puis financé par les commandes",
+      "by_en": "then funded by orders",
+      "fr": "Chapitre 8 · Vous ne voulez pas imprimer ? On s’en occupe",
+      "en": "Chapter 8 · Don’t want to print? We’ll do it",
+      "detail_fr": "Tickets, affiches et étiquettes imprimés et expédiés sous 24 à 48 heures selon la quantité et la destination, avec un objectif : moins cher qu’une imprimerie de quartier. Pour démarrer, deux imprimantes à réservoirs (A3 et A4) et des imprimantes thermiques pour les rouleaux et les étiquettes autocollantes.",
+      "detail_en": "Tickets, posters and labels printed and shipped within 24 to 48 hours depending on quantity and destination, with one goal: cheaper than a local print shop. To start, two ink-tank printers (A3 and A4) and thermal printers for rolls and sticker labels."
+    },
+    {
+      "once": 1500,
+      "approx": true,
+      "by_fr": "puis financé par les locations",
+      "by_en": "then funded by rentals",
+      "fr": "Chapitre 9 · Les packs événement",
+      "en": "Chapter 9 · Event packs",
+      "detail_fr": "Un tournoi, une fête de village, un salon ? Des packs clés en main, livrés prêts à servir : tickets, affiches, et un écran à brancher pour annoncer les numéros. Une première série de tablettes et de supports à louer.",
+      "detail_en": "A tournament, a village fair, a trade show? Ready-made packs, delivered ready to use: tickets, posters, and a screen to plug in to announce numbers. A first set of tablets and stands to rent."
+    },
+    {
+      "month": 1100,
+      "approx": true,
+      "by_fr": "financé par les commandes",
+      "by_en": "funded by orders",
+      "fr": "Chapitre 10 · Un premier emploi",
+      "en": "Chapter 10 · A first job",
+      "detail_fr": "Une personne pour imprimer, préparer et expédier les commandes, à mi-temps pour commencer. Un vrai emploi créé par un outil gratuit.",
+      "detail_en": "Someone to print, pack and ship orders, part-time to begin with. A real job created by a free tool."
+    },
+    {
+      "once": 5000,
+      "approx": true,
+      "by_fr": "financé par les commandes",
+      "by_en": "funded by orders",
+      "fr": "Chapitre 11 · Qualité et automatisation",
+      "en": "Chapter 11 · Quality and automation",
+      "detail_fr": "Contrôle à chaque étape et flux automatisés, de la commande à l’expédition, avec du matériel professionnel : les coûts d’impression baissent, la qualité monte.",
+      "detail_en": "Checks at every step and automated flows, from order to shipping, with professional equipment: printing costs go down, quality goes up."
+    },
+    {
+      "act_fr": "Acte 3 · Le rêve",
+      "act_en": "Act 3 · The dream",
+      "when_fr": "Quand les ventes couvrent ≈ 2 000 € / mois",
+      "when_en": "When sales cover ≈ €2,000 / month",
+      "fr": "Chapitre 12 · Tout gratuit, pour tout le monde",
+      "en": "Chapter 12 · Everything free, for everyone",
+      "detail_fr": "Quand la boutique, l’impression et les packs couvrent les frais du service, de la structure et de l’emploi, l’offre Pro devient gratuite pour tous. Les dons restent possibles, mais plus nécessaires.",
+      "detail_en": "When the shop, printing and packs cover the costs of the service, the company and the job, Pro becomes free for everyone. Donations stay possible, but no longer necessary."
     }
   ],
   "costs": [

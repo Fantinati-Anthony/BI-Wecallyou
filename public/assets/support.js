@@ -21,22 +21,37 @@ if (cfg) {
   // Chapitres : ceux qui ont un montant se débloquent quand les dons et le Pro du mois l'atteignent ;
   // les suivants (chiffres en direct, boutique, impression, tout gratuit) viendront ensuite.
   const stages = cfg.roadmap ?? [];
-  const nextIndex = stages.findIndex((s) => s.month && cfg.raised_month < s.month);
+  // Chapitres suivis par une jauge : un montant mensuel payé par les dons et le Pro (pas les ventes).
+  const gauged = (s) => s.month && !s.once && !s.by_fr;
+  const nextIndex = stages.findIndex((s, i) => i > 0 && gauged(s) && cfg.raised_month < s.month); // le chapitre 1, c'est aujourd'hui
+  // Montants arrondis (« ≈ ») : investissement de départ et coût mensuel.
+  const fr = LANG === 'fr';
+  const cost = (stage) => {
+    const about = stage.approx ? '≈ ' : '';
+    return [
+      stage.once && `${about}${euros(stage.once)} ${fr ? 'd’investissement' : 'investment'}`,
+      stage.month && `${about}${euros(stage.month)} ${fr ? '/ mois' : '/ month'}`,
+      said(stage, 'by'),
+    ].filter(Boolean).join(' · ') || said(stage, 'when');
+  };
   render(
     document.getElementById('roadmap'),
-    stages.map((stage, i) => {
-      const later = !stage.month;
-      const reached = i === 0 || (!later && cfg.raised_month >= stage.month);
+    stages.flatMap((stage, i) => {
+      const followed = gauged(stage);
+      const reached = i === 0 || (followed && cfg.raised_month >= stage.month);
       const bar = h('span');
-      if (!later) grow(bar, cfg.raised_month / stage.month);
-      return h(
-        'li',
-        { class: reached ? 'done' : i === nextIndex ? 'next' : later ? 'later' : '' },
-        h('strong', {}, said(stage)),
-        h('p', { class: 'small' }, said(stage, 'detail')),
-        h('span', { class: 'badge' }, later ? said(stage, 'when') : t('road_month', { amount: stage.month }), reached && i > 0 ? ` · ${t('road_reached')}` : ''),
-        i > 0 && !reached && !later && h('div', { class: 'progress' }, bar),
-      );
+      if (followed) grow(bar, cfg.raised_month / stage.month);
+      return [
+        said(stage, 'act') && h('li', { class: 'act' }, h('p', { class: 'eyebrow' }, said(stage, 'act'))),
+        h(
+          'li',
+          { class: reached ? 'done' : i === nextIndex ? 'next' : 'later' },
+          h('strong', {}, said(stage)),
+          h('p', { class: 'small' }, said(stage, 'detail')),
+          h('span', { class: 'badge' }, cost(stage), reached && i > 0 ? ` · ${t('road_reached')}` : ''),
+          i > 0 && !reached && followed && h('div', { class: 'progress' }, bar),
+        ),
+      ];
     }),
   );
 

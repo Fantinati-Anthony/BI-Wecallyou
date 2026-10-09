@@ -930,6 +930,9 @@ dialog.catalog h2 { margin: 0; }
 .roadmap .progress { margin-top: 8px; }
 .roadmap li.later::before { border-style: dashed; } /* chapitres à venir, sans montant */
 .roadmap li.later strong { color: var(--muted); }
+.roadmap li.act { padding: 6px 0 10px; } /* titre d’acte : ni pastille ni trait */
+.roadmap li.act::before, .roadmap li.act::after { display: none; }
+.roadmap li.act .eyebrow { margin: 0; }
 /* Page Soutenir : le récit, puis le défi du mois */
 .eyebrow { margin: 0 0 6px; color: var(--brand-text); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
 .story { margin-bottom: 20px; }
