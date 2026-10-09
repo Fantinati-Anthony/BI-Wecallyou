@@ -1,0 +1,5 @@
+# Ce dossier contient les clés et les données du serveur : il ne doit JAMAIS être servi par le web.
+# Si votre site affiche « 403 Forbidden », c'est que la racine du domaine pointe ici par erreur :
+# dans cPanel > Domaines, réglez-la sur le dossier public/ (ex. wecallyou/public).
+Require all denied
+Options -Indexes

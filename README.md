@@ -83,7 +83,7 @@ Stockage : de simples fichiers (`server/data/`), pas de base de données. Un tic
 
 1. **Nom de domaine** : pointez-le vers l’hébergement (Cloudflare devant est conseillé : SSL « Full (strict) », proxy activé).
 2. **Fichiers** : en SSH, `git clone https://github.com/Fantinati-Anthony/BI-Wecallyou.git ~/wecallyou` (ou envoyez le dossier par le gestionnaire de fichiers).
-3. **Racine du site** : dans cPanel > Domaines, réglez la racine du domaine sur `~/wecallyou/public`.
+3. **Racine du site** : dans cPanel > Domaines, réglez la racine du domaine sur `~/wecallyou/public`. **Surtout pas** sur `wecallyou/server`, qui contient les clés (il est protégé par son propre `.htaccess`, mais le site ne marcherait pas). Vérification : `https://votre-domaine/config.json` doit répondre « introuvable ».
 4. **Application Node.js** : cPanel > *Setup Node.js App* > Créer une application :
    - Version de Node.js : **24.x**
    - Mode : *Production*
