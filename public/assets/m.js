@@ -527,7 +527,7 @@ async function printTab(panel, { lot, access }) {
   const preview = livePreview();
   preview.fab.classList.add('near');
   const secret = textToSecret(saved.key);
-  const keyCtx = { lang: LANG, domain: info.domain, brand: info.brand, lot: lot.lot, name: lot.name, secret, from: lot.from, to: lot.to, monthlyCost, password: saved.password, pro: lot.pro };
+  const keyCtx = { lang: LANG, domain: info.domain, brand: info.brand, lot: lot.lot, name: lot.name, secret, from: lot.from, to: lot.to, monthlyCost, password: saved.password, pro: lot.pro, screen: lot.screen };
 
   const range = () => [Number(from.value), Number(to.value)];
   const draw = () => {

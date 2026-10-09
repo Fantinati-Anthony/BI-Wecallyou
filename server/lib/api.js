@@ -373,7 +373,8 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
       }
       await store.countLot(to - from + 1);
       // Les tickets eux-mêmes sont demandés ensuite, cahier par cahier (POST /lot/tickets).
-      return { ok: true, ...(await publicLot(lot)) };
+      // Lien de l'écran public : imprimé en QR code sur la page clé.
+      return { ok: true, ...(await publicLot(lot)), screen: screenToken(lot) };
     }],
 
     ['GET', /^\/lot$/, async (req) => {

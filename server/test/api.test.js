@@ -291,6 +291,7 @@ test('listes, groupes, message personnalisé et écran public', async () => {
   assert.equal(settings.status, 200);
   assert.equal(settings.lists[1].options[0], 'U11 > Rouge');
   assert.match(settings.screen, /^[A-Z2-7]{23}$/);
+  assert.equal(lot.res.screen, settings.screen); // déjà connu à la création : imprimé sur la page clé
   for (const bad of [{ lists: [{ name: '<script>', options: [] }] }, { groups: [{ name: 'x', numbers: '1-5000' }] }, { groups: [{ name: 'x', numbers: 'abc' }] }]) {
     assert.equal((await call('POST', '/lot/settings', { name: 'x', channels: [], ...bad }, lot.authToken)).status, 400);
   }

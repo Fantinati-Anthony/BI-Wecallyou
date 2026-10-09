@@ -191,7 +191,7 @@ export function docBand({ brand, kind, aside = '' }) {
 export const docFoot = (lang, domain) => h('footer', { class: 'doc-foot' }, brandMark('doc-logo small'), h('span', {}, tl(lang, 'k_foot', { date: new Date().toLocaleDateString(lang) })), h('span', {}, `https://${domain}`));
 
 /** Page 1 : la clé du lot (QR vers l'espace commerçant), le mode d'emploi et l'appel aux dons. */
-export function keySheet({ lang, domain, brand, lot, name, secret, from, to, monthlyCost, password = false, pro = false, design = {} }) {
+export function keySheet({ lang, domain, brand, lot, name, secret, from, to, monthlyCost, password = false, pro = false, design = {}, screen = null }) {
   const key = secretToText(secret);
   // « ! » final : l'espace commerçant demandera directement le mot de passe du lot.
   const spaceUrl = `https://${domain}/m#${key}${password ? '!' : ''}`;
@@ -209,7 +209,8 @@ export function keySheet({ lang, domain, brand, lot, name, secret, from, to, mon
     h(
       'div',
       { class: 'doc-title' },
-      h('div', { class: 'grow' }, h('h1', {}, name), h('p', {}, tl(lang, 'k_range', { from: labelOf(from), to: labelOf(to) }))),
+      // Nom long : plus petit, pour que la page tienne toujours sur une feuille.
+      h('div', { class: 'grow' }, h('h1', { class: name.length > 40 ? 'long' : name.length > 24 ? 'mid' : null }, name), h('p', {}, tl(lang, 'k_range', { from: labelOf(from), to: labelOf(to) }))),
       merchantLogo && h('img', { class: 'doc-merchant', src: merchantLogo, alt: '' }),
     ),
     h(
@@ -239,12 +240,27 @@ export function keySheet({ lang, domain, brand, lot, name, secret, from, to, mon
       ),
     ),
     h('p', { class: 'k-privacy' }, icon('lock-key'), h('span', {}, tl(lang, 'k_privacy'))),
-    // Abonnés Pro : pas d'appel au don sur leur page clé.
-    !pro && h(
+    // En bas, côte à côte : l'écran d'affichage (la tablette ou la TV du comptoir scanne ce QR) et,
+    // sans Pro, l'appel au don. Seul, un bloc prend toute la largeur.
+    h(
       'div',
-      { class: 'k-donate' },
-      h('div', {}, h('h2', {}, icon('hand-heart'), tl(lang, 'k_donate_title')), h('p', {}, tl(lang, 'k_donate_text', { brand, cost: monthlyCost }))),
-      h('div', { class: 'k-qr small' }, qrSvg(`HTTPS://${domain.toUpperCase()}/SOUTENIR`, 'M')),
+      { class: 'k-extras' },
+      screen &&
+        h(
+          'div',
+          { class: 'k-screen' },
+          h('h2', {}, icon('monitor-play'), tl(lang, 'k_screen_title')),
+          h('p', {}, tl(lang, 'k_screen_text')),
+          h('div', { class: 'k-qr small' }, qrSvg(screenUrl(domain, screen), 'M')),
+        ),
+      !pro &&
+        h(
+          'div',
+          { class: 'k-donate' },
+          h('h2', {}, icon('hand-heart'), tl(lang, 'k_donate_title')),
+          h('p', {}, tl(lang, 'k_donate_text', { brand, cost: monthlyCost })),
+          h('div', { class: 'k-qr small' }, qrSvg(`HTTPS://${domain.toUpperCase()}/SOUTENIR`, 'M')),
+        ),
     ),
     docFoot(lang, domain),
   );
@@ -255,6 +271,9 @@ export function keySheet({ lang, domain, brand, lot, name, secret, from, to, mon
 
 /** Adresse imprimée dans le QR de l'affiche (majuscules : QR plus compact). */
 export const posterUrl = (domain, token) => `HTTPS://${domain.toUpperCase()}/A/${token}`;
+
+/** Adresse de l'écran public (majuscules : QR plus compact ; la page accepte les deux). */
+export const screenUrl = (domain, token) => `HTTPS://${domain.toUpperCase()}/ECRAN/${token}`;
 
 /**
  * Affiche à poser au comptoir : chaque client qui la scanne reçoit le numéro suivant.

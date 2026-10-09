@@ -18,6 +18,7 @@ const DRAFT = 'wcy:design-draft'; // derniers réglages d'impression, repris à 
 const ACTIVITY = 'wcy:activity'; // dernière activité choisie
 const MODE = 'wcy:mode'; // tickets imprimés, affiche à scanner, ou les deux
 const SAMPLE_POSTER = 'A'.repeat(23); // aperçu : la vraie affiche reçoit son lien à la création
+const SAMPLE_SCREEN = 'B'.repeat(23); // aperçu de la page clé : le vrai écran public a son lien à la création
 
 translatePage();
 oneOpen(document.getElementById('create-form')); // un seul volet ouvert à la fois
@@ -117,7 +118,7 @@ const refresh = () => {
     count: total,
     whiteLabel: pro && whiteLabel.checked,
     poster: modeOf() === 'tickets' ? null : { token: SAMPLE_POSTER },
-    key: { lang: LANG, domain, brand, lot: '…', name: name || '…', secret: sampleSecret, from, to, monthlyCost, password: Boolean(password.value), pro },
+    key: { lang: LANG, domain, brand, lot: '…', name: name || '…', secret: sampleSecret, from, to, monthlyCost, password: Boolean(password.value), pro, screen: SAMPLE_SCREEN },
   });
 };
 // Ce qui tient sur le papier dépend du nom et du plus grand numéro du lot.
@@ -241,7 +242,7 @@ form.addEventListener('submit', async (event) => {
 });
 
 async function showCreated({ res, lot, options, hasPassword, proError, mode }) {
-  const key = { lang: LANG, domain, brand, lot: res.lot, name: res.name, secret: lot.secret, from: res.from, to: res.to, monthlyCost, password: hasPassword, pro: pro && !proError };
+  const key = { lang: LANG, domain, brand, lot: res.lot, name: res.name, secret: lot.secret, from: res.from, to: res.to, monthlyCost, password: hasPassword, pro: pro && !proError, screen: res.screen };
   const donation = await supportCard({ context: 'create', count: res.to - res.from + 1, brand });
   nudgeAfterPrint(donation);
   render(

@@ -9,7 +9,7 @@ import { readLogo, pagesFor } from './print.js';
 import { base32, randomBytes } from './crypto.js';
 import { proLock } from './protools.js';
 
-const SWATCHES = ['#ffffff', '#fff6e5', '#fde9e1', '#e6f0ff', '#e3f4ea', '#f3e8ff', '#1d1b18', '#e8572a'];
+const SWATCHES = ['#ffffff', '#fff6e5', '#fde9e1', '#e6f0ff', '#e3f4ea', '#f3e8ff', '#1d1b18', '#c8461c'];
 const PAPER_ORDER = ['a4', 'letter', 'a5', 'a6', 'a3', 'roll80', 'roll58', 'custom'];
 const STUB_PLACES = ['auto', 'right', 'bottom', 'cell'];
 const ALIGN_ICONS = { auto: 'magic-wand', left: 'text-align-left', center: 'text-align-center', right: 'text-align-right' };

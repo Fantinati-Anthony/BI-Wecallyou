@@ -813,7 +813,7 @@ dialog.catalog h2 { margin: 0; }
 
 /* Documents imprimés (page clé, fiche de secours) : couleurs fixes, jamais celles du thème sombre,
    lisibles aussi sur une imprimante noir et blanc. */
-.sheet-doc { padding: 10mm 12mm; font: 3.4mm/1.45 var(--font-ui); color: #14171c; display: flex; flex-direction: column; gap: 4.5mm; }
+.sheet-doc { padding: 9mm 12mm; font: 3.4mm/1.45 var(--font-ui); color: #14171c; display: flex; flex-direction: column; gap: 3.6mm; }
 .sheet-doc h1, .sheet-doc h2 { margin: 0; color: #14171c; font-family: var(--font-display); letter-spacing: -0.02em; }
 .sheet-doc h2 { display: flex; align-items: center; gap: 2mm; font-size: 4.8mm; font-weight: 650; margin-bottom: 1.5mm; }
 .sheet-doc h2 .i { width: 5.5mm; height: 5.5mm; color: #c8461c; }
@@ -828,12 +828,14 @@ dialog.catalog h2 { margin: 0; }
 .doc-aside { padding: 1.6mm 3.4mm; border-radius: 99mm; background: rgb(255 255 255 / 0.2); font: 600 3.6mm var(--font-ui); white-space: nowrap; }
 .doc-title { display: flex; align-items: center; gap: 6mm; padding-bottom: 3mm; border-bottom: 0.4mm solid #e9ebef; }
 .doc-title h1 { font-size: 10mm; font-weight: 750; line-height: 1.05; letter-spacing: -0.035em; }
+.doc-title h1.mid { font-size: 8mm; }
+.doc-title h1.long { font-size: 6.4mm; }
 .doc-title p { margin: 1.5mm 0 0; font-size: 3.8mm; color: #586070; }
 .doc-merchant { max-width: 40mm; max-height: 18mm; object-fit: contain; }
-.sheet-doc .k-box { display: grid; grid-template-columns: 56mm 1fr; gap: 6mm; align-items: center; padding: 5mm; border: 0.6mm solid #c8461c; border-radius: 4mm; background: #fdf3ee; }
+.sheet-doc .k-box { display: grid; grid-template-columns: 48mm 1fr; gap: 6mm; align-items: center; padding: 5mm; border: 0.6mm solid #c8461c; border-radius: 4mm; background: #fdf3ee; }
 .sheet-doc .k-qr { padding: 2mm; border-radius: 2.5mm; background: #fff; line-height: 0; }
-.sheet-doc .k-qr svg { width: 52mm; height: 52mm; }
-.sheet-doc .k-qr.small svg { width: 28mm; height: 28mm; }
+.sheet-doc .k-qr svg { width: 44mm; height: 44mm; }
+.sheet-doc .k-qr.small svg { width: 22mm; height: 22mm; }
 .sheet-doc .k-keep { font-weight: 700; color: #a83a15; }
 .sheet-doc .k-label { margin: 2mm 0 1mm; font-size: 3mm; color: #586070; }
 .sheet-doc .k-code { padding: 2mm 3mm; border: 0.35mm dashed #c8461c; border-radius: 2mm; background: #fff; font: 700 5mm/1.3 var(--mono); letter-spacing: 0.3mm; word-break: break-all; }
@@ -848,8 +850,14 @@ dialog.catalog h2 { margin: 0; }
 .sheet-doc .k-num { display: grid; place-items: center; width: 5.5mm; height: 5.5mm; flex: none; border-radius: 50%; background: #c8461c; color: #fffaf6; font: 700 3.2mm var(--font-display); }
 .sheet-doc .k-privacy { display: flex; gap: 2mm; align-items: flex-start; margin: 0; font-size: 3.2mm; color: #586070; }
 .sheet-doc .k-privacy .i { color: #17734a; }
-.sheet-doc .k-donate { display: grid; grid-template-columns: 1fr auto; gap: 5mm; align-items: center; padding: 4mm 5mm; border-radius: 4mm; background: #f7e2d9; font-size: 3.3mm; }
-.sheet-doc .k-donate p { margin: 0; }
+/* Bas de page : écran d'affichage et appel au don, côte à côte (titre en haut, texte et QR dessous). */
+.sheet-doc .k-extras { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 3.6mm; }
+.sheet-doc :is(.k-screen, .k-donate) { display: grid; grid-template-columns: 1fr auto; column-gap: 4mm; align-content: start; align-items: center; padding: 3.5mm 4.5mm; border-radius: 4mm; font-size: 3.15mm; line-height: 1.4; }
+.sheet-doc :is(.k-screen, .k-donate) h2 { grid-column: 1 / -1; }
+.sheet-doc :is(.k-screen, .k-donate) p { margin: 0; }
+.sheet-doc .k-donate { background: #f7e2d9; }
+.sheet-doc .k-screen { border: 0.35mm solid #d5d9e0; background: #f2f3f5; }
+.sheet-doc .k-screen .k-qr { border: 0.3mm solid #e1e4ea; }
 .sheet-poster { gap: 6mm; }
 .poster-main { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 3mm; padding: 4mm 0; }
 .poster-logo { max-width: 60mm; max-height: 28mm; object-fit: contain; }

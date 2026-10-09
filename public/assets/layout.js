@@ -42,7 +42,7 @@ export const DEFAULT_DESIGN = Object.freeze({
   cut: true,
   mono: false,
   ticketBg: '#ffffff',
-  accent: '#111111',
+  accent: '#c8461c', // orange WeCall.You : la couleur de tous les tickets sans Pro
   stubBg: '#ffffff',
   showNumber: true,
   logo: null,

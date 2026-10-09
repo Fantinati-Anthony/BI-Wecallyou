@@ -125,8 +125,19 @@ try {
   };
   assert.equal(await decode(m.locator('.print-root .sheet').nth(1).locator('.part.client .p-qr').first()), `HTTPS://LOCALHOST:${PORT}/${tickets[0].c}`);
   assert.equal(await decode(m.locator('.print-root .sheet').nth(1).locator('.part.stub .p-qr').first()), `HTTPS://LOCALHOST:${PORT}/${tickets[0].s}`);
+  // Page clé : un QR ouvre l'écran d'affichage du lot, et rien ne dépasse de la feuille.
+  const keyPageEl = m.locator('.print-root .sheet').nth(0);
+  const screenLink = await decode(keyPageEl.locator('.k-screen .p-qr'));
+  assert.match(screenLink, new RegExp(`^HTTPS://LOCALHOST:${PORT}/ECRAN/[A-Z2-7]{23}$`));
+  assert.equal(await keyPageEl.evaluate((el) => el.scrollHeight <= el.clientHeight + 1), true);
   await m.emulateMedia({ media: 'screen' });
-  step('QR codes imprimés relus et corrects (ticket client et souche)');
+  {
+    const tv = await merchant.newPage();
+    await tv.goto(`${BASE}${new URL(screenLink).pathname}`);
+    await waitText(tv.locator('.s-name'), 'Snack Tony');
+    await tv.close();
+  }
+  step('QR codes imprimés relus et corrects (ticket client, souche, écran d’affichage de la page clé)');
 
   /* ---------------------------------------------------- client : inscription */
   const client = await browser.newContext({ locale: 'en-US', viewport: { width: 390, height: 844 } });
@@ -511,6 +522,25 @@ try {
   await sheet().screenshot({ path: path.join(out, '24-rouleau-80mm.png') });
   await m.emulateMedia({ media: 'screen' });
   step('rouleau 80 mm : un ticket par page, souche détachable, noir seul');
+
+  // Page clé : tient sur sa feuille en français et en anglais, gratuit ou Pro, avec mot de passe et nom très long.
+  await m.emulateMedia({ media: 'print' });
+  const keyOverflow = await m.evaluate(async () => {
+    const { keySheet } = await import('/assets/sheets.js');
+    const bad = [];
+    for (const lang of ['fr', 'en'])
+      for (const pro of [false, true])
+        for (const name of ['Snack', 'Association sportive du Grand Stade — buvette et restauration']) {
+          const sheet = keySheet({ lang, domain: 'wecall.you', brand: 'WeCall.You', lot: 1301721212, name, secret: new Uint8Array(16), from: 1, to: 999999, monthlyCost: 21, password: true, pro, screen: 'A'.repeat(23) });
+          document.body.append(sheet);
+          if (sheet.scrollHeight > sheet.clientHeight + 1) bad.push(`${lang} pro=${pro} ${name.length} car. : ${sheet.scrollHeight} > ${sheet.clientHeight}`);
+          sheet.remove();
+        }
+    return bad;
+  });
+  await m.emulateMedia({ media: 'screen' });
+  assert.deepEqual(keyOverflow, []);
+  step('page clé : tient sur la feuille (FR/EN, gratuit/Pro, mot de passe, nom long)');
 
   // Aucun débordement : chaque élément reste dans sa case, quels que soient papier, grille et souche.
   const overflow = await m.evaluate(async () => {
