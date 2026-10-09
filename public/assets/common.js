@@ -62,6 +62,26 @@ export function translatePage(vars = {}) {
   for (const el of document.querySelectorAll('[data-i18n-placeholder]')) el.placeholder = t(el.dataset.i18nPlaceholder, vars);
   for (const el of document.querySelectorAll('[data-lang]')) el.hidden = el.dataset.lang !== LANG;
   for (const el of document.querySelectorAll('[data-icon]')) el.replaceChildren(icon(el.dataset.icon));
+  for (const el of document.querySelectorAll('[data-tip]')) el.replaceChildren(helpTip(t(el.dataset.tip, vars)));
+}
+
+/**
+ * Bulle d'aide « ? » : l'explication s'affiche au survol, au clavier, ou d'un appui sur téléphone
+ * (un second appui, Échap ou un appui ailleurs la referme). À placer dans un .label-row.
+ */
+let tips = 0;
+export function helpTip(text) {
+  const id = `tip-${++tips}`;
+  const button = h('button', { type: 'button', class: 'tip-btn', 'aria-label': t('help'), 'aria-describedby': id, 'aria-expanded': 'false' }, '?');
+  const tip = h('span', { class: 'tip' }, button, h('span', { class: 'tip-pop', role: 'tooltip', id }, text));
+  const toggle = (open) => {
+    tip.classList.toggle('open', open);
+    button.setAttribute('aria-expanded', String(open));
+  };
+  button.addEventListener('click', () => toggle(!tip.classList.contains('open')));
+  button.addEventListener('keydown', (event) => event.key === 'Escape' && toggle(false));
+  document.addEventListener('click', (event) => !tip.contains(event.target) && toggle(false));
+  return tip;
 }
 
 export async function api(path, { body, auth } = {}) {

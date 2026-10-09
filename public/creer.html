@@ -34,20 +34,14 @@
       </div>
       <div class="studio">
         <form id="create-form" class="studio-form" novalidate>
-          <details class="card" id="activity-card" open>
-            <summary data-i18n="studio_activity">Votre activité</summary>
-            <p class="small muted" data-i18n="act_intro">Choisissez votre activité : le message et les variables s’adaptent. Tout reste modifiable.</p>
-            <div id="activity-slot"></div>
-            <p class="act-sent small" id="activity-sent" hidden></p>
-          </details>
-          <details class="card">
+          <details class="card" id="lot-card" open>
             <summary data-i18n="studio_lot">Votre lot</summary>
             <fieldset class="field" id="mode-field">
               <legend><label data-i18n="mode_title">Comment vos clients obtiennent-ils leur numéro ?</label></legend>
-              <div class="checks">
-                <label class="check"><input type="radio" name="mode" value="tickets" checked><span data-icon="ticket"></span><span data-i18n="mode_tickets">Tickets imprimés</span></label>
-                <label class="check"><input type="radio" name="mode" value="poster"><span data-icon="qr-code"></span><span data-i18n="mode_poster">Affiche à scanner</span></label>
-                <label class="check"><input type="radio" name="mode" value="both"><span data-icon="squares-four"></span><span data-i18n="mode_both">Les deux</span></label>
+              <div class="choice-row">
+                <label class="choice"><input type="radio" name="mode" value="tickets" checked><span data-icon="ticket"></span><span data-i18n="mode_tickets">Tickets imprimés</span></label>
+                <label class="choice"><input type="radio" name="mode" value="poster"><span data-icon="qr-code"></span><span data-i18n="mode_poster">Affiche à scanner</span></label>
+                <label class="choice"><input type="radio" name="mode" value="both"><span data-icon="squares-four"></span><span data-i18n="mode_both">Les deux</span></label>
               </div>
               <p class="small muted" id="mode-hint"></p>
             </fieldset>
@@ -67,27 +61,39 @@
             </div>
             <fieldset class="field">
               <legend><label data-i18n="create_channels">Moyens proposés à vos clients</label></legend>
-              <div class="checks">
-                <label class="check"><input type="checkbox" name="channels" value="push" checked><span data-icon="bell-ringing"></span><span data-i18n="ch_push"></span></label>
-                <label class="check"><input type="checkbox" name="channels" value="sms" checked><span data-icon="chat-circle-text"></span><span data-i18n="ch_sms"></span></label>
-                <label class="check"><input type="checkbox" name="channels" value="wa" checked><span data-icon="whatsapp-logo"></span><span data-i18n="ch_wa"></span></label>
-                <label class="check"><input type="checkbox" name="channels" value="mail" checked><span data-icon="envelope-simple"></span><span data-i18n="ch_mail"></span></label>
+              <div class="choice-row cols-4">
+                <label class="choice"><input type="checkbox" name="channels" value="push" checked><span data-icon="bell-ringing"></span><span data-i18n="ch_push"></span></label>
+                <label class="choice"><input type="checkbox" name="channels" value="sms" checked><span data-icon="chat-circle-text"></span><span data-i18n="ch_sms"></span></label>
+                <label class="choice"><input type="checkbox" name="channels" value="wa" checked><span data-icon="whatsapp-logo"></span><span data-i18n="ch_wa"></span></label>
+                <label class="choice"><input type="checkbox" name="channels" value="mail" checked><span data-icon="envelope-simple"></span><span data-i18n="ch_mail"></span></label>
               </div>
             </fieldset>
             <div class="field">
-              <label for="ttl" data-i18n="create_ttl">Durée de vie d’un ticket après son premier scan</label>
+              <div class="label-row"><label for="ttl" data-i18n="create_ttl">Durée de vie d’un ticket après son premier scan</label><span data-tip="ttl_hint"></span></div>
               <select id="ttl" name="ttl" class="select"></select>
-              <p class="small muted" data-i18n="ttl_hint"></p>
             </div>
             <div class="field">
-              <label for="password" data-i18n="create_password">Mot de passe du lot (facultatif, conseillé)</label>
+              <div class="label-row"><label for="password" data-i18n="create_password">Mot de passe du lot (facultatif, conseillé)</label><span data-tip="create_password_hint"></span></div>
               <input id="password" name="password" type="password" autocomplete="new-password" minlength="8">
               <div class="field" id="password2-field" hidden>
                 <label for="password2" data-i18n="create_password2">Confirmez le mot de passe</label>
                 <input id="password2" name="password2" type="password" autocomplete="new-password">
               </div>
-              <p class="small muted" data-i18n="create_password_hint"></p>
             </div>
+          </details>
+          <details class="card" id="message-card">
+            <summary data-i18n="studio_message">Message et variables</summary>
+            <div id="message-slot"></div>
+            <p class="small muted" data-i18n="act_later"></p>
+            <div class="field">
+              <label for="promo" data-i18n="create_promo">Votre message (facultatif)</label>
+              <input id="promo" name="promo" type="text" maxlength="140" data-i18n-placeholder="create_promo_ph">
+            </div>
+            <div class="field">
+              <label for="link" data-i18n="create_link">Votre lien (facultatif)</label>
+              <input id="link" name="link" type="url" maxlength="200" inputmode="url" data-i18n-placeholder="create_link_ph">
+            </div>
+            <p class="small muted" data-i18n="promo_hint"></p>
           </details>
           <details class="card" id="layout-card">
             <summary data-i18n="studio_layout">Papier et mise en page</summary>
@@ -100,18 +106,6 @@
           <details class="card pro-tools" id="pro-tools">
             <summary><span data-i18n="pro_tools_title">Options Pro</span><span class="badge pro-badge"><span data-icon="star"></span>Pro</span></summary>
             <div id="pro-slot"></div>
-          </details>
-          <details class="card">
-            <summary data-i18n="studio_message">Votre message (facultatif)</summary>
-            <div class="field">
-              <label for="promo" data-i18n="create_promo">Votre message (facultatif)</label>
-              <input id="promo" name="promo" type="text" maxlength="140" data-i18n-placeholder="create_promo_ph">
-            </div>
-            <div class="field">
-              <label for="link" data-i18n="create_link">Votre lien (facultatif)</label>
-              <input id="link" name="link" type="url" maxlength="200" inputmode="url" data-i18n-placeholder="create_link_ph">
-            </div>
-            <p class="small muted" data-i18n="promo_hint"></p>
           </details>
           <p class="error" id="create-error" role="alert" hidden></p>
           <button class="btn btn-big btn-block" type="submit" data-i18n="create_btn">Créer mes tickets</button>

@@ -4,7 +4,7 @@ import { verifySignature, applyEvent } from './stripe.js';
 import { checkMessage, relay } from './relay.js';
 import { LIFETIMES, PRO_LIFETIMES, DEFAULT_LIFETIME } from './store.js';
 import { STATS_DAYS } from './pro.js';
-import { createHmac, timingSafeEqual } from 'node:crypto';
+import { createHmac, timingSafeEqual, randomInt } from 'node:crypto';
 import * as base32 from './base32.js';
 
 export const CHANNELS = ['push', 'sms', 'wa', 'mail'];
@@ -314,6 +314,24 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
     return list.sort((a, b) => a.at - b.at);
   }
 
+  /**
+   * Numéro d'affiche tiré au hasard parmi les numéros libres de sa plage (après les tickets imprimés),
+   * aussi court que possible : 3 chiffres tant qu'il y a de la place, un chiffre de plus sinon.
+   */
+  async function drawPosterNumber(lot) {
+    const lo = lot.posterFrom;
+    if (lo > MAX_NUMBER) fail(409, 'poster_full');
+    let hi = Math.min(MAX_NUMBER, Math.max(lo + 99, 10 ** String(lo + 99).length - 1));
+    for (;;) {
+      for (let tries = 0; tries < 40; tries++) {
+        const n = randomInt(lo, hi + 1);
+        if (!(await store.isActive(lot.id, n)) && (await store.claimNumber(lot.id, n))) return n;
+      }
+      if (hi >= MAX_NUMBER) fail(409, 'poster_full');
+      hi = Math.min(MAX_NUMBER, hi * 10 + 9); // plage presque pleine : un chiffre de plus
+    }
+  }
+
   async function lotOfScreen(token) {
     const bin = /^[A-Z2-7]{23}$/.test(token) ? base32.decode(token) : null;
     const lot = bin?.length === 14 ? await store.lot(bin.readUInt32BE(0)) : null;
@@ -394,32 +412,28 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
       };
     }],
 
-    // Affiche : chaque scan reçoit le numéro suivant (ordre d'arrivée), sans ticket imprimé.
+    // Affiche : chaque scan reçoit un numéro unique tiré au hasard, sans ticket imprimé. Le numéro ne dit
+    // rien de l'ordre (un ticket imprimé peut être scanné entre deux scans de l'affiche) : l'ordre
+    // d'arrivée reste connu du commerçant, dans sa file d'arrivée.
     ['POST', /^\/poster\/([A-Za-z2-7]{23})$/, async (req, [token]) => {
       limits.check(`poster:${clientIp(req)}`, 30, 10 * MINUTE);
       const lot = await lotOfPoster(token.toUpperCase());
       limits.check(`poster-lot:${lot.id}`, 5000, 24 * HOUR);
-      lot.posterFrom ??= lot.to + 1; // lot à tickets imprimés : l'affiche prend la suite
-      let n = Math.max(lot.posterNext ?? lot.posterFrom, lot.posterFrom);
-      for (let tries = 0; ; n++, tries++) {
-        if (n > MAX_NUMBER || tries > 5000) fail(409, 'poster_full');
-        if (!(await store.isActive(lot.id, n)) && (await store.claimNumber(lot.id, n))) break;
-      }
+      lot.posterFrom ??= lot.to + 1; // lot à tickets imprimés : l'affiche prend les numéros au-delà
+      const n = await drawPosterNumber(lot);
       await store.event(lot.id, n, 'scan'); // le ticket vit dès maintenant, comme un ticket scanné
-      lot.posterNext = n + 1;
       if (n > lot.to) {
-        await store.countTickets(n - lot.to);
+        await store.countTickets(1);
         lot.to = n;
       }
       await store.saveLot(lot);
       return { ok: true, code: tokens.encode(lot.id, n, Role.CLIENT), label: label(n) };
     }],
 
-    // Nouveau lien d'affiche (l'ancienne affiche cesse de donner des numéros) ou numérotation reprise au début.
-    ['POST', /^\/lot\/poster\/(reset|restart)$/, async (req, [action]) => {
+    // Nouveau lien d'affiche : l'ancienne affiche cesse aussitôt de donner des numéros.
+    ['POST', /^\/lot\/poster\/reset$/, async (req) => {
       const lot = await lotOf(req);
-      if (action === 'reset') lot.posterGen = (lot.posterGen ?? 0) + 1;
-      else lot.posterNext = lot.posterFrom ?? lot.to + 1; // les numéros encore en cours sont sautés
+      lot.posterGen = (lot.posterGen ?? 0) + 1;
       await store.saveLot(lot);
       return { ok: true, ...(await privateLot(lot)) };
     }],

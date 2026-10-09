@@ -1,15 +1,15 @@
 // Espace commerçant : connexion par la page 1 du PDF (et le mot de passe du lot s'il y en a un),
 // appels, suivi des tickets, statistiques, impression, réglages et écran d'affichage.
-import { h, t, LANG, api, render, translatePage, errorText, lots, local, fmtTime, qrSvg, icon, oneOpen } from './common.js';
+import { h, t, LANG, api, render, translatePage, errorText, lots, local, fmtTime, qrSvg, icon, oneOpen, helpTip } from './common.js';
 import { textToSecret, secretToText, lotMaterial, authTokenOf, openLot, b64u, openFromClient } from './crypto.js';
 import { unlock, callTickets } from './call.js';
-import { composer, needsComposer, groupOf, parseNumbers, variableChips, builtinNames } from './message.js';
+import { composer, needsComposer, groupOf, parseNumbers } from './message.js';
 import { keySheet, fillPrintRoot, contentOf, keyPage, setPrintPage, posterSheet, posterUrl, labelOf as ticketLabel } from './sheets.js';
 import { printPlan, printOptions } from './print.js';
 import { designControls, livePreview } from './studio.js';
 import { withoutPro } from './layout.js';
 import { PRO_LIFETIMES, themeFields, proLock } from './protools.js';
-import { loadActivities, activityPicker, presetOf } from './activities.js';
+import { loadActivities, messageEditor } from './activities.js';
 import { supportCard, loadSupport } from './donate.js';
 import { session, sync, removeLot } from './account.js';
 
@@ -597,12 +597,6 @@ function posterCard(lot, access) {
     fillPrintRoot([posterSheet({ lang: LANG, domain: info.domain, brand: info.brand, name: lot.name, token: lot.poster, logo: design.logo, whiteLabel: Boolean(lot.whiteLabel), design })]);
     window.print();
   });
-  const restart = h('button', { type: 'button', class: 'btn btn-soft' }, icon('arrows-clockwise'), t('poster_restart'));
-  restart.addEventListener('click', async () => {
-    const res = await api('/lot/poster/restart', { body: {}, auth: access.auth });
-    status.className = res.ok ? 'small ok' : 'small error';
-    status.textContent = res.ok ? t('poster_restarted', { n: ticketLabel(lot.posterFrom ?? lot.printTo + 1) }) : errorText(res.error);
-  });
   const reset = h('button', { type: 'button', class: 'linklike small' }, t('poster_reset'));
   reset.addEventListener('click', async () => {
     if (!confirm(t('poster_reset_confirm'))) return;
@@ -621,7 +615,7 @@ function posterCard(lot, access) {
     { class: 'card stack', id: 'poster-card' },
     h('h2', { class: 'row' }, icon('qr-code'), t('poster_card_title')),
     h('p', { class: 'small muted' }, t('poster_card_hint', { n: ticketLabel(lot.posterFrom ?? lot.printTo + 1) })),
-    h('div', { class: 'poster-row' }, qr, h('div', { class: 'stack grow' }, print, restart)),
+    h('div', { class: 'poster-row' }, qr, h('div', { class: 'stack grow' }, print)),
     reset,
     status,
   );
@@ -629,32 +623,7 @@ function posterCard(lot, access) {
 
 /* ----------------------------------------------------------------- réglages */
 
-const listsToText = (lists) => lists.map((l) => `${l.name} : ${l.options.join(', ')}`).join('\n');
-const groupsToText = (groups) => groups.map((g) => `${g.name} : ${g.numbers}`).join('\n');
-
-/** « Nom : a, b, c » par ligne → [{ name, options }]. */
-const textToLists = (text) =>
-  text
-    .split('\n')
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line) => {
-      const [name, ...rest] = line.split(':');
-      return { name: name.trim(), options: rest.join(':').split(',').map((o) => o.trim()).filter(Boolean) };
-    });
-
-/** « Nom : 12-18, 25 » par ligne → [{ name, numbers }]. */
-const textToGroups = (text) =>
-  text
-    .split('\n')
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line) => {
-      const at = line.lastIndexOf(':');
-      return { name: line.slice(0, at).trim(), numbers: line.slice(at + 1).trim() };
-    });
-
-function settingsTab(panel, { lot, access, reload }) {
+async function settingsTab(panel, { lot, access, reload }) {
   const name = h('input', { id: 'sn', type: 'text', maxlength: 60, value: lot.name });
   const promo = h('input', { id: 'sp', type: 'text', maxlength: 140, value: lot.promo, placeholder: t('create_promo_ph') });
   const link = h('input', { id: 'sl', type: 'url', maxlength: 200, value: lot.link, placeholder: t('create_link_ph') });
@@ -676,39 +645,15 @@ function settingsTab(panel, { lot, access, reload }) {
     theme.element,
     !lot.pro && proLock(!lot.owned),
   );
-  const checks = CHANNELS.map((c) => h('label', { class: 'check' }, h('input', { type: 'checkbox', value: c, checked: lot.channels.includes(c) }), icon(ICON[c]), t(`ch_${c}`)));
-  const template = h('textarea', { id: 'stp', class: 'textarea', rows: 3, maxlength: 280, placeholder: t('s_template_ph') });
-  template.value = lot.template;
-  const lists = h('textarea', { id: 'sli', class: 'textarea', rows: 3, placeholder: t('s_lists_ph') });
-  const groups = h('textarea', { id: 'sgr', class: 'textarea', rows: 3, placeholder: t('s_groups_ph') });
-  lists.value = listsToText(lot.lists);
-  groups.value = groupsToText(lot.groups);
-
-  // Insertion d'une variable dans le modèle d'un simple appui (les listes saisies apparaissent aussitôt).
-  const vars = variableChips(template, () => [...builtinNames(), ...textToLists(lists.value).map((l) => l.name)].filter(Boolean));
-  const chips = vars.element;
-  const drawChips = vars.refresh;
-  lists.addEventListener('input', drawChips);
-  drawChips();
-
-  // Partir d'un modèle d'activité : message et listes adaptés au métier, puis retouches libres.
-  const models = h('div');
-  loadActivities().then((activities) => {
-    const picker = activityPicker({
-      activities,
-      name: () => name.value.trim(),
-      onPick(activity) {
-        const preset = presetOf(activity);
-        const mine = template.value.trim() || lists.value.trim();
-        if (mine && (template.value !== preset.template || lists.value !== listsToText(preset.lists)) && !confirm(t('act_replace_confirm'))) return;
-        template.value = preset.template;
-        lists.value = listsToText(preset.lists);
-        drawChips();
-      },
-    });
-    name.addEventListener('input', picker.refresh);
-    models.append(h('label', {}, t('act_from_model')), picker.element);
+  const checks = CHANNELS.map((c) => h('label', { class: 'choice' }, h('input', { type: 'checkbox', value: c, checked: lot.channels.includes(c) }), icon(ICON[c]), h('span', {}, t(`ch_${c}`))));
+  // Message et variables : le même éditeur qu'à la création (activité, modèle, listes, groupes).
+  const message = messageEditor({
+    activities: await loadActivities(),
+    initial: lot,
+    name: () => name.value.trim(),
+    ids: { template: 'stp', lists: 'sli', groups: 'sgr', choose: 's-act' },
   });
+  name.addEventListener('input', message.refresh);
 
   const status = h('p', { role: 'status' });
   const form = h(
@@ -721,10 +666,9 @@ function settingsTab(panel, { lot, access, reload }) {
       h('label', { for: 'sn' }, t('create_name')),
       name,
       h('label', {}, t('create_channels')),
-      h('div', { class: 'checks' }, checks),
-      h('label', { for: 'st' }, t('create_ttl')),
+      h('div', { class: 'choice-row cols-4' }, checks),
+      h('div', { class: 'label-row' }, h('label', { for: 'st' }, t('create_ttl')), helpTip(`${t('ttl_hint')} ${t('ttl_pro_hint')}`)),
       ttl,
-      h('p', { class: 'small muted' }, t('ttl_hint'), ' ', t('ttl_pro_hint')),
       lot.ttlApplied !== lot.ttl && h('p', { class: 'small error' }, t('ttl_applied', { h: lot.ttlApplied })),
       h('label', { for: 'sp' }, t('create_promo')),
       promo,
@@ -733,22 +677,7 @@ function settingsTab(panel, { lot, access, reload }) {
       h('p', { class: 'small muted' }, t('promo_hint')),
     ),
     proSection,
-    h(
-      'section',
-      { class: 'card stack' },
-      h('h2', {}, t('s_message')),
-      models,
-      h('label', { for: 'sli' }, t('s_lists')),
-      lists,
-      h('p', { class: 'small muted' }, t('s_lists_hint')),
-      h('label', { for: 'stp' }, t('s_template')),
-      template,
-      chips,
-      h('p', { class: 'small muted' }, t('s_template_hint')),
-      h('label', { for: 'sgr' }, t('s_groups')),
-      groups,
-      h('p', { class: 'small muted' }, t('s_groups_hint')),
-    ),
+    h('section', { class: 'card stack' }, h('h2', {}, t('s_message')), message.element),
     status,
     h('button', { class: 'btn btn-big btn-block', type: 'submit' }, t('m_save')),
   );
@@ -763,9 +692,7 @@ function settingsTab(panel, { lot, access, reload }) {
         whiteLabel: whiteLabel.checked,
         theme: theme.value(),
         channels: checks.map((c) => c.querySelector('input')).filter((i) => i.checked).map((i) => i.value),
-        template: template.value,
-        lists: textToLists(lists.value),
-        groups: textToGroups(groups.value),
+        ...message.value(),
       },
       auth: access.auth,
     });

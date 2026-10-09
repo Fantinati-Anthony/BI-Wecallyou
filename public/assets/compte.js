@@ -4,11 +4,13 @@ import { h, t, LANG, api, render, translatePage, errorText, lots, local, icon } 
 import { textToSecret, secretToText } from './crypto.js';
 import { session, signup, login, recover, sync, changePassword, rotateRecovery, logout, deleteAccount, printKit, downloadKit, removeLot, IDENT, MIN_PASSWORD } from './account.js';
 import { proLock } from './protools.js';
+import { loadActivities, activityOf, chooseActivity, nameOf, ACTIVITY_KEY } from './activities.js';
 
 translatePage();
 
 const app = document.getElementById('app');
 const info = await api('/info');
+const activities = await loadActivities();
 const kitContext = (ident, recovery) => ({ lang: LANG, domain: info.domain ?? location.host, brand: info.brand ?? 'WeCall.You', ident, recovery });
 
 /* -------------------------------------------------------------- formulaires */
@@ -50,6 +52,29 @@ function checkCredentials(ident, password, password2, error) {
   return true;
 }
 
+/**
+ * Activité du commerce : ligne « Snack, food truck [Changer] » ouvrant la fenêtre de choix.
+ * onPick(activity) après un choix. Renvoie { element, value() }.
+ */
+function activityField(selected, onPick = () => {}) {
+  let chosen = selected ? activityOf(activities, selected) : null;
+  const label = h('span', { class: 'act-current' });
+  const button = h('button', { type: 'button', class: 'btn btn-ghost', id: 'acc-act' });
+  const draw = () => {
+    render(label, chosen ? [icon(chosen.icon), h('b', {}, nameOf(chosen))] : h('span', { class: 'muted' }, t('act_none')));
+    render(button, icon('squares-four'), t(chosen ? 'act_change' : 'act_choose'));
+  };
+  button.addEventListener('click', async () => {
+    const picked = await chooseActivity({ activities, selected: chosen?.id });
+    if (!picked) return;
+    chosen = picked;
+    draw();
+    onPick(picked);
+  });
+  draw();
+  return { element: h('div', { class: 'act-line' }, label, button), value: () => chosen?.id ?? null };
+}
+
 function loginForm() {
   const ident = field('li', 'acc_ident', { type: 'text', autocomplete: 'username', autocapitalize: 'none', spellcheck: 'false' });
   const pw = field('lp', 'acc_password', { type: 'password', autocomplete: 'current-password' });
@@ -68,13 +93,28 @@ function signupForm() {
   const ident = field('si', 'acc_ident', { type: 'text', autocomplete: 'username', autocapitalize: 'none', spellcheck: 'false', maxlength: 32 }, 'acc_ident_hint');
   const pw = field('sp', 'acc_password', { type: 'password', autocomplete: 'new-password' }, 'acc_password_hint');
   const pw2 = field('sp2', 'acc_password2', { type: 'password', autocomplete: 'new-password' });
+  const activity = activityField(local.get(ACTIVITY_KEY));
   const error = errorBox();
   const button = h('button', { class: 'btn btn-big btn-block', type: 'submit' }, t('acc_signup_btn'));
-  const form = h('form', { class: 'stack', novalidate: true }, ident.element, pw.element, pw2.element, error, button);
+  const form = h(
+    'form',
+    { class: 'stack', novalidate: true },
+    ident.element,
+    pw.element,
+    pw2.element,
+    h('div', { class: 'field' }, h('label', {}, t('acc_activity')), activity.element, h('p', { class: 'small muted' }, t('acc_activity_hint'))),
+    error,
+    button,
+  );
   onSubmit(form, button, async () => {
     if (!checkCredentials(ident.input.value, pw.input.value, pw2.input.value, error)) return;
     const res = await signup(ident.input.value, pw.input.value);
     if (res.error) return error.show(res.error === 'ident_taken' ? 'err_ident_taken' : res.error);
+    const chosen = activity.value();
+    if (chosen) {
+      local.set(ACTIVITY_KEY, chosen);
+      await sync({ activity: chosen });
+    }
     kitStep(session.get().ident, res.recovery);
   });
   return form;
@@ -182,6 +222,15 @@ async function accountView() {
     pw.value = '';
   });
 
+  // Activité du commerce : changée ici, elle suit le compte sur tous ses téléphones.
+  const activityStatus = h('p', { class: 'small', role: 'status' });
+  const activity = activityField(synced.vault.activity ?? local.get(ACTIVITY_KEY), async (picked) => {
+    local.set(ACTIVITY_KEY, picked.id);
+    const saved = await sync({ activity: picked.id });
+    activityStatus.className = saved ? 'small ok' : 'small error';
+    activityStatus.textContent = saved ? t('acc_activity_saved') : t('err_default');
+  });
+
   const reprint = () => printKit(kitContext(s.ident, textToSecret(synced.vault.recovery)));
   const rotate = async () => {
     if (!confirm(t('acc_new_kit_confirm'))) return;
@@ -194,6 +243,7 @@ async function accountView() {
     h('h1', {}, t('acc_title')),
     h('p', { class: 'muted' }, t('acc_hello', { ident: s.ident })),
     status,
+    h('section', { class: 'card stack' }, h('h2', {}, t('acc_activity')), activity.element, h('p', { class: 'small muted' }, t('acc_activity_hint')), activityStatus),
     h('section', { class: 'card stack' }, h('h2', {}, t('acc_lots')), !multi && proLock(false, 'lots_pro_lock'), list.length ? h('ul', { class: 'waiting-list' }, list) : h('p', { class: 'muted' }, t('acc_lots_none')), h('a', { href: '/creer' }, t('m_new_lot'))),
     h(
       'section',

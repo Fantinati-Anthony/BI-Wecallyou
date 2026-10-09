@@ -68,21 +68,42 @@ try {
   // « Créer mes tickets » aussi dans le menu, et rien ne déborde sur un téléphone.
   assert.equal(await m.locator('.topnav .nav-cta[href="/creer"] svg').count(), 1);
   assert.equal(await m.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+  // Activités : un appui adapte les démonstrations (ticket, téléphone du client, écran public).
+  assert.equal(await m.locator('#home-acts .act-chip').count(), 10);
+  assert.equal(await m.locator('#home-acts.auto').count(), 1); // sans appui, elles défilent seules
+  await m.click('#home-acts .act-chip[data-id="pressing"]');
+  await waitText(m.locator('#hero-phone .hp-merchant'), 'Pressing Lumière');
+  assert.match(await m.locator('#hero-phone .hp-msg').textContent(), /dépôt n°042/);
+  assert.equal(await m.locator('#live-queue .lq-name').textContent(), 'Pressing Lumière');
+  assert.equal(await m.locator('#home-acts.auto').count(), 0); // l'activité choisie reste
   // L'écran public de démonstration s'anime : les appels avancent, le téléphone du client suit sa place.
   await m.locator('#live-queue').scrollIntoViewIfNeeded();
-  assert.equal(await m.locator('#live-queue .lq-number').textContent(), '043');
+  await m.locator('#live-queue .lq-number').filter({ hasText: '043' }).waitFor({ timeout: 3000 }); // le cycle recommence au choix
   assert.match(await m.locator('#live-queue .lq-place').textContent(), /3e/);
   await m.locator('#live-queue .lq-number').filter({ hasText: '044' }).waitFor({ timeout: 6000 });
   assert.match(await m.locator('#live-queue .lq-place').textContent(), /2e/);
   await m.waitForSelector('#live-queue .lq-phone.is-ready', { timeout: 9000 });
   assert.equal(await m.locator('#live-queue .lq-place').textContent(), 'C’est à vous !');
+  assert.match(await m.locator('#live-queue .lq-wait').textContent(), /dépôt n°046/);
   await shot(m, '01b-ecran-anime');
   // La création de lot a sa propre page, atteinte par l'appel à l'action de l'accueil.
   await m.locator('.hero-cta a[href="/creer"]').click();
-  await m.waitForSelector('#create-form .activity');
-  assert.equal(await m.locator('.activity').count(), 10);
-  await m.click('.activity[data-id="autre"]'); // message par défaut, traduit pour chaque client
-  assert.match(await m.locator('#activity-sent').textContent(), /c’est à vous/);
+  await m.waitForSelector('#c-act', { state: 'attached' });
+  // « Message et variables » : l'activité touchée sur l'accueil est proposée, et se change dans une fenêtre.
+  assert.match(await m.locator('#message-card .act-current').textContent(), /Pressing/);
+  assert.match(await m.locator('#ctp').inputValue(), /votre dépôt n°\{numero\}/);
+  await m.click('summary[data-i18n=studio_message]');
+  await m.click('#c-act');
+  await m.waitForSelector('dialog.act-dialog[open]');
+  assert.equal(await m.locator('.act-block').count(), 10);
+  await m.hover('.act-block[data-id="club"]'); // au survol, le message type de l'activité
+  assert.match(await m.locator('.act-phone p').textContent(), /Équipe rouge/);
+  await shot(m, '01c-choix-activite');
+  await m.click('.act-block[data-id="autre"]');
+  await m.click('.act-use'); // message du modèle « pressing » non retouché : remplacé sans question
+  await m.waitForSelector('dialog.act-dialog', { state: 'detached' });
+  assert.equal(await m.locator('#ctp').inputValue(), '');
+  assert.match(await m.locator('#message-card .msg-example').textContent(), /c’est à vous/); // message par défaut
   assert.equal(await m.locator('#c-wl').isDisabled(), true);
   assert.equal(await m.locator('#ttl option[value="720"]').isDisabled(), true);
   // Logo et couleurs des tickets : offre Pro, grisés ici.
@@ -91,7 +112,7 @@ try {
   assert.equal(await m.locator('#design-colors .pro-lock:not([hidden])').count(), 1);
   await m.click('#pro-tools summary');
   assert.equal(await m.locator('#pro-tools .pro-lock').isVisible(), true);
-  assert.equal(await m.locator('#activity-card').getAttribute('open'), null); // un seul volet ouvert à la fois
+  assert.equal(await m.locator('#message-card').getAttribute('open'), null); // un seul volet ouvert à la fois
   step('accueil : comparatif Gratuit / Pro ; page « Créer » : activités, options Pro grisées sans compte Pro');
   await m.click('summary[data-i18n=studio_lot]');
   await m.fill('#name', 'Snack Tony');
@@ -263,7 +284,7 @@ try {
   await waitText(tab.locator('.s-number'), '009');
   step('souche avec message personnalisé, annoncée sur l’écran');
 
-  // Affiche à scanner : chaque client reçoit le numéro suivant ; file d'arrivée ; tout le monde appelé d'un coup.
+  // Affiche à scanner : chaque client reçoit un numéro unique tiré au hasard ; file d'arrivée ; tout le monde appelé d'un coup.
   await m.goto(`${BASE}/m`);
   await m.getByRole('button', { name: 'Imprimer' }).click();
   await m.waitForSelector('#poster-card .p-qr');
@@ -274,25 +295,30 @@ try {
   walkIn.on('pageerror', (err) => errors.push(err.message));
   await walkIn.goto(`${BASE}${posterPath}`);
   await walkIn.waitForSelector('.ticket-head .number');
-  assert.equal(await walkIn.locator('.ticket-head .number').textContent(), '031'); // après les tickets imprimés 001 à 030
+  const firstNumber = await walkIn.locator('.ticket-head .number').textContent();
+  assert.ok(/^\d{3}$/.test(firstNumber) && Number(firstNumber) > 30, firstNumber); // au-delà des tickets imprimés 001 à 030
   assert.equal(await walkIn.locator('.poster-hint').isVisible(), true);
   await walkIn.goto(`${BASE}${posterPath}`); // rescanner l'affiche : même numéro
   await walkIn.waitForSelector('.ticket-head .number');
-  assert.equal(await walkIn.locator('.ticket-head .number').textContent(), '031');
+  assert.equal(await walkIn.locator('.ticket-head .number').textContent(), firstNumber);
   const second = await (await browser.newContext({ locale: 'fr-FR' })).newPage();
   await second.goto(`${BASE}${posterPath}`);
   await second.waitForSelector('.ticket-head .number');
-  assert.equal(await second.locator('.ticket-head .number').textContent(), '032');
+  const secondNumber = await second.locator('.ticket-head .number').textContent();
+  assert.ok(/^\d{3}$/.test(secondNumber) && secondNumber !== firstNumber, secondNumber);
   await walkIn.getByRole('button', { name: /wait to be called/ }).click();
   await m.getByRole('button', { name: 'Appels' }).click();
-  await m.waitForSelector('#arrivals li:has-text("031")');
-  assert.match(await m.locator('#arrivals').textContent(), /032/);
+  await m.waitForSelector(`#arrivals li:has-text("${firstNumber}")`);
+  // Dans l'ordre d'arrivée, quel que soit le numéro tiré.
+  const arrived = await m.locator('#arrivals li').allTextContents();
+  const rank = (n) => arrived.findIndex((line) => line.includes(n));
+  assert.ok(rank(firstNumber) >= 0 && rank(firstNumber) < rank(secondNumber), arrived.join(' | '));
   await shot(m, '26-file-arrivee');
   m.once('dialog', (dialog) => dialog.accept());
   await m.click('#call-all');
   await m.waitForSelector('#arrivals:has-text("Personne en attente")');
   await walkIn.waitForSelector('.ready', { timeout: 15_000 });
-  step('affiche : 031 puis 032 dans l’ordre d’arrivée, même numéro au rescan, tout le monde appelé d’un coup');
+  step('affiche : numéros uniques tirés au hasard, file dans l’ordre d’arrivée, même numéro au rescan, tout le monde appelé d’un coup');
 
   /* ------------------------------ autre téléphone : page 1 + mot de passe */
   const lotsSaved = await m.evaluate(() => JSON.parse(localStorage.getItem('wcy:lots')));
@@ -315,6 +341,11 @@ try {
   await m.fill('#si', 'snack.tony');
   await m.fill('#sp', 'mot de passe du snack');
   await m.fill('#sp2', 'mot de passe du snack');
+  // Activité du commerce, choisie à l'inscription : gardée chiffrée dans le compte.
+  await m.click('#acc-act');
+  await m.click('.act-block[data-id="buvette"]');
+  await m.click('.act-use');
+  await waitText(m.locator('.act-current b'), 'Buvette, festival, kermesse');
   await m.click('form button[type=submit]');
   await m.waitForSelector('.kit-key', { timeout: 30_000 });
   const recoveryKey = (await m.locator('.kit-key').textContent()).trim();
@@ -348,7 +379,11 @@ try {
   await p3.click('form button[type=submit]');
   await p3.waitForURL(`${BASE}/m`, { timeout: 30_000 });
   await p3.waitForSelector('h1:has-text("Snack Tony")');
-  step('autre téléphone : connexion par identifiant, le lot est retrouvé');
+  // L'activité choisie à l'inscription suit le compte : proposée par défaut à la création des tickets.
+  await p3.goto(`${BASE}/creer`);
+  await p3.waitForSelector('#message-card .act-current b', { state: 'attached' });
+  assert.match(await p3.locator('#message-card .act-current').textContent(), /Buvette/);
+  step('autre téléphone : connexion par identifiant, le lot et l’activité du compte sont retrouvés');
 
   // Mot de passe oublié : la fiche de secours (son QR) permet d'en choisir un nouveau.
   const phone4 = await browser.newContext({ locale: 'fr-FR', viewport: { width: 390, height: 844 } });
@@ -425,7 +460,11 @@ try {
   // Compte Pro : les options Pro du générateur s'ouvrent et s'appliquent au nouveau lot.
   await p4.goto(`${BASE}/creer`);
   await p4.waitForSelector('#c-wl:not([disabled])', { state: 'attached' });
-  await p4.click('.activity[data-id="pressing"]');
+  await p4.click('summary[data-i18n=studio_message]');
+  await p4.click('#c-act');
+  await p4.click('.act-block[data-id="pressing"]');
+  await p4.click('.act-use');
+  await p4.waitForSelector('dialog.act-dialog', { state: 'detached' });
   await p4.click('summary[data-i18n=studio_lot]');
   await p4.fill('#name', 'Pressing Lumière');
   await p4.fill('#count', '20');
@@ -475,7 +514,8 @@ try {
   // Ce lot appartient désormais au compte devenu Pro : logo et couleurs ouverts.
   assert.equal(await m.locator('#d-acc').isDisabled(), false);
   // Grille proposée : 24 tickets par page.
-  await m.locator('.chips .chip', { hasText: /^24$/ }).first().click();
+  await m.fill('#d-cols', '3');
+  await m.fill('#d-rows', '8');
   await printAll();
   assert.equal(await sheet().locator('.pair').count(), 24);
   await m.emulateMedia({ media: 'print' });

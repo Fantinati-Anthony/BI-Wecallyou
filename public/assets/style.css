@@ -301,11 +301,21 @@ details[open] > summary { margin-bottom: 14px; }
 .hero-visual { position: relative; height: 460px; }
 .hv-ticket { position: absolute; left: 0; top: 36px; width: 80%; transform: rotate(-6deg); transform-origin: 30% 50%; }
 .hv-ticket .sheet { transform-origin: top left; border-radius: 6px; box-shadow: var(--shadow-2); }
+/* Téléphone du client (démonstration) : « C'est à vous ! » avec le message de l'activité choisie. */
 .hv-phone {
-  position: absolute; right: 0; bottom: 0; width: 38%; margin: 0; overflow: hidden;
-  border-radius: 30px; border: 1px solid var(--line); box-shadow: var(--shadow-2); background: var(--surface);
+  position: absolute; right: 0; bottom: 0; width: 38%; aspect-ratio: 9 / 17; container-type: inline-size; overflow: hidden;
+  /* Marges en px : les unités cqw du téléphone ne valent que pour son contenu. */
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 20px 12px;
+  border: 6px solid #15181d; border-radius: 30px; box-shadow: var(--shadow-2); background: #17734a; color: #f6fbf8; text-align: center;
 }
-.hv-phone img { width: 100%; height: auto; }
+.hp-merchant { font-size: clamp(10px, 6cqw, 13px); font-weight: 600; opacity: 0.85; }
+.hp-title { margin: 0; font: 750 clamp(16px, 12cqw, 26px)/1.05 var(--font-display); letter-spacing: -0.03em; color: inherit; }
+.hp-number { font: 800 clamp(34px, 30cqw, 64px)/0.95 var(--font-display); letter-spacing: -0.05em; font-variant-numeric: tabular-nums; }
+@container (max-width: 190px) { .hp-merchant { display: none; } }
+.hp-msg {
+  margin: 4px 0 0; padding: 5cqw 6cqw; border-radius: 14px; background: rgb(255 255 255 / 0.16); font-size: clamp(11px, 6.2cqw, 14px); line-height: 1.35;
+  display: -webkit-box; -webkit-line-clamp: 7; -webkit-box-orient: vertical; overflow: hidden;
+}
 @media (prefers-reduced-motion: no-preference) {
   .hv-ticket { animation: hv-ticket 0.9s var(--ease) both 0.1s; }
   .hv-phone { animation: hv-phone 0.9s var(--ease) both 0.35s; }
@@ -313,16 +323,30 @@ details[open] > summary { margin-bottom: 14px; }
   @keyframes hv-phone { from { opacity: 0; transform: translateY(40px); } }
 }
 
-.uses { overflow: hidden; border-block: 1px solid var(--line); padding: 18px 0; -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
-.uses-track { display: flex; gap: 56px; width: max-content; margin: 0; padding: 0; list-style: none; font: 600 1.3rem/1.2 var(--font-display); letter-spacing: -0.015em; color: var(--muted); }
-@media (prefers-reduced-motion: no-preference) {
-  .uses-track { animation: uses 48s linear infinite; }
-  .uses:hover .uses-track { animation-play-state: paused; }
-  @keyframes uses { to { transform: translateX(-50%); } }
+/* Activités de l'accueil : un appui adapte les démonstrations ; sinon elles changent seules, cycle après cycle. */
+.acts { border-block: 1px solid var(--line); padding: 18px 0 20px; }
+.acts-title { margin: 0 0 12px; text-align: center; font-weight: 600; color: var(--muted); }
+.acts-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.act-chip {
+  position: relative; display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 8px 14px; overflow: hidden;
+  border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--text); font: 600 0.92rem var(--font-ui); cursor: pointer;
 }
-@media (prefers-reduced-motion: reduce) {
-  .uses-track { width: auto; flex-wrap: wrap; justify-content: center; gap: 12px 32px; }
-  .uses-track [aria-hidden='true'] { display: none; }
+.act-chip .i { width: 18px; height: 18px; color: var(--brand-text); }
+.act-chip:hover { border-color: var(--muted); }
+.act-chip[aria-pressed='true'] { border-color: var(--brand); background: var(--brand-soft); }
+/* Défilement automatique : la pastille choisie se remplit pendant le cycle de démonstration. */
+.acts-list.auto .act-chip[aria-pressed='true']::after {
+  content: ''; position: absolute; left: 0; bottom: 0; width: 100%; height: 3px; background: var(--brand); transform-origin: left;
+  animation: acts-progress var(--cycle, 13s) linear both;
+}
+@keyframes acts-progress { from { transform: scaleX(0); } }
+@media (max-width: 700px) {
+  .acts-list { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; margin: 0 -16px; padding: 2px 16px 8px; scrollbar-width: none; scroll-snap-type: x proximity; }
+  .act-chip { flex: none; scroll-snap-align: start; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hv-phone.swap > * { animation: hp-swap 0.5s var(--ease); }
+  @keyframes hp-swap { from { opacity: 0; transform: translateY(6px); } }
 }
 
 .how { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 64px; padding: 96px 0 72px; }
@@ -412,6 +436,7 @@ details[open] > summary { margin-bottom: 14px; }
 @media (max-width: 900px) {
   .hero { grid-template-columns: 1fr; gap: 28px; padding: 12px 0 48px; }
   .hero-visual { height: 380px; }
+  .hv-phone { width: 46%; }
   .how { grid-template-columns: 1fr; gap: 24px; padding: 64px 0 48px; }
   .how-aside { position: static; }
   .bento { grid-template-columns: 1fr; padding-bottom: 64px; }
@@ -495,27 +520,86 @@ select option:disabled { color: var(--muted); }
 .lot-card.add:hover { color: var(--text); }
 .lot-card.add .i { width: 28px; height: 28px; }
 
-/* Carrousel des activités (création d'un lot, réglages du message) */
-.carousel { position: relative; min-width: 0; max-width: 100%; }
-.carousel-nav { display: flex; justify-content: flex-end; gap: 6px; margin-bottom: 8px; }
-.carousel-nav .btn { min-height: 38px; padding: 6px 10px; }
-.activity-track {
-  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(200px, 240px); gap: 10px;
-  overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: thin;
-  padding: 3px 3px 10px; margin: 0 -3px;
+/* Activité d'un lot : « Activité : Snack [Changer] », et la fenêtre de choix (blocs à gauche, message type à droite) */
+.act-line { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 12px; border-radius: var(--r-ctl); background: var(--surface-2); }
+.act-current { display: inline-flex; align-items: center; gap: 8px; margin-right: auto; }
+.act-current .i { width: 22px; height: 22px; color: var(--brand-text); }
+.msg-example { margin: 0; padding: 12px 14px; border: 1px dashed var(--line); border-radius: var(--r-ctl); font-size: 0.92rem; }
+dialog.act-dialog { width: min(980px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); padding: 22px; border: 1px solid var(--line); border-radius: var(--r-box); background: var(--surface); color: var(--text); box-shadow: var(--shadow-2); }
+dialog.act-dialog[open] { display: flex; flex-direction: column; gap: 12px; }
+dialog.act-dialog::backdrop { background: rgb(14 16 19 / 0.55); }
+.act-dialog > p { margin: 0; }
+.act-dialog-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.act-dialog-head h2 { margin: 0; }
+.act-dialog-body { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 18px; min-height: 0; overflow: auto; }
+.act-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; align-content: start; }
+.act-block {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 10px; min-height: 96px; padding: 14px;
+  border: 1px solid var(--line); border-radius: 14px; background: var(--surface); color: var(--text); font: 650 0.95rem/1.25 var(--font-display); text-align: left; cursor: pointer;
 }
-.activity {
-  scroll-snap-align: start; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-height: 176px; padding: 16px;
-  border: 1px solid var(--line); border-radius: var(--r-box); background: var(--surface); color: var(--text);
-  font: inherit; text-align: left; cursor: pointer; transition: border-color 0.15s ease;
+.act-block .i { box-sizing: content-box; width: 24px; height: 24px; padding: 7px; border-radius: var(--r-ctl); background: var(--brand-soft); color: var(--brand-text); }
+.act-block:hover { border-color: var(--muted); }
+.act-block[aria-pressed='true'] { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
+.act-preview { position: sticky; top: 0; align-self: start; display: grid; gap: 12px; padding: 16px; border-radius: 14px; background: var(--surface-2); }
+.act-preview > p { margin: 0; }
+.act-phone { display: grid; gap: 8px; padding: 16px; border-radius: 20px; background: #17734a; color: #f6fbf8; }
+.act-phone-head { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; opacity: 0.9; }
+.act-phone strong { font: 750 1.3rem/1.1 var(--font-display); }
+.act-phone p { margin: 0; padding: 10px 12px; border-radius: 12px; background: rgb(255 255 255 / 0.16); line-height: 1.4; }
+.act-details h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; font-size: 1.05rem; }
+.act-details h3 .i { color: var(--brand-text); }
+.act-details p { margin: 0 0 6px; }
+.act-details p .i { vertical-align: -3px; }
+.act-vars { margin: 0 0 8px; padding-left: 18px; font-size: 0.88rem; }
+.act-vars li + li { margin-top: 4px; }
+.act-dialog-foot { display: flex; justify-content: flex-end; gap: 8px; }
+@media (max-width: 720px) {
+  dialog.act-dialog { padding: 16px; }
+  .act-dialog-body { grid-template-columns: 1fr; }
+  .act-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .act-block { min-height: 0; flex-direction: row; align-items: center; gap: 8px; padding: 10px; font-size: 0.86rem; overflow-wrap: anywhere; hyphens: auto; }
+  .act-block .i { width: 20px; height: 20px; padding: 6px; }
+  /* Sur téléphone : le message reste visible en bas pendant qu'on parcourt les activités. */
+  .act-preview { position: sticky; top: auto; bottom: 0; order: 1; padding: 10px; box-shadow: 0 -10px 18px -12px rgb(0 0 0 / 0.35); }
+  .act-preview > p, .act-details { display: none; }
 }
-.activity:hover { border-color: var(--muted); }
-.activity[aria-pressed='true'] { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
-.activity-icon { display: grid; place-items: center; width: 42px; height: 42px; border-radius: var(--r-ctl); background: var(--brand-soft); color: var(--brand-text); }
-.activity-icon .i { width: 24px; height: 24px; }
-.activity-name { font: 650 1.05rem/1.2 var(--font-display); letter-spacing: -0.01em; }
-.activity-example { font-size: 0.84rem; line-height: 1.4; color: var(--muted); }
-.act-sent { margin: 12px 0 0; padding: 12px 14px; border-radius: var(--r-ctl); background: var(--surface-2); }
+
+/* Choix sur une seule ligne : comment les clients ont leur numéro, moyens proposés */
+.choice-row { display: grid; grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); gap: 8px; }
+.choice-row.cols-4 { --n: 4; }
+.choice {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 74px; margin: 0; padding: 10px 6px;
+  border: 1px solid var(--line); border-radius: var(--r-ctl); background: var(--surface); color: var(--muted); font-size: 0.86rem; font-weight: 600; line-height: 1.2; text-align: center;
+  cursor: pointer; transition: border-color 0.15s, background-color 0.15s;
+}
+.choice input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.choice .i { width: 22px; height: 22px; }
+.choice:hover { border-color: var(--muted); }
+.choice:has(input:checked) { border-color: var(--brand); background: color-mix(in srgb, var(--brand-soft) 55%, var(--surface)); color: var(--text); }
+.choice:has(input:checked) .i { color: var(--brand-text); }
+.choice:has(input:focus-visible) { outline: 2px solid var(--brand); outline-offset: 2px; }
+.choice:has(input[type='checkbox']:checked)::after { content: '✓'; position: absolute; top: 5px; right: 8px; font-size: 0.75rem; color: var(--brand-text); }
+@media (max-width: 420px) { .choice-row.cols-4 { --n: 2; } }
+
+/* Bulle d'aide « ? » (survol, clavier ou appui) : au-dessus du libellé, sur toute la largeur du champ */
+.label-row { position: relative; display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.label-row label { margin: 0; }
+.tip { display: inline-flex; }
+.tip-btn {
+  display: grid; place-items: center; flex: none; width: 22px; height: 22px; padding: 0;
+  border: 1px solid var(--line); border-radius: 50%; background: var(--surface-2); color: var(--muted); font: 700 0.78rem/1 var(--font-ui); cursor: help;
+}
+.tip-btn:hover, .tip-btn:focus-visible, .tip.open .tip-btn { border-color: var(--brand); color: var(--brand-text); }
+.tip-pop {
+  position: absolute; left: 0; right: 0; bottom: calc(100% + 8px); z-index: 30; padding: 10px 12px; border-radius: var(--r-ctl);
+  background: var(--text); color: var(--surface); font-size: 0.86rem; font-weight: 500; line-height: 1.45; box-shadow: var(--shadow-2);
+  opacity: 0; visibility: hidden; transform: translateY(4px); transition: opacity 0.15s, transform 0.15s, visibility 0.15s; pointer-events: none;
+}
+.tip:hover .tip-pop, .tip:focus-within .tip-pop, .tip.open .tip-pop { opacity: 1; visibility: visible; transform: none; }
+
+/* Nombre de souches, avec la remarque « sans souche » à côté */
+.stub-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.stub-row .small { flex: 1 1 150px; min-width: 0; margin: 0; max-width: 34ch; } /* à droite s’il y a la place, dessous sinon */
 
 /* Variables à insérer d'un appui ; nombre de notifications d'un ticket (Suivi) */
 .var-box p { margin: 0 0 6px; }

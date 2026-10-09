@@ -1,10 +1,11 @@
 {
-  "_doc": "Modèles par activité, proposés à la création d'un lot et dans Réglages > Message et variables. Chaque modèle donne un message ({nom}, {numero}, {groupe} et ses listes), des listes déroulantes (variables choisies au moment de l'appel) et une durée de vie conseillée en heures (72 h et plus : offre Pro). Les options sont des phrases entières : le message reste correct même si rien n'est choisi.",
+  "_doc": "Modèles par activité, proposés à la création d'un lot et dans Réglages > Message et variables. Chaque modèle donne un nom de commerce d'exemple (« demo », pour les démonstrations), un message ({nom}, {numero}, {groupe} et ses listes), des listes déroulantes (variables choisies au moment de l'appel) et une durée de vie conseillée en heures (72 h et plus : offre Pro). Les options sont des phrases entières : le message reste correct même si rien n'est choisi.",
   "activities": [
     {
       "id": "snack",
       "icon": "hamburger",
       "name": { "fr": "Snack, food truck", "en": "Snack bar, food truck" },
+      "demo": { "fr": "Snack du Stade", "en": "Stadium Snacks" },
       "ttl": 3,
       "fr": {
         "template": "{nom} : votre commande n°{numero} est prête ! {Retrait}",
@@ -19,6 +20,7 @@
       "id": "boulangerie",
       "icon": "bread",
       "name": { "fr": "Boulangerie, traiteur", "en": "Bakery, caterer" },
+      "demo": { "fr": "Boulangerie du Marché", "en": "Market Bakery" },
       "ttl": 24,
       "fr": {
         "template": "{nom} : votre commande n°{numero} vous attend en boutique. {Info}",
@@ -33,6 +35,7 @@
       "id": "pressing",
       "icon": "t-shirt",
       "name": { "fr": "Pressing, cordonnerie, retouches", "en": "Dry cleaning, shoe repair, alterations" },
+      "demo": { "fr": "Pressing Lumière", "en": "Bright Dry Cleaning" },
       "ttl": 168,
       "fr": {
         "template": "{nom} : votre dépôt n°{numero} est prêt. {Retrait}",
@@ -47,6 +50,7 @@
       "id": "atelier",
       "icon": "wrench",
       "name": { "fr": "Atelier, réparation, SAV", "en": "Repair shop, after-sales" },
+      "demo": { "fr": "Atelier Vélo Express", "en": "Express Bike Repair" },
       "ttl": 168,
       "fr": {
         "template": "{nom} : ticket n°{numero}, {État}",
@@ -61,6 +65,7 @@
       "id": "club",
       "icon": "soccer-ball",
       "name": { "fr": "Club, tournoi", "en": "Club, tournament" },
+      "demo": { "fr": "Tournoi U11", "en": "U11 Tournament" },
       "ttl": 12,
       "fr": {
         "template": "{groupe} : c’est à vous ! {Lieu}",
@@ -75,6 +80,7 @@
       "id": "buvette",
       "icon": "beer-stein",
       "name": { "fr": "Buvette, festival, kermesse", "en": "Refreshment stand, festival, fair" },
+      "demo": { "fr": "Buvette de la Fête", "en": "Fair Refreshments" },
       "ttl": 6,
       "fr": {
         "template": "Ticket n°{numero} : c’est prêt ! {Stand}",
@@ -89,6 +95,7 @@
       "id": "guichet",
       "icon": "bank",
       "name": { "fr": "Accueil, mairie, guichet", "en": "Front desk, town hall, counter" },
+      "demo": { "fr": "Mairie, accueil", "en": "Town hall desk" },
       "ttl": 3,
       "fr": {
         "template": "Ticket n°{numero} : c’est à vous. {Guichet}",
@@ -103,6 +110,7 @@
       "id": "cabinet",
       "icon": "stethoscope",
       "name": { "fr": "Cabinet, salle d’attente", "en": "Practice, waiting room" },
+      "demo": { "fr": "Cabinet du Parc", "en": "Park Practice" },
       "ttl": 3,
       "fr": {
         "template": "{nom} : c’est votre tour (ticket n°{numero}). {Salle}",
@@ -117,6 +125,7 @@
       "id": "retrait",
       "icon": "package",
       "name": { "fr": "Click & collect, retrait", "en": "Click & collect" },
+      "demo": { "fr": "Drive du Centre", "en": "Town Centre Pickup" },
       "ttl": 24,
       "fr": {
         "template": "{nom} : votre commande n°{numero} est prête. {Lieu}",
@@ -131,6 +140,7 @@
       "id": "autre",
       "icon": "chat-centered-text",
       "name": { "fr": "Autre : message simple", "en": "Other: simple message" },
+      "demo": { "fr": "Votre commerce", "en": "Your business" },
       "ttl": 6,
       "fr": { "template": "", "lists": [] },
       "en": { "template": "", "lists": [] }

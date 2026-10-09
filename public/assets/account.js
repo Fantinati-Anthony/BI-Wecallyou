@@ -18,6 +18,7 @@ import {
   normalizeIdent,
 } from './crypto.js';
 import { fillPrintRoot, docBand, docFoot, keyPage, setPrintPage } from './sheets.js';
+import { ACTIVITY_KEY } from './activities.js';
 
 const KEY = 'wcy:account';
 
@@ -115,6 +116,12 @@ export async function sync(changes = {}, retry = true) {
     vault.recovery = changes.recovery;
     dirty = true;
   }
+  // Activité du commerce : gardée chiffrée dans le coffre, elle devient le choix par défaut sur chaque téléphone.
+  if (changes.activity && changes.activity !== vault.activity) {
+    vault.activity = changes.activity;
+    dirty = true;
+  }
+  if (vault.activity && !local.get(ACTIVITY_KEY)) local.set(ACTIVITY_KEY, vault.activity);
   for (const id of changes.removeLots ?? []) {
     if (vault.lots[id]) {
       delete vault.lots[id];

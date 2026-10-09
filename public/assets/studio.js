@@ -3,7 +3,7 @@
 // Imprimer). Tout se passe dans le navigateur. La mise en page est gratuite pour tous ; le logo
 // et les couleurs sont réservés à l'offre Pro (grisés sinon, et jamais imprimés sans Pro).
 import { h, t, LANG, render, icon } from './common.js';
-import { PAPERS, LIMITS, QR_WARN_MM, MAX_STUBS, normalizeDesign, withoutPro, fitDesign, fitGrid, gridLimits, presetGrids, pageOf, gridOf, contentKey } from './layout.js';
+import { PAPERS, LIMITS, QR_WARN_MM, MAX_STUBS, normalizeDesign, withoutPro, fitDesign, fitGrid, gridLimits, pageOf, gridOf, contentKey } from './layout.js';
 import { contentOf, ticketSheets, keySheet, labelOf, posterSheet } from './sheets.js';
 import { readLogo, pagesFor } from './print.js';
 import { base32, randomBytes } from './crypto.js';
@@ -82,10 +82,7 @@ export function designControls(initial, onChange, contentFor, { pro = false } = 
     const d = view();
     const content = contentFor(d);
     const geometry = [d.paper, d.orientation, d.pw, d.ph, d.margins, d.gapX, d.gapY, d.stub, d.mono, contentKey(content)];
-    return {
-      limits: cached(JSON.stringify(['limits', d.cols, d.rows, ...geometry]), () => gridLimits(d, content)),
-      presets: cached(JSON.stringify(['presets', ...geometry]), () => presetGrids(d, content)),
-    };
+    return { limits: cached(JSON.stringify(['limits', d.cols, d.rows, ...geometry]), () => gridLimits(d, content)) };
   };
 
   function set(patch, { fromProduct = false } = {}) {
@@ -146,8 +143,7 @@ export function designControls(initial, onChange, contentFor, { pro = false } = 
   );
   const orientationBox = h('div', { class: 'field' }, h('label', {}, t('d_orientation')), orientation);
 
-  /* grille */
-  const presets = h('div', { class: 'chips', role: 'group', 'aria-label': t('d_presets') });
+  /* grille : colonnes × lignes, chacune bornée pour que le QR code reste lisible */
   const cols = numberField('d-cols', t('d_cols'), { min: 1, max: LIMITS.cols[1], onInput: (v) => set({ cols: v }) });
   const rows = numberField('d-rows', t('d_rows'), { min: 1, max: LIMITS.rows[1], onInput: (v) => set({ rows: v }) });
   for (const field of [cols, rows, pw, ph]) field.input.addEventListener('change', () => refresh(true));
@@ -171,6 +167,8 @@ export function designControls(initial, onChange, contentFor, { pro = false } = 
     }),
   );
   const stubPlace = h('div', { class: 'field' }, h('label', {}, t('d_stub')), stub);
+  // « Sans souche » : la remarque se place à côté du choix ; les autres conseils, en dessous.
+  const stubNone = h('p', { class: 'small muted' }, t('stub_none_hint'));
   const stubHint = h('p', { class: 'small muted' });
   const align = h(
     'div',
@@ -228,7 +226,7 @@ export function designControls(initial, onChange, contentFor, { pro = false } = 
 
   /** Remet les champs en accord avec les réglages (force : y compris le champ en cours de saisie). */
   function refresh(force = false) {
-    const { limits, presets: grids } = analysis();
+    const { limits } = analysis();
     const roll = Boolean(PAPERS[design.paper].roll);
     const keep = (field) => !force && document.activeElement === field.input;
     const show = (field, value) => {
@@ -250,14 +248,6 @@ export function designControls(initial, onChange, contentFor, { pro = false } = 
     orientationBox.hidden = roll;
     pressed(orientation, (b) => b.dataset.or === design.orientation);
 
-    render(
-      presets,
-      grids.map((g) => {
-        const chip = h('button', { type: 'button', class: 'chip', title: `${g.cols} × ${g.rows}`, 'aria-pressed': String(g.cols === design.cols && g.rows === design.rows) }, String(g.count));
-        chip.addEventListener('click', () => set({ cols: g.cols, rows: g.rows }));
-        return chip;
-      }),
-    );
     cols.input.max = Math.max(1, limits.cols);
     rows.input.max = Math.max(1, limits.rows);
     cols.note.textContent = t('d_max', { n: limits.cols });
@@ -268,7 +258,8 @@ export function designControls(initial, onChange, contentFor, { pro = false } = 
     pressed(stub, (b) => b.dataset.stub === design.stub);
     pressed(align, (b) => b.dataset.align === design.align);
     stubPlace.hidden = design.stubs === 0;
-    stubHint.textContent = [design.stubs === 0 ? t('stub_none_hint') : design.stub === 'cell' ? t('stub_cell_hint') : design.stub === 'auto' ? t('stub_auto_hint') : '', design.stubs > 1 ? t('stubs_many_hint') : ''].filter(Boolean).join(' ');
+    stubNone.hidden = design.stubs !== 0;
+    stubHint.textContent = [design.stubs === 0 ? '' : design.stub === 'cell' ? t('stub_cell_hint') : design.stub === 'auto' ? t('stub_auto_hint') : '', design.stubs > 1 ? t('stubs_many_hint') : ''].filter(Boolean).join(' ');
     stubHint.hidden = !stubHint.textContent;
 
     margins.forEach((m, i) => show(m, design.margins[i]));
@@ -311,11 +302,9 @@ export function designControls(initial, onChange, contentFor, { pro = false } = 
       h('div', { class: 'field' }, h('label', { for: 'd-paper' }, t('d_paper')), paper),
       size,
       orientationBox,
-      h('label', {}, t('d_presets')),
-      presets,
       h('div', { class: 'inline-fields' }, cols.element, rows.element),
       h('label', {}, t('d_stubs')),
-      stubCount,
+      h('div', { class: 'stub-row' }, stubCount, stubNone),
       stubPlace,
       stubHint,
       h('label', {}, t('d_align')),

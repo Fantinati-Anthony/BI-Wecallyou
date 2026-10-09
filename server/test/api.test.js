@@ -333,30 +333,36 @@ test('statistiques anonymes du mois', async () => {
   assert.equal(info.brand, 'WeCall.You');
 });
 
-test('affiche : un numéro par scan dans l’ordre d’arrivée, jamais imprimable, lien révocable', async () => {
+test('affiche : un numéro unique tiré au hasard par scan, ordre d’arrivée gardé, jamais imprimable, lien révocable', async () => {
   const lot = await newLot(); // tickets imprimés 1 à 20
   const auth = lot.authToken;
   const { poster } = await call('GET', '/lot', undefined, auth);
   assert.match(poster, /^[A-Z2-7]{23}$/);
 
-  // L'affiche prend la suite des tickets imprimés : 021, puis 022.
+  // Numéros de l'affiche : au hasard, au-delà des tickets imprimés (021 à 999), jamais deux fois.
   const first = await call('POST', `/poster/${poster}`, {});
+  await new Promise((resolve) => setTimeout(resolve, 5)); // deux arrivées distinctes dans le temps
   const second = await call('POST', `/poster/${poster}`, {});
-  assert.deepEqual([first.label, second.label], ['021', '022']);
+  for (const scan of [first, second]) assert.ok(/^\d{3}$/.test(scan.label) && Number(scan.label) >= 21, scan.label);
+  assert.notEqual(first.label, second.label);
   const page = await call('GET', `/t/${first.code}`);
-  assert.equal(page.label, '021');
+  assert.equal(page.label, first.label);
   assert.equal(page.role, 'client');
+  const drawn = [first.label, second.label];
+  for (let i = 0; i < 20; i++) drawn.push((await call('POST', `/poster/${poster}`, {})).label); // sous la limite de 30 scans par adresse
+  assert.equal(new Set(drawn).size, 22); // 22 scans, 22 numéros différents
+  assert.ok(drawn.some((l, i) => i > 0 && Number(l) < Number(drawn[i - 1]))); // aucun ordre croissant imposé
 
   // File d'arrivée : dans l'ordre des scans ; les numéros de l'affiche ne s'impriment pas.
   const state = await call('GET', '/lot', undefined, auth);
-  assert.deepEqual(state.arrivals.map((a) => a.label), ['021', '022']);
+  assert.deepEqual(state.arrivals.slice(0, 2).map((a) => a.label), [first.label, second.label]);
   assert.equal(state.printTo, 20);
   assert.equal((await call('POST', '/lot/tickets', { from: 15, to: 25 }, auth)).status, 409);
   assert.equal((await call('POST', '/lot/tickets', { from: 1, to: 20 }, auth)).tickets.length, 20);
 
   // Un appel retire le ticket de la file d'arrivée.
-  assert.equal((await call('POST', '/call', { n: 21 }, auth)).ok, true);
-  assert.deepEqual((await call('GET', '/lot', undefined, auth)).arrivals.map((a) => a.label), ['022']);
+  assert.equal((await call('POST', '/call', { n: Number(first.label) }, auth)).ok, true);
+  assert.equal((await call('GET', '/lot', undefined, auth)).arrivals[0].label, second.label);
 
   // Lien falsifié refusé ; nouveau lien : l'ancien ne donne plus de numéro.
   const forged = poster.slice(0, 22) + (poster[22] === 'A' ? 'B' : 'A');
@@ -364,15 +370,13 @@ test('affiche : un numéro par scan dans l’ordre d’arrivée, jamais imprimab
   const reset = await call('POST', '/lot/poster/reset', {}, auth);
   assert.notEqual(reset.poster, poster);
   assert.equal((await call('POST', `/poster/${poster}`, {})).status, 404);
-  assert.equal((await call('POST', `/poster/${reset.poster}`, {})).label, '023');
+  assert.ok(!drawn.includes((await call('POST', `/poster/${reset.poster}`, {})).label));
 
-  // Lot « affiche seule » : les numéros commencent au premier ; reprise au début sans doublon.
+  // Lot « affiche seule » : numéros à 3 chiffres dès 001, rien d'imprimable, plus de « reprise » (aucun ordre).
   const only = await wc.createLot();
   await call('POST', '/lots', { name: 'Fournil', channels: ['sms'], from: 1, to: 99, poster: 'only', ...only.request });
   const onlyPoster = (await call('GET', '/lot', undefined, only.authToken)).poster;
-  assert.equal((await call('POST', `/poster/${onlyPoster}`, {})).label, '001');
-  assert.equal((await call('POST', `/poster/${onlyPoster}`, {})).label, '002');
-  await call('POST', '/lot/poster/restart', {}, only.authToken);
-  assert.equal((await call('POST', `/poster/${onlyPoster}`, {})).label, '003'); // 001 et 002 sont encore en cours
+  assert.match((await call('POST', `/poster/${onlyPoster}`, {})).label, /^\d{3}$/);
   assert.equal((await call('POST', '/lot/tickets', { from: 1, to: 10 }, only.authToken)).status, 409);
+  assert.equal((await call('POST', '/lot/poster/restart', {}, only.authToken)).status, 404);
 });

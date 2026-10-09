@@ -108,17 +108,6 @@ try {
     await ctx.close();
   }
 
-  // Le client appelé : l'écran passe au vert (identique en clair et en sombre).
-  {
-    const ctx = await phone('light');
-    const p = await ctx.newPage();
-    await p.goto(`${BASE}/${ticket(41).c}`);
-    await p.waitForSelector('.ready');
-    await p.waitForTimeout(300);
-    await save('client-pret', await p.screenshot());
-    await ctx.close();
-  }
-
   // Une planche imprimée (A4, 12 tickets), cadrée sur le coin haut gauche.
   {
     const ctx = await browser.newContext({ locale: 'fr-FR', viewport: { width: 900, height: 1200 }, deviceScaleFactor: 2, bypassCSP: true });

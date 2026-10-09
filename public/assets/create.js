@@ -9,13 +9,13 @@ import { designControls, livePreview } from './studio.js';
 import { supportCard, nudgeAfterPrint, loadSupport } from './donate.js';
 import { session, sync } from './account.js';
 import { PRO_LIFETIMES, themeFields, proLock } from './protools.js';
-import { loadActivities, activityPicker, presetOf, exampleOf } from './activities.js';
+import { loadActivities, messageEditor, ACTIVITY_KEY } from './activities.js';
+import { parseNumbers } from './message.js';
 
 const LIFETIMES = [1, 3, 6, 12, 24, 48];
 const DEFAULT_LIFETIME = 6;
 const MAX_FREE_LIFETIME = 48;
 const DRAFT = 'wcy:design-draft'; // derniers réglages d'impression, repris à la prochaine création
-const ACTIVITY = 'wcy:activity'; // dernière activité choisie
 const MODE = 'wcy:mode'; // tickets imprimés, affiche à scanner, ou les deux
 const SAMPLE_POSTER = 'A'.repeat(23); // aperçu : la vraie affiche reçoit son lien à la création
 const SAMPLE_SCREEN = 'B'.repeat(23); // aperçu de la page clé : le vrai écran public a son lien à la création
@@ -63,38 +63,28 @@ function setPro(on) {
 setPro(pro);
 if (session.get() && !info.allPro) sync().then((account) => account && setPro(Boolean(account.pro)));
 
-/* ------------------------------------------------------------ votre activité */
+/* ------------------------------------------------------- message et variables */
 
-// Un message et des variables adaptés au métier (le lot les reçoit à sa création), et une durée conseillée.
+// Activité par défaut (choisie sur ce téléphone ou dans le compte), changée d'un bouton : elle donne
+// le message, ses variables et la durée conseillée. Le lot reçoit le tout à sa création.
 const activities = await loadActivities();
-let chosen = activities.find((a) => a.id === local.get(ACTIVITY)) ?? null;
-const sent = document.getElementById('activity-sent');
-function showChoice() {
-  sent.hidden = !chosen;
-  if (chosen) render(sent, h('strong', {}, t('act_sent')), ' ', exampleOf(chosen, form.elements.name.value.trim()), h('br'), h('span', { class: 'muted' }, t('act_later')));
-}
 function suggestLifetime(activity) {
   const hours = PRO_LIFETIMES.includes(activity.ttl) && !pro ? MAX_FREE_LIFETIME : activity.ttl;
   if ([...ttlSelect.options].some((o) => Number(o.value) === hours && !o.disabled)) ttlSelect.value = String(hours);
 }
-const picker = activityPicker({
+const message = messageEditor({
   activities,
-  selected: chosen?.id,
+  selected: local.get(ACTIVITY_KEY) ?? 'autre',
   name: () => form.elements.name.value.trim(),
-  onPick(activity) {
-    chosen = activity;
-    local.set(ACTIVITY, activity.id);
+  ids: { template: 'ctp', lists: 'cli', groups: 'cgr', choose: 'c-act' },
+  onActivity(activity) {
+    local.set(ACTIVITY_KEY, activity.id);
     suggestLifetime(activity);
-    showChoice();
   },
 });
-document.getElementById('activity-slot').append(picker.element);
-if (chosen) suggestLifetime(chosen);
-showChoice();
-form.elements.name.addEventListener('input', () => {
-  picker.refresh();
-  showChoice();
-});
+document.getElementById('message-slot').append(message.element);
+if (message.activity()) suggestLifetime(message.activity());
+form.elements.name.addEventListener('input', message.refresh);
 
 /* ------------------------------------------------- studio : réglages + aperçu */
 
@@ -196,6 +186,10 @@ form.addEventListener('submit', async (event) => {
   if (password.value && password.value.length < 8) return showError('password_short');
   if (password.value !== password2.value && password.value) return showError('password_match');
   if (!printable && mode !== 'poster') return showError('qr_small');
+  // Message et variables : mêmes règles que le serveur, vérifiées avant de créer le lot.
+  const msg = message.value();
+  if (msg.lists.length > 5 || msg.lists.some((l) => l.name.length > 24 || !/^[\p{L}\p{N}][\p{L}\p{N} _-]*$/u.test(l.name))) return showError('lists');
+  if (msg.groups.length > 100 || msg.groups.some((g) => !g.name || !parseNumbers(g.numbers))) return showError('groups');
 
   const button = form.querySelector('button[type=submit]');
   button.disabled = true;
@@ -214,20 +208,19 @@ form.addEventListener('submit', async (event) => {
     if (!res.ok) return showError(res.error);
     lots.save(res.lot, { key: secretToText(lot.secret), material: b64u.encode(lot.material), name, password: Boolean(password.value) });
     if (session.get()) await sync(); // connecté : le lot rejoint le compte
-    // Réglages appliqués au lot neuf : modèle de l'activité (gratuit) et options Pro. Si le Pro est
-    // refusé, l'activité est quand même appliquée.
+    // Réglages appliqués au lot neuf : message et variables (gratuits) et options Pro. Si le Pro est
+    // refusé, le message est quand même appliqué.
     let result = res;
     let proError = null;
-    const preset = chosen ? presetOf(chosen) : null;
-    const withPreset = Boolean(preset && (preset.template || preset.lists.length));
+    const withMessage = Boolean(msg.template.trim() || msg.lists.length || msg.groups.length);
     const colors = pro ? theme.value() : undefined;
     const withPro = pro && (proTtl || whiteLabel.checked || Boolean(colors));
-    if (withPreset || withPro) {
-      const base = { name, promo, link, channels, template: withPreset ? preset.template : undefined, lists: withPreset ? preset.lists : undefined };
+    if (withMessage || withPro) {
+      const base = { name, promo, link, channels, ...(withMessage ? msg : {}) };
       let applied = await api('/lot/settings', { body: { ...base, ttl, whiteLabel: withPro && whiteLabel.checked, theme: withPro ? (colors ?? undefined) : undefined }, auth: lot.authToken });
       if (!applied.ok && withPro) {
         proError = applied.error;
-        applied = withPreset ? await api('/lot/settings', { body: { ...base, ttl: proTtl ? MAX_FREE_LIFETIME : ttl }, auth: lot.authToken }) : applied;
+        applied = withMessage ? await api('/lot/settings', { body: { ...base, ttl: proTtl ? MAX_FREE_LIFETIME : ttl }, auth: lot.authToken }) : applied;
       }
       if (applied.ok) result = { ...res, whiteLabel: applied.whiteLabel };
       else proError ??= applied.error;
