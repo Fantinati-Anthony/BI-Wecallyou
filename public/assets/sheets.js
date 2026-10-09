@@ -7,16 +7,21 @@ import { normalizeDesign, fitDesign, headSize, pageOf } from './layout.js';
 /** Numéro tel qu'imprimé : au moins trois chiffres. */
 export const labelOf = (n) => String(n).padStart(3, '0');
 
-/** Ce que porte chaque ticket, pour la mise en page (layout.js ne regarde que les longueurs). */
-export function contentOf(design, { lang, domain, name = '', whiteLabel = false, last = 999 }) {
+/**
+ * Ce que porte chaque ticket, pour la mise en page (layout.js ne regarde que les longueurs). En tête :
+ * le nom, ou le logo du commerce (Pro). En bas, une ligne de signature : le logo WeCall.You, ou
+ * l'adresse si le commerce a son logo ; rien si la marque est masquée (Pro). Une seule langue.
+ */
+export function contentOf(design, { lang, domain, brand = 'WeCall.You', name = '', whiteLabel = false, last = 999 }) {
   return {
     head: design.logo ? 'logo' : name ? 'name' : null,
     name,
+    brand: design.logo ? '' : brand,
     logoRatio: design.logoRatio,
     showNumber: design.showNumber,
     label: labelOf(last),
     scan: tl(lang, 'ticket_scan'),
-    scanSub: tl(lang, 'ticket_scan_en'),
+    scanSub: '',
     domain: whiteLabel ? '' : domain,
     tag: tl(lang, 'stub_tag'),
     hint: tl(lang, 'stub_hint'),
@@ -60,7 +65,7 @@ function clientPart(t, ctx) {
       items.has('number') && h('div', { class: 'p-num' }, t.label),
       h('div', { class: 'p-scan' }, content.scan),
       items.has('scanSub') && h('div', { class: 'p-sub' }, content.scanSub),
-      items.has('domain') && h('div', { class: 'p-domain' }, content.domain),
+      items.has('domain') && (content.brand ? h('div', { class: 'p-domain p-brand' }, wordmark(content.brand)) : h('div', { class: 'p-domain' }, content.domain)),
     ),
   );
 }
@@ -182,13 +187,28 @@ export function brandMark(cls = 'doc-logo') {
   return box;
 }
 
-/** Bandeau du document : logo, marque et nature du document à gauche, repère à droite. */
-export function docBand({ brand, kind, aside = '' }) {
-  return h('header', { class: 'doc-band' }, brandMark(), h('div', { class: 'grow' }, h('div', { class: 'doc-brand' }, brand), h('div', { class: 'doc-kind' }, kind)), aside && h('div', { class: 'doc-aside' }, aside));
+/** Nom de la marque, son point en couleur : « WeCall.You ». */
+export function brandText(brand) {
+  const at = brand.lastIndexOf('.');
+  return at > 0 && at < brand.length - 1 ? [brand.slice(0, at), h('span', { class: 'wm-dot' }, '.'), brand.slice(at + 1)] : brand;
 }
 
-/** Pied du document : date, adresse du service. */
-export const docFoot = (lang, domain) => h('footer', { class: 'doc-foot' }, brandMark('doc-logo small'), h('span', {}, tl(lang, 'k_foot', { date: new Date().toLocaleDateString(lang) })), h('span', {}, `https://${domain}`));
+/** Logo complet : pictogramme et nom. Le nom prend la couleur du texte autour : foncé sur fond clair, clair sur fond foncé. */
+export const wordmark = (brand = 'WeCall.You') => h('span', { class: 'wm' }, brandMark('wm-icon'), h('span', { class: 'wm-text' }, brandText(brand)));
+
+/** Logo du document : celui du commerce (Pro) s'il en a un, sinon celui de WeCall.You. */
+const docLogo = (logo) => (logo ? h('img', { class: 'doc-logo doc-logo-img', src: logo, alt: '' }) : brandMark());
+
+/**
+ * Bandeau du document : le logo WeCall.You (pictogramme et nom, en clair sur l'orange) et la nature du
+ * document ; le logo du commerce (Pro) les remplace. Repère à droite.
+ */
+export function docBand({ brand, kind, aside = '', logo = null }) {
+  return h('header', { class: 'doc-band' }, docLogo(logo), h('div', { class: 'grow' }, !logo && h('div', { class: 'doc-brand' }, brandText(brand)), h('div', { class: 'doc-kind' }, kind)), aside && h('div', { class: 'doc-aside' }, aside));
+}
+
+/** Pied du document : logo WeCall.You (en foncé), date, adresse du service. */
+export const docFoot = (lang, domain, brand = 'WeCall.You') => h('footer', { class: 'doc-foot' }, wordmark(brand), h('span', {}, tl(lang, 'k_foot', { date: new Date().toLocaleDateString(lang) })), h('span', {}, `https://${domain}`));
 
 /** Page 1 : la clé du lot (QR vers l'espace commerçant), le mode d'emploi et l'appel aux dons. */
 export function keySheet({ lang, domain, brand, lot, name, secret, from, to, monthlyCost, password = false, pro = false, design = {}, screen = null }) {
@@ -205,13 +225,12 @@ export function keySheet({ lang, domain, brand, lot, name, secret, from, to, mon
   const sheet = h(
     'section',
     { class: 'sheet sheet-key sheet-doc' },
-    docBand({ brand, kind: tl(lang, 'k_doc'), aside: tl(lang, 'k_lot', { id: lot }) }),
+    docBand({ brand, kind: tl(lang, 'k_doc'), aside: tl(lang, 'k_lot', { id: lot }), logo: merchantLogo }),
     h(
       'div',
       { class: 'doc-title' },
       // Nom long : plus petit, pour que la page tienne toujours sur une feuille.
       h('div', { class: 'grow' }, h('h1', { class: name.length > 40 ? 'long' : name.length > 24 ? 'mid' : null }, name), h('p', {}, tl(lang, 'k_range', { from: labelOf(from), to: labelOf(to) }))),
-      merchantLogo && h('img', { class: 'doc-merchant', src: merchantLogo, alt: '' }),
     ),
     h(
       'div',
@@ -262,7 +281,7 @@ export function keySheet({ lang, domain, brand, lot, name, secret, from, to, mon
           h('div', { class: 'k-qr small' }, qrSvg(`HTTPS://${domain.toUpperCase()}/SOUTENIR`, 'M')),
         ),
     ),
-    docFoot(lang, domain),
+    docFoot(lang, domain, brand),
   );
   sheet.style.setProperty('--page-w', mm(page.w));
   sheet.style.setProperty('--page-h', mm(page.h));
@@ -290,7 +309,8 @@ export function posterSheet({ lang, domain, brand, name, token, logo = null, whi
   const sheet = h(
     'section',
     { class: 'sheet sheet-key sheet-doc sheet-poster' },
-    whiteLabel ? h('header', { class: 'doc-band' }, h('div', { class: 'doc-brand grow' }, name)) : docBand({ brand, kind: tl(lang, 'poster_kind'), aside: name }),
+    // Marque masquée (Pro) : le nom du commerce seul, avec son logo s'il en a un.
+    whiteLabel ? h('header', { class: 'doc-band' }, logo && docLogo(logo), h('div', { class: 'doc-brand grow' }, name)) : docBand({ brand, kind: tl(lang, 'poster_kind'), aside: name, logo }),
     h(
       'div',
       { class: 'poster-main' },
@@ -306,7 +326,7 @@ export function posterSheet({ lang, domain, brand, name, token, logo = null, whi
       steps.map(([glyph, text], i) => h('li', {}, h('div', { class: 'k-step-head' }, h('span', { class: 'k-num' }, String(i + 1)), icon(glyph), h('b', {}, tl(lang, `${text}_t`))), h('p', {}, tl(lang, text)))),
     ),
     h('p', { class: 'k-privacy' }, icon('lock-key'), h('span', {}, tl(lang, 'poster_privacy'))),
-    !whiteLabel && docFoot(lang, domain),
+    !whiteLabel && docFoot(lang, domain, brand),
   );
   sheet.style.setProperty('--page-w', mm(page.w));
   sheet.style.setProperty('--page-h', mm(page.h));

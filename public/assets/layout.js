@@ -238,7 +238,7 @@ function block(kind, c, t, n, width) {
     case 'scanSub':
       return paragraph(c.scanSub, t * 0.88, 0, width);
     case 'domain':
-      return t * 0.8 * LH; // une ligne, coupée si besoin : le QR code porte déjà l'adresse
+      return t * 0.8 * LH; // une ligne (logo WeCall.You ou adresse), coupée si besoin : le QR code porte déjà l'adresse
     case 'tag':
       return widthOf(c.tag, t * 0.85, 1, 0.3) <= width ? t * 0.85 * LH : null;
     case 'hint':

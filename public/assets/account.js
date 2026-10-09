@@ -208,7 +208,7 @@ export function printKit({ lang, domain, brand, ident, recovery }) {
         ),
       ),
       h('div', { class: 'k-warn' }, icon('warning'), h('span', {}, tl(lang, 'kit_sheet_warn'))),
-      docFoot(lang, domain),
+      docFoot(lang, domain, brand),
     ),
   ]);
   window.print();

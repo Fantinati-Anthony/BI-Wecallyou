@@ -133,6 +133,10 @@ try {
   assert.equal(tickets.length, 30);
   const sheets = await m.locator('.print-root .sheet').count();
   assert.equal(sheets, 1 + 3); // page clé + 3 pages de 12
+  // Logo WeCall.You par défaut : en signature de chaque ticket (une seule langue), et dans le bandeau de la page clé.
+  assert.equal(await m.locator('.print-root .sheet').nth(1).locator('.part.client .p-brand .wm-icon svg').count(), 12);
+  assert.equal(await m.locator('.print-root .sheet').nth(1).locator('.p-sub').count(), 0);
+  assert.equal(await m.locator('.print-root .sheet').nth(0).locator('.doc-band .doc-logo svg').count(), 1);
   await m.emulateMedia({ media: 'print' });
   await m.locator('.print-root .sheet').nth(0).screenshot({ path: path.join(out, '03-page-cle.png') });
   await m.locator('.print-root .sheet').nth(1).screenshot({ path: path.join(out, '04-page-tickets.png') });
@@ -474,6 +478,16 @@ try {
   assert.equal(await p4.locator('#design-colors .pro-lock').isVisible(), false);
   await p4.fill('#d-tbg', '#fff6e5');
   await p4.waitForSelector('.pv-frame .sheet-tickets[style*="--t-bg: #fff6e5"]', { state: 'attached' });
+  // Logo du commerce (Pro) : il remplace celui de WeCall.You, sur les tickets comme dans le bandeau de la page clé.
+  const logo = new PNG({ width: 60, height: 20 });
+  logo.data.fill(90);
+  await p4.setInputFiles('#d-logo', { name: 'logo.png', mimeType: 'image/png', buffer: PNG.sync.write(logo) });
+  await p4.waitForSelector('.pv-frame .p-logo', { state: 'attached' });
+  assert.equal(await p4.locator('.pv-frame .p-brand').count(), 0);
+  await p4.locator('[data-tab="key"]').dispatchEvent('click');
+  await p4.waitForSelector('.pv-frame .doc-band img.doc-logo-img', { state: 'attached' });
+  assert.equal(await p4.locator('.pv-frame .doc-band .doc-logo svg').count(), 0);
+  await p4.locator('[data-tab="tickets"]').dispatchEvent('click');
   await p4.click('#pro-tools summary');
   await p4.check('#c-wl');
   await p4.fill('#th-screenNumber', '#2b7fff');
