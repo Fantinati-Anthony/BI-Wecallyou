@@ -3,7 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { PAPERS, STUBS, LIMITS, QR_MIN_MM, QR_MIN_THERMAL_MM, normalizeDesign, pageOf, gridOf, fitDesign, gridLimits, fitGrid, presetGrids } from '../../public/assets/layout.js';
+import { PAPERS, STUBS, LIMITS, QR_MIN_MM, QR_MIN_THERMAL_MM, DEFAULT_DESIGN, PRO_DESIGN, normalizeDesign, withoutPro, pageOf, gridOf, fitDesign, gridLimits, fitGrid, presetGrids } from '../../public/assets/layout.js';
 
 const content = (extra = {}) => ({
   head: 'name',
@@ -144,4 +144,15 @@ test('plusieurs souches : chacune garde un QR lisible ; sur étiquettes, le tick
   assert.equal(normalizeDesign({ stub: 'none', stubs: 2 }).stubs, 0);
   assert.equal(normalizeDesign({ stubs: 9 }).stubs, 3);
   assert.equal(normalizeDesign({ align: 'diagonale' }).align, 'auto');
+});
+
+test('sans Pro : couleurs d’origine et pas de logo, le reste de la mise en page est gardé', () => {
+  const logo = 'data:image/png;base64,iVBORw0KGgo=';
+  const chosen = { paper: 'a5', cols: 1, rows: 2, stubs: 2, align: 'left', mono: false, ticketBg: '#fff6e5', accent: '#0a7d4f', stubBg: '#e6f0ff', logo, logoRatio: 3 };
+  const free = withoutPro(chosen);
+  for (const key of PRO_DESIGN) assert.equal(free[key], DEFAULT_DESIGN[key], key);
+  assert.equal(free.logoRatio, DEFAULT_DESIGN.logoRatio);
+  const kept = normalizeDesign(chosen);
+  for (const key of ['paper', 'cols', 'rows', 'stubs', 'stub', 'align', 'mono', 'showNumber']) assert.deepEqual(free[key], kept[key], key);
+  assert.equal(kept.logo, logo); // en Pro, rien n'est retiré
 });

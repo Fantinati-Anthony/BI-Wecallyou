@@ -21,6 +21,7 @@ const GROUPS = [
     'cmp_g_brand',
     [
       ['cmp_studio', YES, YES],
+      ['cmp_print_brand', NO, YES],
       ['cmp_whitelabel', NO, YES],
       ['cmp_colors', NO, YES],
       ['cmp_keypage', NO, YES],

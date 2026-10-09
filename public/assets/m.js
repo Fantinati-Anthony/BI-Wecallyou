@@ -7,6 +7,7 @@ import { composer, needsComposer, groupOf, parseNumbers, variableChips, builtinN
 import { keySheet, fillPrintRoot, contentOf, keyPage, setPrintPage, posterSheet, posterUrl, labelOf as ticketLabel } from './sheets.js';
 import { printPlan, printOptions } from './print.js';
 import { designControls, livePreview } from './studio.js';
+import { withoutPro } from './layout.js';
 import { PRO_LIFETIMES, themeFields, proLock } from './protools.js';
 import { loadActivities, activityPicker, presetOf } from './activities.js';
 import { supportCard, loadSupport } from './donate.js';
@@ -545,6 +546,7 @@ async function printTab(panel, { lot, access }) {
       draw();
     },
     contentFor,
+    { pro: Boolean(lot.pro) }, // logo et couleurs des tickets : offre Pro
   );
   for (const el of [from, to]) el.addEventListener('input', draw);
 
@@ -589,7 +591,8 @@ function posterCard(lot, access) {
   const qr = h('div', { class: 'poster-mini' }, qrSvg(posterUrl(info.domain, lot.poster)));
   const print = h('button', { type: 'button', class: 'btn btn-block', id: 'print-poster' }, icon('printer'), t('poster_print'));
   print.addEventListener('click', () => {
-    const design = printOptions.get(lot.lot);
+    const saved = printOptions.get(lot.lot);
+    const design = lot.pro ? saved : withoutPro(saved); // logo et couleurs : offre Pro
     setPrintPage(keyPage(design));
     fillPrintRoot([posterSheet({ lang: LANG, domain: info.domain, brand: info.brand, name: lot.name, token: lot.poster, logo: design.logo, whiteLabel: Boolean(lot.whiteLabel), design })]);
     window.print();

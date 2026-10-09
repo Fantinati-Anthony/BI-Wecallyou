@@ -41,6 +41,7 @@ const monthlyCost = support ? support.costs.reduce((sum, c) => sum + c.month, 0)
 
 // Statut connu sur ce téléphone, puis confirmé par le serveur. Installation indépendante « allPro » : tout est ouvert.
 let pro = Boolean(info.allPro || session.get()?.pro);
+let design = null; // studio d'impression (plus bas) : son logo et ses couleurs suivent le statut Pro
 const whiteLabel = h('input', { type: 'checkbox', id: 'c-wl' });
 const theme = themeFields({ enabled: pro });
 const lock = proLock(!session.get());
@@ -56,6 +57,7 @@ function setPro(on) {
   theme.setEnabled(on);
   lock.hidden = on;
   proCard.classList.toggle('locked', !on);
+  design?.setPro(on);
 }
 setPro(pro);
 if (session.get() && !info.allPro) sync().then((account) => account && setPro(Boolean(account.pro)));
@@ -120,13 +122,14 @@ const refresh = () => {
 };
 // Ce qui tient sur le papier dépend du nom et du plus grand numéro du lot.
 const contentFor = (value) => contentOf(value, { lang: LANG, domain, name: draft().name, last: draft().to, whiteLabel: pro && whiteLabel.checked });
-const design = designControls(
+design = designControls(
   local.get(DRAFT, {}),
   (value) => {
     local.set(DRAFT, value);
     refresh();
   },
   contentFor,
+  { pro },
 );
 document.getElementById('design-layout').append(design.layout);
 document.getElementById('design-colors').append(design.colors);

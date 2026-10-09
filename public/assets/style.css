@@ -464,6 +464,10 @@ details[open] > summary { margin-bottom: 14px; }
 .pro-badge .i { width: 1em; height: 1em; }
 .pro-tools.locked .check, .pro-tools.locked .theme-preview, .pro-tools.locked .grid-4 { opacity: 0.5; }
 .pro-tools.locked .check { cursor: not-allowed; }
+/* Logo et couleurs du studio : visibles par tous, grisés sans Pro (le lien vers l'offre reste actif). */
+.pro-only { border: 0; margin: 0; padding: 0; min-width: 0; }
+.pro-only:disabled > :not(.pro-lock) { opacity: 0.5; }
+.pro-only:disabled :is(input, button, label) { cursor: not-allowed; }
 .pro-lock { display: flex; gap: 10px; align-items: flex-start; margin: 0; padding: 12px 14px; border-radius: var(--r-ctl); background: var(--brand-soft); color: var(--text); }
 .pro-lock .i { color: var(--brand-text); margin-top: 2px; }
 select option:disabled { color: var(--muted); }

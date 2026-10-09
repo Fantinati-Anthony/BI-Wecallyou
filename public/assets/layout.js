@@ -89,6 +89,15 @@ export function normalizeDesign(o = {}) {
   };
 }
 
+/** Réglages réservés à l'offre Pro : le logo du commerce et les couleurs des tickets (et de l'affiche). */
+export const PRO_DESIGN = Object.freeze(['ticketBg', 'accent', 'stubBg', 'logo']);
+
+/** Sans Pro : mêmes réglages, mais couleurs d'origine et pas de logo. */
+export function withoutPro(o = {}) {
+  const d = normalizeDesign(o);
+  return { ...d, ticketBg: DEFAULT_DESIGN.ticketBg, accent: DEFAULT_DESIGN.accent, stubBg: DEFAULT_DESIGN.stubBg, logo: null, logoRatio: DEFAULT_DESIGN.logoRatio };
+}
+
 /** Taille de la page (mm), orientation comprise. */
 export function pageOf(d) {
   const paper = PAPERS[d.paper];

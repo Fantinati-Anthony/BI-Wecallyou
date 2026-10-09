@@ -1,12 +1,13 @@
 // Studio d'impression : papier (et catalogue de papiers compatibles), grille, souche, couleurs,
 // logo et aperçu en direct. Utilisé à la création d'un lot et dans l'espace commerçant (onglet
-// Imprimer). Tout se passe dans le navigateur : ces réglages ne coûtent rien au serveur, ils
-// restent donc gratuits pour tous.
+// Imprimer). Tout se passe dans le navigateur. La mise en page est gratuite pour tous ; le logo
+// et les couleurs sont réservés à l'offre Pro (grisés sinon, et jamais imprimés sans Pro).
 import { h, t, LANG, render, icon } from './common.js';
-import { PAPERS, LIMITS, QR_WARN_MM, MAX_STUBS, normalizeDesign, fitDesign, fitGrid, gridLimits, presetGrids, pageOf, gridOf, contentKey } from './layout.js';
+import { PAPERS, LIMITS, QR_WARN_MM, MAX_STUBS, normalizeDesign, withoutPro, fitDesign, fitGrid, gridLimits, presetGrids, pageOf, gridOf, contentKey } from './layout.js';
 import { contentOf, ticketSheets, keySheet, labelOf, posterSheet } from './sheets.js';
 import { readLogo, pagesFor } from './print.js';
 import { base32, randomBytes } from './crypto.js';
+import { proLock } from './protools.js';
 
 const SWATCHES = ['#ffffff', '#fff6e5', '#fde9e1', '#e6f0ff', '#e3f4ea', '#f3e8ff', '#1d1b18', '#e8572a'];
 const PAPER_ORDER = ['a4', 'letter', 'a5', 'a6', 'a3', 'roll80', 'roll58', 'custom'];
@@ -61,10 +62,14 @@ function pressed(group, test) {
 /**
  * Champs du studio. onChange(design) à chaque modification ; contentFor(design) donne ce que
  * porteront les tickets (nom, numéros…), dont dépend ce qui tient sur le papier.
- * Renvoie { layout, colors, get, refresh, applyProduct }.
+ * pro : logo et couleurs permis (sinon grisés, et get() rend les couleurs d'origine sans logo).
+ * Renvoie { layout, colors, get, refresh, applyProduct, setPro }.
  */
-export function designControls(initial, onChange, contentFor) {
+export function designControls(initial, onChange, contentFor, { pro = false } = {}) {
   let design = normalizeDesign(initial);
+  let isPro = Boolean(pro);
+  // Ce qui sera imprimé : les réglages tels quels en Pro, sans logo ni couleurs sinon.
+  const view = () => (isPro ? design : withoutPro(design));
   const cache = new Map();
   const cached = (key, compute) => {
     if (!cache.has(key)) {
@@ -74,11 +79,12 @@ export function designControls(initial, onChange, contentFor) {
     return cache.get(key);
   };
   const analysis = () => {
-    const content = contentFor(design);
-    const geometry = [design.paper, design.orientation, design.pw, design.ph, design.margins, design.gapX, design.gapY, design.stub, design.mono, contentKey(content)];
+    const d = view();
+    const content = contentFor(d);
+    const geometry = [d.paper, d.orientation, d.pw, d.ph, d.margins, d.gapX, d.gapY, d.stub, d.mono, contentKey(content)];
     return {
-      limits: cached(JSON.stringify(['limits', design.cols, design.rows, ...geometry]), () => gridLimits(design, content)),
-      presets: cached(JSON.stringify(['presets', ...geometry]), () => presetGrids(design, content)),
+      limits: cached(JSON.stringify(['limits', d.cols, d.rows, ...geometry]), () => gridLimits(d, content)),
+      presets: cached(JSON.stringify(['presets', ...geometry]), () => presetGrids(d, content)),
     };
   };
 
@@ -104,8 +110,12 @@ export function designControls(initial, onChange, contentFor) {
     // Une grille trop serrée pour ce papier est réduite, sauf pour un papier du catalogue
     // (ses cases sont fixes : l'aperçu signale alors le problème).
     if (!design.product) {
-      const content = contentFor(design);
-      if (!fitDesign(design, content).ok) design = normalizeDesign(fitGrid(design, content));
+      const shown = view();
+      const content = contentFor(shown);
+      if (!fitDesign(shown, content).ok) {
+        const { cols, rows } = fitGrid(shown, content);
+        design = normalizeDesign({ ...design, cols, rows });
+      }
     }
     refresh();
     onChange(design);
@@ -212,6 +222,9 @@ export function designControls(initial, onChange, contentFor) {
     logo.value = '';
     set({ logo: null });
   });
+  // Logo et couleurs : offre Pro. Visibles par tous, grisés sans Pro.
+  const lock = proLock(false, 'd_pro_lock');
+  const proBox = h('fieldset', { class: 'pro-only stack' }, lock, colorFields, h('label', { for: 'd-logo' }, t('create_logo')), logo, removeLogo);
 
   /** Remet les champs en accord avec les réglages (force : y compris le champ en cours de saisie). */
   function refresh(force = false) {
@@ -263,24 +276,33 @@ export function designControls(initial, onChange, contentFor) {
     show(gapY, design.gapY);
     cut.checked = design.cut;
 
+    const shown = view();
+    proBox.disabled = !isPro;
+    lock.hidden = isPro;
     colorFields.hidden = design.mono;
     stubBg.element.hidden = design.stub === 'none';
-    ticketBg.input.value = design.ticketBg;
-    accent.input.value = design.accent;
-    stubBg.input.value = design.stubBg;
+    ticketBg.input.value = shown.ticketBg;
+    accent.input.value = shown.accent;
+    stubBg.input.value = shown.stubBg;
     mono.checked = design.mono;
     mono.disabled = roll;
     monoHint.hidden = !roll;
     showNumber.checked = design.showNumber;
-    removeLogo.hidden = !design.logo;
+    removeLogo.hidden = !shown.logo;
   }
   refresh();
   loadProducts().then(() => refresh()); // nom du papier choisi, une fois le catalogue chargé
 
   return {
-    get: () => design,
+    get: view,
     refresh,
     applyProduct,
+    /** Le compte devient (ou cesse d'être) Pro : champs ouverts ou grisés, aperçu et grille recalculés. */
+    setPro(on) {
+      if (isPro === Boolean(on)) return;
+      isPro = Boolean(on);
+      set({});
+    },
     layout: h(
       'div',
       { class: 'stack' },
@@ -306,11 +328,8 @@ export function designControls(initial, onChange, contentFor) {
       { class: 'stack' },
       h('label', { class: 'check', for: 'd-mono' }, mono, ' ', t('d_mono')),
       monoHint,
-      colorFields,
       h('label', { class: 'check', for: 'd-num' }, showNumber, ' ', t('create_show_number')),
-      h('label', { for: 'd-logo' }, t('create_logo')),
-      logo,
-      removeLogo,
+      proBox,
     ),
   };
 }

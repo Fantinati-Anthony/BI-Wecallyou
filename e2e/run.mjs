@@ -85,6 +85,10 @@ try {
   assert.match(await m.locator('#activity-sent').textContent(), /c’est à vous/);
   assert.equal(await m.locator('#c-wl').isDisabled(), true);
   assert.equal(await m.locator('#ttl option[value="720"]').isDisabled(), true);
+  // Logo et couleurs des tickets : offre Pro, grisés ici.
+  assert.equal(await m.locator('#d-tbg').isDisabled(), true);
+  assert.equal(await m.locator('#d-logo').isDisabled(), true);
+  assert.equal(await m.locator('#design-colors .pro-lock:not([hidden])').count(), 1);
   await m.click('#pro-tools summary');
   assert.equal(await m.locator('#pro-tools .pro-lock').isVisible(), true);
   assert.equal(await m.locator('#activity-card').getAttribute('open'), null); // un seul volet ouvert à la fois
@@ -252,6 +256,7 @@ try {
   await m.goto(`${BASE}/m`);
   await m.getByRole('button', { name: 'Imprimer' }).click();
   await m.waitForSelector('#poster-card .p-qr');
+  assert.equal(await m.locator('#d-acc').isDisabled(), true); // lot gratuit : logo et couleurs grisés ici aussi
   const posterPath = new URL(await decode(m.locator('#poster-card .p-qr'))).pathname;
   assert.match(posterPath, /^\/A\/[A-Z2-7]{23}$/);
   const walkIn = await client.newPage();
@@ -414,6 +419,11 @@ try {
   await p4.fill('#name', 'Pressing Lumière');
   await p4.fill('#count', '20');
   await p4.selectOption('#ttl', '720');
+  // En Pro, les couleurs du ticket s'ouvrent et passent dans l'aperçu.
+  await p4.click('summary[data-i18n=studio_colors]');
+  assert.equal(await p4.locator('#design-colors .pro-lock').isVisible(), false);
+  await p4.fill('#d-tbg', '#fff6e5');
+  await p4.waitForSelector('.pv-frame .sheet-tickets[style*="--t-bg: #fff6e5"]', { state: 'attached' });
   await p4.click('#pro-tools summary');
   await p4.check('#c-wl');
   await p4.fill('#th-screenNumber', '#2b7fff');
@@ -451,6 +461,8 @@ try {
   };
   const sheet = (i = 0) => m.locator('.print-root .sheet').nth(i);
 
+  // Ce lot appartient désormais au compte devenu Pro : logo et couleurs ouverts.
+  assert.equal(await m.locator('#d-acc').isDisabled(), false);
   // Grille proposée : 24 tickets par page.
   await m.locator('.chips .chip', { hasText: /^24$/ }).first().click();
   await printAll();
