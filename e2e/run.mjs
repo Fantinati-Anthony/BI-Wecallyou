@@ -448,6 +448,21 @@ try {
   await m.emulateMedia({ media: 'screen' });
   step('impression 24 tickets par page');
 
+  // Deux souches par ticket (commande + cuisine), zones de découpe visibles dans l'aperçu.
+  await m.click('[data-stubs="2"]');
+  await printAll();
+  assert.equal(await sheet().locator('.pair').first().locator('.part.stub').count(), 2);
+  await m.click('.pv-fab'); // sur téléphone, l'aperçu s'ouvre en plein écran
+  await m.click('#pv-cuts');
+  assert.equal(await m.locator('.pv-frame.show-cuts').count(), 1);
+  await m.screenshot({ path: path.join(out, '27-decoupes.png') });
+  await m.click('.pv-close');
+  await m.click('[data-align="left"]');
+  await printAll();
+  assert.equal(await sheet().evaluate((el) => el.classList.contains('align-left')), true);
+  await m.click('[data-stubs="1"]');
+  step('deux souches par ticket, alignement à gauche, zones de découpe visibles');
+
   // Papier du catalogue : étiquettes 63,5 × 38,1 mm, le ticket et sa souche sur deux étiquettes voisines.
   await m.click('#d-catalog');
   await m.locator('dialog.catalog .product', { hasText: '63,5 × 38,1' }).getByRole('button', { name: 'Utiliser ce papier' }).click();
@@ -484,9 +499,9 @@ try {
     const problems = [];
     let checked = 0;
     for (const paper of papers) {
-      for (const stub of ['auto', 'right', 'bottom', 'cell', 'none']) {
+      for (const [stub, stubs] of [['auto', 1], ['right', 1], ['bottom', 1], ['cell', 1], ['none', 0], ['right', 3], ['bottom', 3], ['cell', 2]]) {
         for (const v of variants) {
-          const base = normalizeDesign({ ...paper, stub });
+          const base = normalizeDesign({ ...paper, stub, stubs });
           const c = contentOf(base, { lang: 'fr', domain: 'wecallyou.fantinati.fr', ...v });
           const grids = presetGrids(base, c);
           const lim = gridLimits({ ...base, cols: 1, rows: 1 }, c);

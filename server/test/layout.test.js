@@ -127,3 +127,21 @@ test('modèles par activité : valides pour le serveur, dans les deux langues, s
     }
   }
 });
+
+test('plusieurs souches : chacune garde un QR lisible ; sur étiquettes, le ticket et ses souches se suivent', () => {
+  const c = content();
+  for (const stubs of [1, 2, 3]) {
+    for (const stub of ['right', 'bottom']) {
+      const fit = fitDesign(normalizeDesign({ paper: 'a4', cols: 1, rows: 4, stub, stubs }), c);
+      assert.equal(fit.ok, true, `${stubs} × ${stub}`);
+      assert.equal(fit.stubs, stubs);
+      assert.ok(fit.stubPart.q >= QR_MIN_MM);
+    }
+  }
+  const labels = normalizeDesign({ paper: 'a4', margins: [15.15, 7.21, 15.15, 7.21], gapX: 2.54, cols: 3, rows: 7, stub: 'cell', stubs: 2 });
+  assert.equal(fitDesign(labels, c).perPage, 7); // 21 étiquettes : 7 tickets avec 2 souches chacun
+  assert.equal(normalizeDesign({ stubs: 0, stub: 'right' }).stub, 'none');
+  assert.equal(normalizeDesign({ stub: 'none', stubs: 2 }).stubs, 0);
+  assert.equal(normalizeDesign({ stubs: 9 }).stubs, 3);
+  assert.equal(normalizeDesign({ align: 'diagonale' }).align, 'auto');
+});

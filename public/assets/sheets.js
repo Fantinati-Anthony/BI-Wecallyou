@@ -85,29 +85,31 @@ const cutClass = (ctx) => (ctx.design.cut ? ' cut' : '');
 
 /** Cases d'une page, dans l'ordre de lecture de la grille. */
 function cellsOf(tickets, ctx) {
-  const { stub } = ctx.fit;
+  const { stub, stubs } = ctx.fit;
   if (stub === 'none') return tickets.map((t) => h('div', { class: `pair stub-none${cutClass(ctx)}` }, clientPart(t, ctx)));
-  if (stub !== 'cell') return tickets.map((t) => h('div', { class: `pair stub-${stub}${cutClass(ctx)}` }, clientPart(t, ctx), stubPart(t, ctx)));
-  // Souche sur la case voisine (étiquettes) : côte à côte si les colonnes sont paires,
-  // l'une sous l'autre si les lignes le sont, sinon à la suite.
+  // Une ou plusieurs souches, à droite ou en dessous du ticket (elles appellent toutes le même ticket).
+  if (stub !== 'cell') return tickets.map((t) => h('div', { class: `pair stub-${stub}${cutClass(ctx)}` }, clientPart(t, ctx), Array.from({ length: stubs }, () => stubPart(t, ctx))));
+  // Souches sur les cases voisines (étiquettes) : le ticket puis ses souches, côte à côte si les
+  // colonnes le permettent, l'une sous l'autre si les lignes le permettent, sinon à la suite.
+  const size = stubs + 1;
   const { cols, rows } = ctx.design;
   const grid = Array.from({ length: rows }, () => Array(cols).fill(null));
   const one = (part) => h('div', { class: `pair stub-cell${cutClass(ctx)}` }, part);
   tickets.forEach((t, i) => {
-    let a;
-    let b;
-    if (cols % 2 === 0) {
-      a = [Math.floor(i / (cols / 2)), (i % (cols / 2)) * 2];
-      b = [a[0], a[1] + 1];
-    } else if (rows % 2 === 0) {
-      a = [Math.floor(i / cols) * 2, i % cols];
-      b = [a[0] + 1, a[1]];
+    let cells;
+    if (cols % size === 0) {
+      const row = Math.floor(i / (cols / size));
+      const col = (i % (cols / size)) * size;
+      cells = Array.from({ length: size }, (_, k) => [row, col + k]);
+    } else if (rows % size === 0) {
+      const row = Math.floor(i / cols) * size;
+      cells = Array.from({ length: size }, (_, k) => [row + k, i % cols]);
     } else {
-      a = [Math.floor((2 * i) / cols), (2 * i) % cols];
-      b = [Math.floor((2 * i + 1) / cols), (2 * i + 1) % cols];
+      cells = Array.from({ length: size }, (_, k) => [Math.floor((i * size + k) / cols), (i * size + k) % cols]);
     }
-    grid[a[0]][a[1]] = one(clientPart(t, ctx));
-    grid[b[0]][b[1]] = one(stubPart(t, ctx));
+    cells.forEach(([r, c], k) => {
+      grid[r][c] = one(k === 0 ? clientPart(t, ctx) : stubPart(t, ctx));
+    });
   });
   return grid.flat().map((cell) => cell ?? h('div', { class: 'pair empty' }));
 }
@@ -137,6 +139,7 @@ export function ticketSheets(tickets, options) {
     '--cell-h': mm(fit.cell.h),
     '--gap-x': mm(design.gapX),
     '--gap-y': mm(design.gapY),
+    '--stubs': Math.max(1, fit.stubs),
     '--client-w': mm(fit.stub === 'right' ? fit.cell.w * fit.split : fit.cell.w),
     '--client-h': mm(fit.stub === 'bottom' ? fit.cell.h * fit.split : fit.cell.h),
     ...partVars('c', fit.client, content),
@@ -150,7 +153,7 @@ export function ticketSheets(tickets, options) {
   };
   const pages = [];
   for (let i = 0; i < tickets.length; i += fit.perPage) {
-    const page = h('section', { class: `sheet sheet-tickets${design.mono ? ' mono' : ''}` });
+    const page = h('section', { class: `sheet sheet-tickets align-${design.align}${design.mono ? ' mono' : ''}` });
     for (const [k, v] of Object.entries(vars)) page.style.setProperty(k, v);
     page.append(...cellsOf(tickets.slice(i, i + fit.perPage), ctx));
     pages.push(page);

@@ -16,6 +16,8 @@ export const PAPERS = {
   custom: { w: 100, h: 150 },
 };
 export const STUBS = ['auto', 'right', 'bottom', 'cell', 'none'];
+export const MAX_STUBS = 3; // souches par ticket : commande, cuisine, livraison…
+export const ALIGNS = ['auto', 'left', 'center', 'right'];
 export const LIMITS = { cols: [1, 12], rows: [1, 24], size: [25, 500], margin: [0, 50], gap: [0, 30] };
 export const QR_MIN_MM = 10; // en dessous, la lecture n'est plus fiable
 export const QR_MIN_THERMAL_MM = 14; // imprimante thermique (203 dpi) : modules plus gros
@@ -35,6 +37,8 @@ export const DEFAULT_DESIGN = Object.freeze({
   cols: 2,
   rows: 6,
   stub: 'auto',
+  stubs: 1,
+  align: 'auto',
   cut: true,
   mono: false,
   ticketBg: '#ffffff',
@@ -67,7 +71,12 @@ export function normalizeDesign(o = {}) {
     gapY: mm(o.gapY, LIMITS.gap, 0),
     cols: int(o.cols ?? legacyCols, LIMITS.cols, DEFAULT_DESIGN.cols),
     rows: int(o.rows ?? legacyRows, LIMITS.rows, DEFAULT_DESIGN.rows),
-    stub: STUBS.includes(o.stub) ? o.stub : DEFAULT_DESIGN.stub,
+    // « Sans souche » = zéro souche ; sinon 1 à 3 souches, à droite, en dessous ou sur les cases voisines.
+    ...(() => {
+      const stubs = o.stub === 'none' ? 0 : int(o.stubs, [0, MAX_STUBS], DEFAULT_DESIGN.stubs);
+      return { stubs, stub: stubs === 0 ? 'none' : STUBS.includes(o.stub) ? o.stub : DEFAULT_DESIGN.stub };
+    })(),
+    align: ALIGNS.includes(o.align) ? o.align : DEFAULT_DESIGN.align,
     cut: roll ? o.cut === true : o.cut !== false, // rouleau : l'imprimante coupe, pas besoin de traits
     mono: roll || o.mono === true, // les imprimantes à tickets n'impriment qu'en noir
     ticketBg: hex(o.ticketBg, DEFAULT_DESIGN.ticketBg),
@@ -333,8 +342,9 @@ export function fitDesign(d, c) {
   // que les imprimantes de bureau n'impriment pas. Rouleaux et formats libres (imprimantes à
   // tickets ou d'étiquettes) impriment jusqu'au bord.
   const safe = PAPERS[d.paper].roll || d.paper === 'custom' ? 0 : Math.max(0, 4 - Math.min(...d.margins));
-  const perPage = d.stub === 'cell' ? Math.floor((d.cols * d.rows) / 2) : d.cols * d.rows;
-  const base = { ok: false, page, cell, perPage, qMin, stub: d.stub, split: 1, client: null, stubPart: null, qr: 0 };
+  const stubs = d.stub === 'none' ? 0 : (d.stubs ?? 1);
+  const perPage = d.stub === 'cell' ? Math.floor((d.cols * d.rows) / (stubs + 1)) : d.cols * d.rows;
+  const base = { ok: false, page, cell, perPage, qMin, stub: d.stub, stubs, split: 1, client: null, stubPart: null, qr: 0 };
   if (cell.w < 8 || cell.h < 8 || perPage < 1) return base;
   const opts = { qMin, safe };
   // La souche reprend au plus les tailles du ticket (textes, numéro) : une même famille visuelle.
@@ -351,9 +361,10 @@ export function fitDesign(d, c) {
       const client = fitPart('client', cell.w, cell.h, c, opts);
       consider(stub, 1, client, stubFor(cell.w, cell.h, client));
     } else {
-      for (const s of SPLITS) {
+      // Plusieurs souches : elles se partagent la bande de souche, côte à côte (à droite) ou empilées (en dessous).
+      for (const s of SPLITS.map((split) => Math.max(0.34, split - 0.1 * (stubs - 1)))) {
         const client = stub === 'right' ? fitPart('client', cell.w * s, cell.h, c, opts) : fitPart('client', cell.w, cell.h * s, c, opts);
-        const stubPart = stub === 'right' ? stubFor(cell.w * (1 - s), cell.h, client) : stubFor(cell.w, cell.h * (1 - s), client);
+        const stubPart = stub === 'right' ? stubFor((cell.w * (1 - s)) / stubs, cell.h, client) : stubFor(cell.w, (cell.h * (1 - s)) / stubs, client);
         consider(stub, s, client, stubPart);
       }
     }

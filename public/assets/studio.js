@@ -3,14 +3,15 @@
 // Imprimer). Tout se passe dans le navigateur : ces réglages ne coûtent rien au serveur, ils
 // restent donc gratuits pour tous.
 import { h, t, LANG, render, icon } from './common.js';
-import { PAPERS, LIMITS, QR_WARN_MM, normalizeDesign, fitDesign, fitGrid, gridLimits, presetGrids, pageOf, gridOf, contentKey } from './layout.js';
+import { PAPERS, LIMITS, QR_WARN_MM, MAX_STUBS, normalizeDesign, fitDesign, fitGrid, gridLimits, presetGrids, pageOf, gridOf, contentKey } from './layout.js';
 import { contentOf, ticketSheets, keySheet, labelOf, posterSheet } from './sheets.js';
 import { readLogo, pagesFor } from './print.js';
 import { base32, randomBytes } from './crypto.js';
 
 const SWATCHES = ['#ffffff', '#fff6e5', '#fde9e1', '#e6f0ff', '#e3f4ea', '#f3e8ff', '#1d1b18', '#e8572a'];
 const PAPER_ORDER = ['a4', 'letter', 'a5', 'a6', 'a3', 'roll80', 'roll58', 'custom'];
-const STUB_ORDER = ['auto', 'right', 'bottom', 'cell', 'none'];
+const STUB_PLACES = ['auto', 'right', 'bottom', 'cell'];
+const ALIGN_ICONS = { auto: 'magic-wand', left: 'text-align-left', center: 'text-align-center', right: 'text-align-right' };
 /** Grille proposée quand on change de papier (réduite ensuite si elle ne tient pas). */
 const GRID_DEFAULTS = { a4: [2, 6], letter: [2, 6], a5: [2, 3], a6: [1, 2], a3: [3, 8], roll80: [1, 1], roll58: [1, 1], custom: [1, 1] };
 /** Réglages qui déplacent les cases : les modifier détache le papier choisi dans le catalogue. */
@@ -90,9 +91,10 @@ export function designControls(initial, onChange, contentFor) {
       if (paper.roll) Object.assign(next, { ph: paper.h, orientation: 'portrait' });
       if (PAPERS[design.paper].roll) next.mono = false; // le noir imposé par le rouleau ne suit pas
     }
-    // Souche sur la case voisine : deux cases au moins (on ajoute une ligne si on vient de la choisir).
-    if (next.stub === 'cell' && next.cols * next.rows < 2) {
-      if ('stub' in patch) next.rows = 2;
+    // Souches sur les cases voisines : une case par souche, plus celle du ticket (on ajoute des lignes si on vient de le choisir).
+    const group = (next.stubs ?? 1) + 1;
+    if (next.stub === 'cell' && next.cols * next.rows < group) {
+      if ('stub' in patch || 'stubs' in patch) next.rows = Math.ceil(group / next.cols);
       else next.stub = 'auto';
     }
     // Paysage ↔ portrait : même nombre de tickets, grille tournée.
@@ -112,7 +114,7 @@ export function designControls(initial, onChange, contentFor) {
   /** Applique les réglages d'un papier du catalogue (le noir et blanc choisi à la main est gardé). */
   function applyProduct(product) {
     const keepMono = design.mono && !design.product && !PAPERS[design.paper].roll;
-    set({ orientation: 'portrait', margins: undefined, gapX: 0, gapY: 0, cut: true, stub: 'auto', ...product.design, mono: product.design.mono ?? keepMono, product: product.id }, { fromProduct: true });
+    set({ orientation: 'portrait', margins: undefined, gapX: 0, gapY: 0, cut: true, stub: 'auto', stubs: 1, ...product.design, mono: product.design.mono ?? keepMono, product: product.id }, { fromProduct: true });
   }
 
   /* papier */
@@ -139,16 +141,36 @@ export function designControls(initial, onChange, contentFor) {
   const cols = numberField('d-cols', t('d_cols'), { min: 1, max: LIMITS.cols[1], onInput: (v) => set({ cols: v }) });
   const rows = numberField('d-rows', t('d_rows'), { min: 1, max: LIMITS.rows[1], onInput: (v) => set({ rows: v }) });
   for (const field of [cols, rows, pw, ph]) field.input.addEventListener('change', () => refresh(true));
+  // Souches : combien (0 = ticket seul), puis où (à droite, en dessous, cases voisines).
+  const stubCount = h(
+    'div',
+    { class: 'segmented', role: 'group', 'aria-label': t('d_stubs') },
+    Array.from({ length: MAX_STUBS + 1 }, (_, n) => {
+      const button = h('button', { type: 'button', 'data-stubs': n }, n === 0 ? t('stubs_0') : String(n));
+      button.addEventListener('click', () => set({ stubs: n, stub: n === 0 ? 'none' : design.stub === 'none' ? 'auto' : design.stub }));
+      return button;
+    }),
+  );
   const stub = h(
     'div',
     { class: 'segmented wrap', role: 'group', 'aria-label': t('d_stub') },
-    STUB_ORDER.map((value) => {
+    STUB_PLACES.map((value) => {
       const button = h('button', { type: 'button', 'data-stub': value }, t(`stub_${value}`));
       button.addEventListener('click', () => set({ stub: value }));
       return button;
     }),
   );
+  const stubPlace = h('div', { class: 'field' }, h('label', {}, t('d_stub')), stub);
   const stubHint = h('p', { class: 'small muted' });
+  const align = h(
+    'div',
+    { class: 'segmented', role: 'group', 'aria-label': t('d_align') },
+    Object.entries(ALIGN_ICONS).map(([value, glyph]) => {
+      const button = h('button', { type: 'button', 'data-align': value, title: t(`align_${value}`), 'aria-label': t(`align_${value}`) }, icon(glyph));
+      button.addEventListener('click', () => set({ align: value }));
+      return button;
+    }),
+  );
 
   /* réglages fins */
   const margins = ['top', 'right', 'bottom', 'left'].map((side, i) =>
@@ -229,8 +251,11 @@ export function designControls(initial, onChange, contentFor) {
     rows.note.textContent = t('d_max', { n: limits.rows });
     show(cols, design.cols);
     show(rows, design.rows);
+    pressed(stubCount, (b) => Number(b.dataset.stubs) === design.stubs);
     pressed(stub, (b) => b.dataset.stub === design.stub);
-    stubHint.textContent = design.stub === 'none' ? t('stub_none_hint') : design.stub === 'cell' ? t('stub_cell_hint') : design.stub === 'auto' ? t('stub_auto_hint') : '';
+    pressed(align, (b) => b.dataset.align === design.align);
+    stubPlace.hidden = design.stubs === 0;
+    stubHint.textContent = [design.stubs === 0 ? t('stub_none_hint') : design.stub === 'cell' ? t('stub_cell_hint') : design.stub === 'auto' ? t('stub_auto_hint') : '', design.stubs > 1 ? t('stubs_many_hint') : ''].filter(Boolean).join(' ');
     stubHint.hidden = !stubHint.textContent;
 
     margins.forEach((m, i) => show(m, design.margins[i]));
@@ -267,9 +292,12 @@ export function designControls(initial, onChange, contentFor) {
       h('label', {}, t('d_presets')),
       presets,
       h('div', { class: 'inline-fields' }, cols.element, rows.element),
-      h('label', {}, t('d_stub')),
-      stub,
+      h('label', {}, t('d_stubs')),
+      stubCount,
+      stubPlace,
       stubHint,
+      h('label', {}, t('d_align')),
+      align,
       advanced,
       catalog.dialog,
     ),
@@ -309,7 +337,8 @@ export function paperThumb(design) {
     for (let c = 0; c < d.cols; c++) {
       const x = ml + c * (cell.w + d.gapX);
       const y = mt + r * (cell.h + d.gapY);
-      const odd = d.cols % 2 === 0 ? c % 2 : d.rows % 2 === 0 ? r % 2 : (r * d.cols + c) % 2;
+      const size = d.stubs + 1; // ticket + ses souches, sur les cases voisines
+      const odd = d.cols % size === 0 ? c % size : d.rows % size === 0 ? r % size : (r * d.cols + c) % size;
       box.append(svg('rect', { x, y, width: cell.w, height: cell.h, class: fit.stub === 'cell' && odd ? 'th-stub' : 'th-cell' }));
       if (fit.stub === 'right') box.append(svg('rect', { x: x + cell.w * fit.split, y, width: cell.w * (1 - fit.split), height: cell.h, class: 'th-stub' }));
       if (fit.stub === 'bottom') box.append(svg('rect', { x, y: y + cell.h * fit.split, width: cell.w, height: cell.h * (1 - fit.split), class: 'th-stub' }));
@@ -430,7 +459,14 @@ export function livePreview() {
     if (last) update(last);
   }
   const close = h('button', { type: 'button', class: 'btn btn-ghost pv-close' }, icon('x'), t('pv_close'));
-  const panel = h('aside', { class: 'studio-preview card', 'aria-label': t('pv_title') }, h('div', { class: 'row' }, h('h3', { class: 'grow' }, t('pv_title')), tabs, close), info, alert, frame, h('p', { class: 'small muted' }, t('pv_sample')));
+  // Zones de découpe : traits et marges mis en évidence à l'écran (jamais imprimés).
+  const cuts = h('button', { type: 'button', class: 'btn btn-ghost pv-cuts', id: 'pv-cuts', 'aria-pressed': 'false' }, icon('scissors'), t('pv_cuts'));
+  cuts.addEventListener('click', () => {
+    const on = !frame.classList.contains('show-cuts');
+    frame.classList.toggle('show-cuts', on);
+    cuts.setAttribute('aria-pressed', String(on));
+  });
+  const panel = h('aside', { class: 'studio-preview card', 'aria-label': t('pv_title') }, h('div', { class: 'row' }, h('h3', { class: 'grow' }, t('pv_title')), tabs, cuts, close), info, alert, frame, h('p', { class: 'small muted' }, t('pv_sample')));
   const fab = h('button', { type: 'button', class: 'btn pv-fab' }, icon('eye'), t('pv_open'));
   fab.addEventListener('click', () => panel.classList.add('open'));
   close.addEventListener('click', () => panel.classList.remove('open'));
