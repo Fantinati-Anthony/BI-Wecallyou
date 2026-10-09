@@ -23,24 +23,70 @@
   "roadmap": [
     {
       "month": 21,
-      "fr": "Aujourd’hui : un serveur mutualisé en France (o2switch)",
-      "en": "Today: a shared server in France (o2switch)",
-      "detail_fr": "Gratuit pour tous. Sa capacité est limitée : en cas d’affluence, les lots des donateurs (Pro) passent en priorité, les autres attendent quelques secondes.",
-      "detail_en": "Free for everyone. Its capacity is limited: when it gets busy, donors’ batches (Pro) go first, others wait a few seconds."
+      "fr": "Chapitre 1 · Aujourd’hui : un serveur mutualisé en France (o2switch)",
+      "en": "Chapter 1 · Today: a shared server in France (o2switch)",
+      "detail_fr": "Gratuit pour tous. Sa capacité est limitée : en cas d’affluence, les files des donateurs (Pro) passent en priorité, les autres attendent quelques secondes.",
+      "detail_en": "Free for everyone. Its capacity is limited: when it gets busy, donors’ queues (Pro) go first, others wait a few seconds."
     },
     {
       "month": 60,
-      "fr": "Palier 2 : serveurs à la demande (Scaleway, France) et base Neon (Europe)",
-      "en": "Step 2: on-demand servers (Scaleway, France) and a Neon database (Europe)",
-      "detail_fr": "Plusieurs copies du service qui se multiplient seules quand la charge monte, sans intervention humaine. Plus d’attente aux heures de pointe, pour tout le monde.",
-      "detail_en": "Several copies of the service that multiply on their own when load rises, with no human intervention. No more waiting at peak times, for everyone."
+      "challenge": true,
+      "fr": "Chapitre 2 · Le défi : des serveurs à la demande (Scaleway, France)",
+      "en": "Chapter 2 · The challenge: on-demand servers (Scaleway, France)",
+      "detail_fr": "Des conteneurs serverless qui se multiplient seuls aux heures de pointe et se mettent en veille au calme. Leur nombre suit les dons, les abonnements Pro et l’affluence réelle. Base de données Neon, en Europe.",
+      "detail_en": "Serverless containers that multiply on their own at peak times and go to sleep when it’s quiet. Their number follows donations, Pro subscriptions and real traffic. Neon database, in Europe."
     },
     {
       "month": 150,
-      "fr": "Palier 3 : secours dans une seconde zone et temps de développement",
-      "en": "Step 3: backup in a second zone and development time",
+      "fr": "Chapitre 3 · Un secours, et du temps pour l’outil",
+      "en": "Chapter 3 · A backup, and time for the tool",
       "detail_fr": "Le service tient même si un centre de données tombe, et du temps rémunéré fait évoluer l’outil (nouvelles fonctions, nouvelles langues).",
       "detail_en": "The service keeps running even if a data centre fails, and paid time keeps improving the tool (new features, new languages)."
+    },
+    {
+      "month": null,
+      "when_fr": "Ensuite",
+      "when_en": "Next",
+      "fr": "Chapitre 4 · Les vrais chiffres, en direct",
+      "en": "Chapter 4 · The real numbers, live",
+      "detail_fr": "Une liaison directe avec Scaleway : le coût réel du mois et le nombre de copies du service en marche s’affichent ici, sans retouche.",
+      "detail_en": "A direct link with Scaleway: the real cost of the month and the number of running copies of the service show up here, untouched."
+    },
+    {
+      "month": null,
+      "when_fr": "Défis suivants",
+      "when_en": "Next challenges",
+      "fr": "Chapitre 5 · Des défis plus grands, des fonctions en plus",
+      "en": "Chapter 5 · Bigger challenges, more features",
+      "detail_fr": "Chaque nouveau palier débloque une fonction choisie avec vous : fiche ticket au scan, relances automatiques, plusieurs guichets, message de fin…",
+      "detail_en": "Each new step unlocks a feature chosen with you: ticket card on scan, automatic reminders, several counters, end-of-service message…"
+    },
+    {
+      "month": null,
+      "when_fr": "Soyons fous",
+      "when_en": "Let’s go wild",
+      "fr": "Chapitre 6 · La boutique",
+      "en": "Chapter 6 · The shop",
+      "detail_fr": "Papiers, rouleaux et étiquettes compatibles, prêts à imprimer, et des kits pour démarrer en dix minutes.",
+      "detail_en": "Compatible paper, rolls and labels, ready to print, and kits to get started in ten minutes."
+    },
+    {
+      "month": null,
+      "when_fr": "Soyons fous",
+      "when_en": "Let’s go wild",
+      "fr": "Chapitre 7 · Impression et packs événement",
+      "en": "Chapter 7 · Printing and event packs",
+      "detail_fr": "Vos tickets imprimés et livrés, et des packs clés en main pour un tournoi, une fête de village ou un salon : tickets, affiches, écran prêt à brancher.",
+      "detail_en": "Your tickets printed and delivered, and ready-made packs for a tournament, a village fair or a trade show: tickets, posters, a screen ready to plug in."
+    },
+    {
+      "month": null,
+      "when_fr": "Le rêve",
+      "when_en": "The dream",
+      "fr": "Chapitre 8 · Tout gratuit, pour tout le monde",
+      "en": "Chapter 8 · Everything free, for everyone",
+      "detail_fr": "Si la boutique et les services couvrent les frais, l’offre Pro devient gratuite pour tous. Les dons restent possibles, mais plus nécessaires.",
+      "detail_en": "If the shop and services cover the costs, Pro becomes free for everyone. Donations stay possible, but no longer necessary."
     }
   ],
   "costs": [

@@ -928,6 +928,19 @@ dialog.catalog h2 { margin: 0; }
 .roadmap li.next::before { border-color: var(--brand); }
 .roadmap li:not(:last-child)::after { content: ''; position: absolute; left: 14px; top: 22px; bottom: 0; width: 2px; background: var(--line); }
 .roadmap .progress { margin-top: 8px; }
+.roadmap li.later::before { border-style: dashed; } /* chapitres à venir, sans montant */
+.roadmap li.later strong { color: var(--muted); }
+/* Page Soutenir : le récit, puis le défi du mois */
+.eyebrow { margin: 0 0 6px; color: var(--brand-text); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.story { margin-bottom: 20px; }
+.story h1 { text-wrap: balance; }
+.story .signature { color: var(--muted); font-style: italic; text-align: right; }
+.challenge { border-color: color-mix(in srgb, var(--brand) 45%, var(--line)); }
+.challenge h2 { margin-top: 0; text-wrap: balance; }
+.challenge-figures { margin: 6px 0 0; font-variant-numeric: tabular-nums; }
+.challenge-figures strong { font: 800 2.2rem/1 var(--font-display); letter-spacing: -0.03em; }
+.challenge-figures span { color: var(--muted); font-weight: 600; }
+.progress-big { height: 14px; }
 
 /* ------------------------------------------------------------ écran public */
 

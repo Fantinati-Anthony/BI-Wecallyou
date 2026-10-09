@@ -24,16 +24,44 @@
   </header>
 
   <main class="wrap">
-    <article data-lang="fr">
-      <h1>Un service gratuit, qui le reste grâce à vous</h1>
-      <p class="lead">WeCall.You n’affiche aucune publicité, ne revend aucune donnée et ne pourrait de toute façon pas : les coordonnées de vos clients sont chiffrées sur leur téléphone, illisibles pour nous. Le code est ouvert, chacun peut le vérifier.</p>
-      <p>Il reste des frais bien réels : le serveur, les noms de domaine, et le temps passé à améliorer l’outil. Vos dons les couvrent, rien d’autre.</p>
+    <!-- L'histoire du projet, puis le défi du mois : le récit d'abord, les chiffres ensuite. -->
+    <article class="story" data-lang="fr">
+      <p class="eyebrow">L’histoire</p>
+      <h1>Une file d’attente qui ne crie plus, et une aventure à vivre ensemble</h1>
+      <p class="lead">Tout part d’une scène que tout le monde connaît. Une buvette un jour de tournoi, un food truck à midi, le comptoir d’un pressing. Des gens debout qui attendent, un numéro qu’on crie dans le bruit, des clients qui n’osent pas s’éloigner de peur de rater leur tour.</p>
+      <p>WeCall.You est né de là : un ticket en papier, un QR code, et le téléphone du client qui sonne quand c’est son tour. Sans application, sans compte, sans publicité. Et sans rien savoir de vos clients : leurs coordonnées sont chiffrées sur leur propre téléphone, illisibles pour nous comme pour n’importe qui. Le code est ouvert, chacun peut le vérifier.</p>
+      <p>Derrière, il n’y a ni entreprise ni investisseurs. Il y a moi, un développeur seul, qui ne cherche pas à faire fortune. Mon objectif est simple : que WeCall.You rembourse ses frais, le serveur et les noms de domaine, puis un jour une partie des heures qu’il demande. Mon temps, lui, je ne le compte pas.</p>
+      <p>Alors plutôt que de vendre vos données ou d’afficher de la pub, j’en fais une aventure à plusieurs. Chaque don et chaque abonnement Pro fait avancer le service pour tout le monde, et chaque palier franchi se voit : sur cette page, dans les chiffres, dans l’outil.</p>
+      <p class="signature">Le créateur de WeCall.You</p>
     </article>
-    <article data-lang="en" hidden>
-      <h1>A free service that stays free thanks to you</h1>
-      <p class="lead">WeCall.You shows no ads, sells no data, and couldn’t anyway: your customers’ contact details are encrypted on their phones, unreadable to us. The code is open, anyone can check it.</p>
-      <p>Some costs are very real: the server, the domain names, and the time spent improving the tool. Your donations cover them, nothing else.</p>
+    <article class="story" data-lang="en" hidden>
+      <p class="eyebrow">The story</p>
+      <h1>A queue that no longer shouts, and an adventure to share</h1>
+      <p class="lead">It all starts with a scene everyone knows. A snack bar on tournament day, a food truck at lunchtime, a dry cleaner’s counter. People standing and waiting, a number shouted over the noise, customers who don’t dare walk away for fear of missing their turn.</p>
+      <p>That’s where WeCall.You comes from: a paper ticket, a QR code, and the customer’s phone ringing when it’s their turn. No app, no account, no ads. And without knowing anything about your customers: their contact details are encrypted on their own phone, unreadable to us or anyone else. The code is open, anyone can check it.</p>
+      <p>Behind it there is no company and no investors. There is me, a lone developer who isn’t trying to get rich. My goal is simple: that WeCall.You pays back its costs, the server and the domain names, and one day part of the hours it takes. My own time, I don’t count.</p>
+      <p>So rather than selling your data or showing ads, I’m making it a shared adventure. Every donation and every Pro subscription moves the service forward for everyone, and every step reached shows: on this page, in the numbers, in the tool.</p>
+      <p class="signature">The creator of WeCall.You</p>
     </article>
+
+    <section class="card challenge" id="challenge" hidden>
+      <p class="eyebrow" data-lang="fr">Le défi du mois</p>
+      <p class="eyebrow" data-lang="en" hidden>This month’s challenge</p>
+      <h2 data-lang="fr">Faire passer WeCall.You sur des serveurs à la demande</h2>
+      <h2 data-lang="en" hidden>Move WeCall.You to on-demand servers</h2>
+      <p class="challenge-figures"><strong id="ch-raised"></strong> <span id="ch-goal"></span></p>
+      <div class="progress progress-big"><span id="ch-bar"></span></div>
+      <p class="small muted" id="ch-note"></p>
+      <div data-lang="fr">
+        <p>Si on atteint l’objectif, WeCall.You quitte son petit serveur mutualisé pour <strong>Scaleway</strong>, un hébergeur français, en conteneurs serverless. Concrètement, le service se copie tout seul quand l’affluence monte, un samedi de tournoi ou un rush de midi, et se met en veille quand tout est calme.</p>
+        <p>Le nombre de copies suivra trois choses : les dons, les abonnements Pro, et les pics réels du moment. Plus on est nombreux à soutenir, plus le service encaisse d’affluence, pour tout le monde.</p>
+      </div>
+      <div data-lang="en" hidden>
+        <p>If we reach the goal, WeCall.You leaves its small shared server for <strong>Scaleway</strong>, a French host, running on serverless containers. In practice, the service copies itself when traffic rises, on a tournament Saturday or a lunchtime rush, and goes to sleep when it’s quiet.</p>
+        <p>The number of copies will follow three things: donations, Pro subscriptions, and the real peaks of the moment. The more of us support it, the more traffic the service can take, for everyone.</p>
+      </div>
+      <a class="btn btn-block" href="#card"><span data-icon="hand-heart"></span><span data-lang="fr">Je relève le défi</span><span data-lang="en" hidden>I’m in</span></a>
+    </section>
 
     <div id="card"></div>
 
@@ -51,11 +79,11 @@
     </section>
 
     <section class="card">
-      <h2 data-lang="fr">La feuille de route : ce que vos dons débloquent</h2>
-      <h2 data-lang="en" hidden>The roadmap: what your donations unlock</h2>
+      <h2 data-lang="fr">Les chapitres de l’aventure</h2>
+      <h2 data-lang="en" hidden>The chapters of the adventure</h2>
       <ol class="roadmap" id="roadmap"></ol>
-      <p class="small muted" data-lang="fr">Montants mensuels estimés. Le code est prêt à changer de serveur : chaque palier ne demande qu’un déploiement, pas une réécriture.</p>
-      <p class="small muted" data-lang="en" hidden>Estimated monthly amounts. The code is ready to move servers: each step only needs a deployment, not a rewrite.</p>
+      <p class="small muted" data-lang="fr">Montants mensuels estimés (dons et abonnements Pro). Le code est prêt à changer de serveur : chaque palier ne demande qu’un déploiement, pas une réécriture. Les chapitres suivants viendront dans cet ordre, ou presque.</p>
+      <p class="small muted" data-lang="en" hidden>Estimated monthly amounts (donations and Pro subscriptions). The code is ready to move servers: each step only needs a deployment, not a rewrite. The later chapters will come in this order, or close to it.</p>
     </section>
 
     <section class="card">
@@ -75,6 +103,12 @@
       <p>Oui, à tout moment, depuis le lien reçu par e-mail de Stripe après votre premier don.</p>
       <h3>Et si les dons ne suffisent pas ?</h3>
       <p>Le service reste gratuit. Le développement avance simplement moins vite. Et comme le code est open source, n’importe qui peut l’héberger : il ne disparaîtra pas.</p>
+      <h3>Et si le défi du mois n’est pas atteint ?</h3>
+      <p>Rien ne s’arrête : le service continue sur son serveur actuel, et le défi repart le mois suivant.</p>
+      <h3>Pourquoi Scaleway ?</h3>
+      <p>C’est un hébergeur français, avec des centres de données en France et en Europe : tout reste ici. Et ses conteneurs serverless se paient à l’usage : les copies en plus ne coûtent que pendant les pics.</p>
+      <h3>WeCall.You va-t-il devenir payant ?</h3>
+      <p>Non. Le cœur reste gratuit, sans limite, et le code reste libre. Le Pro ajoute des options, et le rêve est même de le rendre gratuit pour tous grâce à la boutique et aux services.</p>
       <h3>Que voyez-vous de mon paiement ?</h3>
       <p>Le paiement est entièrement géré par Stripe. Notre serveur ne voit ni votre carte, ni votre identité.</p>
     </section>
@@ -88,6 +122,12 @@
       <p>Yes, at any time, from the link Stripe emails you after your first donation.</p>
       <h3>What if donations aren’t enough?</h3>
       <p>The service stays free. Development just moves more slowly. And since the code is open source, anyone can host it: it won’t disappear.</p>
+      <h3>What if this month’s challenge isn’t reached?</h3>
+      <p>Nothing stops: the service keeps running on its current server, and the challenge starts again next month.</p>
+      <h3>Why Scaleway?</h3>
+      <p>It’s a French host, with data centres in France and Europe: everything stays here. And its serverless containers are paid by use: extra copies only cost money during peaks.</p>
+      <h3>Will WeCall.You become paid?</h3>
+      <p>No. The core stays free, with no limits, and the code stays free software. Pro adds options, and the dream is even to make it free for everyone thanks to the shop and services.</p>
       <h3>What do you see of my payment?</h3>
       <p>Payment is handled entirely by Stripe. Our server sees neither your card nor your identity.</p>
     </section>
