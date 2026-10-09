@@ -1,8 +1,9 @@
 // Page « Mon compte » : connexion, création (avec fiche de secours), mot de passe oublié,
 // et, une fois connecté, statut Pro, lots du compte et gestion de la sécurité.
-import { h, t, LANG, api, render, translatePage, errorText, lots, local } from './common.js';
+import { h, t, LANG, api, render, translatePage, errorText, lots, local, icon } from './common.js';
 import { textToSecret, secretToText } from './crypto.js';
 import { session, signup, login, recover, sync, changePassword, rotateRecovery, logout, deleteAccount, printKit, downloadKit, removeLot, IDENT, MIN_PASSWORD } from './account.js';
+import { proLock } from './protools.js';
 
 translatePage();
 
@@ -151,13 +152,17 @@ async function accountView() {
     ? h('p', { class: 'banner-ok' }, t('acc_pro', { date: new Date(synced.premiumUntil).toLocaleDateString(LANG) }))
     : h('div', { class: 'notice stack' }, h('strong', {}, t('acc_free')), h('p', { class: 'small' }, t('acc_free_hint')), h('a', { class: 'btn btn-gold', href: '/pro' }, t('acc_become_pro')));
 
-  const list = Object.entries(lots.all()).map(([id, lot]) =>
+  // Plusieurs lots en un appui : option Pro. Sans Pro, seul le lot en cours s'ouvre d'ici.
+  const current = String(local.get('wcy:current') ?? '');
+  const entries = Object.entries(lots.all());
+  const multi = synced.pro || entries.length <= 1;
+  const list = entries.map(([id, lot]) =>
     h(
       'li',
       {},
       h('span', { class: 'grow' }, h('strong', {}, lot.name), h('span', { class: 'small muted' }, ` #${id}`)),
-      h('a', { class: 'btn btn-soft', href: '/m', onclick: () => local.set('wcy:current', Number(id)) }, t('acc_open')),
-      h('button', { type: 'button', class: 'linklike small', onclick: async () => confirm(t('acc_remove_lot_confirm')) && (await removeLot(id), accountView()) }, '✕'),
+      (multi || id === current) && h('a', { class: 'btn btn-soft', href: '/m', onclick: () => local.set('wcy:current', Number(id)) }, t('acc_open')),
+      h('button', { type: 'button', class: 'btn btn-ghost', title: t('lots_remove'), 'aria-label': t('lots_remove'), onclick: async () => confirm(t('acc_remove_lot_confirm')) && (await removeLot(id), accountView()) }, icon('x')),
     ),
   );
 
@@ -189,7 +194,7 @@ async function accountView() {
     h('h1', {}, t('acc_title')),
     h('p', { class: 'muted' }, t('acc_hello', { ident: s.ident })),
     status,
-    h('section', { class: 'card' }, h('h2', {}, t('acc_lots')), list.length ? h('ul', { class: 'waiting-list' }, list) : h('p', { class: 'muted' }, t('acc_lots_none')), h('a', { href: '/' }, t('m_new_lot'))),
+    h('section', { class: 'card stack' }, h('h2', {}, t('acc_lots')), !multi && proLock(false, 'lots_pro_lock'), list.length ? h('ul', { class: 'waiting-list' }, list) : h('p', { class: 'muted' }, t('acc_lots_none')), h('a', { href: '/' }, t('m_new_lot'))),
     h(
       'section',
       { class: 'card stack' },

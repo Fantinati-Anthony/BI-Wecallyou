@@ -598,9 +598,28 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
       const account = await accountOf(req);
       const body = await readJson(req);
       const lot = (await store.lotByAuth(body.lotAuth)) ?? fail(404, 'invalid');
+      // Gratuit : un lot par compte. Plusieurs lots réunis sur un compte : option Pro.
+      if (!(account.lots ?? []).includes(lot.id) && !accounts.isPro(account) && !config.allPro) {
+        const alive = (await Promise.all((account.lots ?? []).map((id) => store.lot(id)))).filter(Boolean);
+        if (alive.length >= 1) fail(403, 'pro_required');
+      }
       await accounts.addLot(account, lot.id);
       if (lot.owner !== account.id) {
         lot.owner = account.id;
+        await store.saveLot(lot);
+      }
+      return { ok: true };
+    }],
+
+    // Détache un lot du compte (il reste utilisable avec sa page clé) : libère la place d'un compte gratuit.
+    ['POST', /^\/account\/unlink$/, async (req) => {
+      const account = await accountOf(req);
+      const body = await readJson(req);
+      const id = Number(body.lot);
+      if (!Number.isInteger(id) || !(await accounts.removeLot(account, id))) fail(404, 'invalid');
+      const lot = await store.lot(id);
+      if (lot?.owner === account.id) {
+        delete lot.owner;
         await store.saveLot(lot);
       }
       return { ok: true };

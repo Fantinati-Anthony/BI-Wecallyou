@@ -120,6 +120,11 @@ test('don pur : aucune contrepartie ; abonnement Pro : durée selon le montant e
   assert.equal((await call('POST', '/lots', { name: 'x', channels: [], from: 1, to: 2, ttl: 720, ...(await wc.createLot()).request })).status, 403);
   assert.equal((await call('POST', '/account/link', { lotAuth: lot.authToken }, auth)).ok, true);
   assert.equal((await call('POST', '/account/link', { lotAuth: 'x'.repeat(43) }, auth)).status, 404);
+  // Compte gratuit : un seul lot ; plusieurs lots sur le compte, c'est le Pro.
+  const other = await wc.createLot();
+  const otherLot = await call('POST', '/lots', { name: 'Fournil du marché', channels: ['sms'], from: 1, to: 5, ...other.request });
+  assert.equal((await call('POST', '/account/link', { lotAuth: other.authToken }, auth)).status, 403);
+  assert.equal((await call('POST', '/account/link', { lotAuth: lot.authToken }, auth)).ok, true); // le sien : toujours permis
   const lotAuth = `Lot ${lot.authToken}`;
   let state = await call('GET', '/lot', undefined, lotAuth);
   assert.equal(state.lot, made.lot);
@@ -150,6 +155,11 @@ test('don pur : aucune contrepartie ; abonnement Pro : durée selon le montant e
   assert.equal(me.pro, true);
   const days = (me.premiumUntil - Date.now()) / 86_400_000;
   assert.ok(days > 92 && days < 94, `${days} jours`);
+
+  // En Pro, plusieurs lots sur le compte ; détacher un lot libère sa place.
+  assert.equal((await call('POST', '/account/link', { lotAuth: other.authToken }, auth)).ok, true);
+  assert.equal((await call('POST', '/account/unlink', { lot: otherLot.lot }, auth)).ok, true);
+  assert.equal((await call('POST', '/account/unlink', { lot: otherLot.lot }, auth)).status, 404);
 
   // Les options Pro s'ouvrent.
   const opened = await settings({ ttl: 720, whiteLabel: true });

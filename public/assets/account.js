@@ -134,7 +134,7 @@ export async function sync(changes = {}, retry = true) {
       if (linked.ok) {
         entry.linked = true;
         dirty = true;
-      }
+      } else if (linked.error === 'pro_required') break; // compte gratuit : un seul lot rattaché (réessayé une fois Pro)
     }
   }
   let version = res.version;
@@ -152,7 +152,10 @@ export async function sync(changes = {}, retry = true) {
 /** Retire un lot du compte (en plus de ce téléphone). */
 export async function removeLot(id) {
   lots.forget(id);
-  if (session.get()) await sync({ removeLots: [String(id)] });
+  const s = session.get();
+  if (!s) return;
+  await api('/account/unlink', { body: { lot: Number(id) }, auth: authOf(s) }); // libère sa place sur le compte
+  await sync({ removeLots: [String(id)] });
 }
 
 /* ------------------------------------------------------- fiche de secours */

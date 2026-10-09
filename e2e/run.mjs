@@ -250,6 +250,14 @@ try {
   await m.waitForURL(`${BASE}/m`);
   step('compte créé, fiche de secours téléchargée (identifiant + clé)');
 
+  // Compte gratuit : « Mes lots » reste visible, mais passer d'un lot à l'autre en un appui est réservé au Pro.
+  await m.goto(`${BASE}/m`);
+  await m.click('#my-lots');
+  await m.waitForSelector('.lot-card.current');
+  assert.equal(await m.locator('.pro-lock').isVisible(), true);
+  assert.match(await m.locator('.lot-card.add').last().textContent(), /page clé/);
+  step('compte gratuit : « Mes lots » visible, un lot à la fois (passage en un appui : Pro)');
+
   // Un autre téléphone : identifiant + mot de passe → il retrouve le lot, sans la page 1.
   const phone3 = await browser.newContext({ locale: 'fr-FR', viewport: { width: 390, height: 844 } });
   const p3 = await phone3.newPage();
@@ -352,6 +360,17 @@ try {
   assert.equal(await p4.locator('#swl').isChecked(), true);
   assert.equal(await p4.locator('#th-screenNumber').inputValue(), '#2b7fff');
   step('compte Pro : lot créé avec 30 jours, marque masquée et couleurs dès le générateur');
+
+  // Mes lots : deux lots sur ce téléphone, on passe de l'un à l'autre depuis l'en-tête.
+  await p4.click('#my-lots');
+  await p4.waitForSelector('.lot-card:not(.add) .badge');
+  assert.equal(await p4.locator('.lot-card:not(.add)').count(), 2);
+  assert.match(await p4.locator('.lot-card.current').textContent(), /Pressing Lumière/);
+  await shot(p4, '25-mes-lots');
+  await p4.locator('.lot-card', { hasText: 'Snack Tony' }).click();
+  await p4.waitForSelector('h1:has-text("Snack Tony")');
+  assert.match(await p4.locator('#my-lots').textContent(), /(2)/);
+  step('mes lots : liste des lots du téléphone, passage d’un lot à l’autre');
 
   /* ------------------------------------------- studio d'impression */
   await m.goto(`${BASE}/m`);

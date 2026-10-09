@@ -84,26 +84,77 @@ function connectView({ key = '', needsPassword = false, message = '' } = {}) {
   render(
     app,
     form,
-    others.length > 0 && lotSwitcher(),
+    others.length > 0 && h('p', { class: 'center' }, h('button', { type: 'button', class: 'btn btn-ghost', onclick: lotsView }, icon('squares-four'), t('lots_back'))),
     !session.get() && h('p', { class: 'center' }, h('a', { href: '/compte' }, t('acc_login_link'))),
     h('p', { class: 'center' }, h('a', { href: '/' }, t('m_new_lot'))),
   );
   (needsPassword && key ? pwInput : keyInput).focus();
 }
 
-function lotSwitcher(current = null) {
-  const entries = Object.entries(lots.all());
-  return h(
-    'section',
-    { class: 'card' },
-    h('h3', {}, t('m_switch')),
+const labelOf = (n) => String(n ?? '').padStart(3, '0');
+
+/** Résumé d'un lot pour sa carte : plage de numéros, Pro, dernier appel (lus avec la clé du lot). */
+async function lotSummary(id) {
+  const login = await unlock(id);
+  if (!login) return null;
+  const [lot, queue] = await Promise.all([api('/lot', { auth: login.auth }), api('/lot/queue', { auth: login.auth })]);
+  return lot.ok ? { lot, queue: queue.ok ? queue : null } : { error: lot.error, status: lot.status };
+}
+
+/** Passer d'un lot à l'autre en un appui : option Pro (compte Pro, lot Pro, ou installation « allPro »). */
+let lotIsPro = false;
+const multiLots = () => Boolean(info?.allPro || lotIsPro || (session.get()?.pro && (session.get()?.premiumUntil ?? 0) > Date.now()));
+
+/**
+ * Mes lots : tous les lots de ce téléphone (et du compte). En Pro, d'un appui on passe de l'un à
+ * l'autre ; sans Pro, la liste reste visible mais un autre lot s'ouvre avec sa page clé.
+ */
+async function lotsView() {
+  clearInterval(refreshTimer);
+  app.classList.remove('wrap-studio');
+  info ??= await api('/info');
+  const multi = multiLots();
+  const current = String(local.get('wcy:current') ?? '');
+  const cards = Object.entries(lots.all()).map(([id, saved]) => {
+    const open = multi || id === current;
+    const info = h('span', { class: 'lot-info' }, t('loading'));
+    const badges = h('span', { class: 'pills' });
+    lotSummary(Number(id)).then((summary) => {
+      if (!summary || summary.error) {
+        info.textContent = t(summary?.status === 401 ? 'lots_locked' : 'lots_unreachable');
+        return;
+      }
+      const { lot, queue } = summary;
+      info.textContent = t('lots_range', { from: labelOf(lot.from), to: labelOf(lot.to) });
+      render(
+        badges,
+        lot.pro && h('span', { class: 'badge pro-badge' }, icon('star'), 'Pro'),
+        saved.password && h('span', { class: 'badge' }, icon('lock-key'), t('lots_password')),
+        h('span', { class: 'badge' }, queue?.last ? t('lots_last', { n: queue.last, time: fmtTime(queue.lastAt) }) : t('lots_no_call')),
+      );
+    });
+    return h(
+      open ? 'button' : 'div',
+      { type: open ? 'button' : false, class: `lot-card${id === current ? ' current' : ''}${open ? '' : ' locked'}`, onclick: open ? () => dashboard(Number(id)) : false, 'aria-disabled': open ? false : 'true' },
+      h('span', { class: 'lot-name' }, saved.name || `#${id}`),
+      h('span', { class: 'lot-info' }, t('lot_number', { id })),
+      info,
+      badges,
+    );
+  });
+  render(
+    app,
+    h('h1', {}, t('lots_title')),
+    h('p', { class: 'muted' }, t(session.get() ? 'lots_synced' : 'lots_device')),
+    !multi && proLock(!session.get(), 'lots_pro_lock'),
     h(
       'div',
-      { class: 'stack' },
-      entries.map(([id, lot]) =>
-        h('button', { type: 'button', class: `btn btn-block ${String(id) === String(current) ? '' : 'btn-soft'}`, onclick: () => dashboard(Number(id)) }, `${lot.name} · #${id}`),
-      ),
+      { class: 'lot-grid' },
+      cards,
+      h('a', { class: 'lot-card add', href: '/#creer' }, icon('plus'), h('span', { class: 'lot-name' }, t('m_new_lot'))),
+      h('button', { type: 'button', class: 'lot-card add', onclick: () => connectView() }, icon('key'), h('span', { class: 'lot-name' }, t(multi ? 'lots_add_existing' : 'lots_open_key'))),
     ),
+    !session.get() && h('p', { class: 'small' }, h('a', { href: '/compte' }, t('acc_login_link'))),
   );
 }
 
@@ -118,6 +169,7 @@ async function dashboard(lotId) {
   if (!lot.ok) return connectView({ key: lots.get(lotId)?.key ?? '', message: errorText(lot.error) });
   const access = await unlock(lotId, lot.wrapped);
   info ??= await api('/info');
+  lotIsPro = Boolean(lot.pro);
 
   const panel = h('div');
   const tabs = h('div', { class: 'tabs', role: 'tablist' });
@@ -136,7 +188,13 @@ async function dashboard(lotId) {
     tabs.append(h('button', { type: 'button', class: 'btn btn-soft', 'data-tab': name, onclick: () => show(name) }, t(key)));
   }
   const donation = await supportCard({ context: 'dashboard', brand: info.brand });
-  render(app, h('h1', {}, lot.name), accountLine(lot), tabs, panel, donation);
+  const head = h(
+    'div',
+    { class: 'lot-head' },
+    h('div', {}, h('p', { class: 'lot-meta small muted' }, t('lot_number', { id: lot.lot }), ' · ', t('lots_range', { from: labelOf(lot.from), to: labelOf(lot.to) })), h('h1', {}, lot.name)),
+    h('button', { type: 'button', class: 'btn btn-ghost', id: 'my-lots', onclick: lotsView }, icon(multiLots() ? 'squares-four' : 'lock-key'), t('lots_mine', { n: Object.keys(lots.all()).length })),
+  );
+  render(app, head, accountLine(lot), tabs, panel, donation);
   show('call');
 }
 
@@ -618,8 +676,7 @@ function settingsTab(panel, { lot, access, reload }) {
   forget.addEventListener('click', async () => {
     if (!confirm(t('m_forget_confirm'))) return;
     await removeLot(lot.lot);
-    const next = Object.keys(lots.all())[0];
-    if (next) dashboard(Number(next));
+    if (Object.keys(lots.all()).length) lotsView();
     else connectView();
   });
 
@@ -627,7 +684,6 @@ function settingsTab(panel, { lot, access, reload }) {
     panel,
     form,
     h('section', { class: 'card stack' }, h('h2', {}, t('m_device')), h('p', {}, t('m_add_phone')), forget),
-    Object.keys(lots.all()).length > 1 && lotSwitcher(lot.lot),
     h('p', { class: 'center' }, h('a', { href: '/' }, t('m_new_lot'))),
   );
 }
@@ -653,7 +709,9 @@ if (hash) {
   } else connectView({ key: secret ? secretToText(secret, true) : '', needsPassword });
 } else {
   const current = local.get('wcy:current');
+  const all = Object.keys(lots.all());
   if (current && lots.get(current)) await dashboard(current);
-  else if (Object.keys(lots.all()).length) await dashboard(Number(Object.keys(lots.all())[0]));
+  else if (all.length === 1) await dashboard(Number(all[0]));
+  else if (all.length > 1) await lotsView();
   else connectView();
 }

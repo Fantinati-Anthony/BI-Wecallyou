@@ -31,6 +31,7 @@ const GROUPS = [
     [
       ['cmp_privacy', YES, YES],
       ['cmp_stats', 'cmp_stats_free', 'cmp_stats_pro'],
+      ['cmp_multilots', 'cmp_multilots_free', YES],
       ['cmp_priority', NO, YES],
     ],
   ],

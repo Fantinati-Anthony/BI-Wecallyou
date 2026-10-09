@@ -53,7 +53,7 @@ export function themeFields({ initial = null, enabled = true, canReset = enabled
   };
 }
 
-/** Mention sous des outils grisés : réservés au Pro, avec le lien vers l'offre. anonymous : pas de compte connecté. */
-export function proLock(anonymous) {
-  return h('p', { class: 'pro-lock small' }, icon('lock-key'), h('span', {}, t(anonymous ? 'pro_lock_anon' : 'pro_lock_free'), ' ', h('a', { href: '/pro' }, t('nav_pro'))));
+/** Mention sous des outils grisés : réservés au Pro, avec le lien vers l'offre. anonymous : pas de compte connecté ; message : texte propre à l'outil. */
+export function proLock(anonymous, message = null) {
+  return h('p', { class: 'pro-lock small' }, icon('lock-key'), h('span', {}, t(message ?? (anonymous ? 'pro_lock_anon' : 'pro_lock_free')), ' ', h('a', { href: '/pro' }, t('nav_pro'))));
 }

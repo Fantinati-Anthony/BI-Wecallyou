@@ -166,6 +166,13 @@ export class Accounts {
     }
   }
 
+  async removeLot(account, lotId) {
+    if (!(account.lots ?? []).includes(lotId)) return false;
+    account.lots = account.lots.filter((id) => id !== lotId);
+    await this.save(account);
+    return true;
+  }
+
   async linkCustomer(customerId, accountId) {
     if (!/^cus_\w{1,64}$/.test(customerId)) return;
     await fs.writeFile(path.join(this.customersDir, customerId), accountId, { mode: 0o600 });
