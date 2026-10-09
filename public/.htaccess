@@ -42,7 +42,12 @@ AddType image/webp .webp
   <FilesMatch "\.(html|webmanifest)$|^(sw\.js|soutien\.json|papiers\.json)$">
     Header set Cache-Control "no-cache"
   </FilesMatch>
-  <FilesMatch "\.(css|js|png|svg|webp)$">
+  # Scripts et styles : toujours revalidés (réponse 304 si rien n'a changé), pour qu'une mise à
+  # jour ne mélange jamais l'ancien et le nouveau code.
+  <FilesMatch "\.(css|js)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+  <FilesMatch "\.(png|svg|webp)$">
     Header set Cache-Control "public, max-age=3600"
   </FilesMatch>
   <FilesMatch "\.woff2$">
