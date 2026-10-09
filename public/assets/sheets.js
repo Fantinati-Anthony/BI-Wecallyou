@@ -33,7 +33,7 @@ function sizesFor(perPage) {
   };
 }
 
-function ticketPair(t, { lang, domain, name, logo = null, showNumber = true }) {
+function ticketPair(t, { lang, domain, name, logo = null, showNumber = true, whiteLabel = false }) {
   return h(
     'div',
     { class: 'pair' },
@@ -44,7 +44,7 @@ function ticketPair(t, { lang, domain, name, logo = null, showNumber = true }) {
       showNumber && h('div', { class: 'p-num' }, t.label),
       qrSvg(ticketUrl(domain, t.c)),
       h('div', { class: 'p-hint' }, h('b', {}, tl(lang, 'ticket_scan')), tl(lang, 'ticket_scan_en')),
-      h('div', { class: 'p-domain' }, domain),
+      !whiteLabel && h('div', { class: 'p-domain' }, domain),
     ),
     h(
       'div',
@@ -72,7 +72,7 @@ export function ticketSheets(tickets, { perPage = DEFAULT_LAYOUT, ...ctx }) {
 }
 
 /** Page 1 : la clé du lot (QR vers l'espace commerçant), le mode d'emploi et l'appel aux dons. */
-export function keySheet({ lang, domain, brand, lot, name, secret, from, to, monthlyCost, password = false }) {
+export function keySheet({ lang, domain, brand, lot, name, secret, from, to, monthlyCost, password = false, pro = false }) {
   const key = secretToText(secret);
   // « ! » final : l'espace commerçant demandera directement le mot de passe du lot.
   const spaceUrl = `https://${domain}/m#${key}${password ? '!' : ''}`;
@@ -108,7 +108,8 @@ export function keySheet({ lang, domain, brand, lot, name, secret, from, to, mon
       h('ol', {}, h('li', {}, tl(lang, 'k_how_1')), h('li', {}, tl(lang, 'k_how_2')), h('li', {}, tl(lang, 'k_how_3'))),
     ),
     h('div', {}, tl(lang, 'k_privacy')),
-    h(
+    // Abonnés Pro : pas d'appel au don sur leur page clé.
+    !pro && h(
       'div',
       { class: 'k-donate' },
       h('div', {}, h('h2', {}, tl(lang, 'k_donate_title')), h('div', {}, tl(lang, 'k_donate_text', { brand, cost: monthlyCost }))),

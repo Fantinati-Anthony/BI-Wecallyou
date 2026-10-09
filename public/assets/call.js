@@ -112,7 +112,9 @@ function mailButton({ lot, access, message, brand }, mails) {
   if (!mails.length) return null;
   const labels = [...new Set(mails.map((m) => m.call.label))];
   const lang = mails[0].lang;
-  const body = `${textFor(lot, labels.join(', '), lang, message)}\n\n${tl(lang, 'msg_mail_foot', { brand })}`;
+  // Option Pro « marque masquée » : pas de mention de WeCallYou dans l'e-mail.
+  const foot = lot.whiteLabel ? tl(lang, 'msg_mail_foot_plain') : tl(lang, 'msg_mail_foot', { brand });
+  const body = `${textFor(lot, labels.join(', '), lang, message)}\n\n${foot}`;
   const subject = tl(lang, 'msg_subject', { m: lot.name, n: labels.join(', ') });
   const label = mails.length === 1 ? `✉️ ${t('send_mail')} ${masked(String(mails[0].data.v))}` : t('g_mail', { count: mails.length });
   const btn = h('a', { class: 'btn btn-block btn-big btn-mail', href: mailHref(mails.map((m) => m.data.v), subject, body) }, label);

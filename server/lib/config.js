@@ -22,8 +22,12 @@ export function loadConfig(file = process.env.TN_CONFIG ?? path.join(SERVER_DIR,
     port: Number(process.env.PORT ?? raw.port ?? 3000),
     tokenKey: Buffer.from(raw.tokenKey, 'hex'),
     statusKey: Buffer.from(raw.statusKey, 'hex'),
-    // Secret du webhook Stripe (whsec_…) : vide = dons sans activation automatique du Pro.
+    // Secret du webhook Stripe (whsec_…) : vide = pas d'activation automatique du Pro.
     stripeWebhookSecret: raw.stripeWebhookSecret ?? '',
+    // Liens de paiement Stripe de l'offre Pro (plink_…) ; les autres (dons) n'activent rien.
+    stripeProLinks: raw.stripeProLinks ?? [],
+    // Installation indépendante (club, association…) : toutes les options Pro pour tout le monde.
+    allPro: raw.allPro ?? false,
     // Requêtes traitées en même temps par processus avant que la priorité Pro n'entre en jeu.
     capacity: raw.capacity ?? 40,
   };

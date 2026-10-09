@@ -25,7 +25,7 @@
       <h2>Ce qui est conservé, et combien de temps</h2>
       <ul>
         <li><strong>Tant que personne ne scanne un ticket</strong> : rien. Un ticket imprimé n’existe pas sur le serveur.</li>
-        <li><strong>Vos coordonnées chiffrées</strong> : effacées 30 minutes après l’appel de votre ticket, et au plus tard à la fin de sa durée de vie (6 h par défaut, 48 h au maximum).</li>
+        <li><strong>Vos coordonnées chiffrées</strong> : effacées 30 minutes après l’appel de votre ticket, et au plus tard à la fin de sa durée de vie (6 h par défaut, 48 h au maximum ; jusqu’à 30 jours si le commerçant a choisi une durée longue, par exemple pour un pressing ou une réparation).</li>
         <li><strong>Le journal du ticket</strong> (scanné, inscrit, appelé, notification remise, vu) : sans aucune donnée personnelle, effacé à la fin de la durée de vie du ticket.</li>
         <li><strong>Des statistiques</strong> : uniquement des compteurs par jour et par lot (nombre de scans, d’appels…), gardés 90 jours.</li>
         <li><strong>Votre adresse IP</strong> : jamais enregistrée. Elle sert seulement, en mémoire et quelques minutes, à freiner les abus.</li>
@@ -36,7 +36,8 @@
         <li><strong>Le commerçant</strong> découvre votre numéro ou votre adresse uniquement au moment de vous écrire, depuis son téléphone. Son outil ne les affiche pas, ne les liste pas et ne permet pas de les exporter.</li>
         <li><strong>Google, Apple ou Mozilla</strong> acheminent les notifications, sans pouvoir en lire le contenu (chiffré de bout en bout).</li>
         <li><strong>Votre opérateur, WhatsApp (Meta) ou votre messagerie</strong> transportent le SMS, le message ou l’e-mail envoyé par le commerçant, selon le moyen que vous avez choisi.</li>
-        <li><strong>Stripe</strong> traite les dons, pour son propre compte ; notre serveur ne voit ni carte ni identité.</li>
+        <li><strong>Stripe</strong> traite les dons et les abonnements Pro, pour son propre compte ; notre serveur ne voit ni carte ni identité.</li>
+        <li><strong>Comptes (facultatifs)</strong> : nous ne gardons qu’une empreinte de l’identifiant et un coffre chiffré dans votre navigateur ; ni l’identifiant, ni le mot de passe, ni vos lots ne nous sont lisibles. Un compte inutilisé pendant 400 jours est supprimé.</li>
       </ul>
 
       <h2>Cookies et traceurs</h2>
@@ -57,7 +58,7 @@
       <h2>What is kept, and for how long</h2>
       <ul>
         <li><strong>Until someone scans a ticket</strong>: nothing. A printed ticket does not exist on the server.</li>
-        <li><strong>Your encrypted contact details</strong>: deleted 30 minutes after your ticket is called, and at the latest when the ticket’s lifetime ends (6 h by default, 48 h maximum).</li>
+        <li><strong>Your encrypted contact details</strong>: deleted 30 minutes after your ticket is called, and at the latest when the ticket’s lifetime ends (6 h by default, 48 h maximum; up to 30 days if the merchant chose a long lifetime, e.g. for dry cleaning or repairs).</li>
         <li><strong>The ticket log</strong> (scanned, signed up, called, notification delivered, seen): no personal data, deleted when the ticket’s lifetime ends.</li>
         <li><strong>Statistics</strong>: daily counters per batch only (number of scans, calls…), kept for 90 days.</li>
         <li><strong>Your IP address</strong>: never recorded. It is used only, in memory and for a few minutes, to slow down abuse.</li>
@@ -68,7 +69,8 @@
         <li><strong>The merchant</strong> sees your number or address only when messaging you, from their phone. Their tool does not display, list or export them.</li>
         <li><strong>Google, Apple or Mozilla</strong> carry notifications without being able to read them (end-to-end encrypted).</li>
         <li><strong>Your carrier, WhatsApp (Meta) or your mail provider</strong> carry the text, message or email sent by the merchant, depending on what you chose.</li>
-        <li><strong>Stripe</strong> processes donations on its own behalf; our server sees neither card nor identity.</li>
+        <li><strong>Stripe</strong> processes donations and Pro subscriptions on its own behalf; our server sees neither card nor identity.</li>
+        <li><strong>Accounts (optional)</strong>: we keep only a fingerprint of the username and a vault encrypted in your browser; neither the username, the password nor your batches are readable to us. An account unused for 400 days is deleted.</li>
       </ul>
 
       <h2>Cookies and trackers</h2>
@@ -79,6 +81,6 @@
       <p class="small muted">Hosting: o2switch, Clermont-Ferrand, France.</p>
     </article>
   </main>
-  <footer class="footer"><a href="/soutenir" data-i18n="support_link">Soutenir le projet</a></footer>
+  <footer class="footer"><a href="/soutenir" data-i18n="support_link">Soutenir le projet</a> · <a href="/mentions" data-i18n="legal">Mentions légales et CGV</a></footer>
 </body>
 </html>

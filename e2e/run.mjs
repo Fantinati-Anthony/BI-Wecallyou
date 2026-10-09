@@ -269,9 +269,14 @@ try {
   await shot(p4, '17-compte');
   step('mot de passe oublié : fiche de secours → nouveau mot de passe, rien perdu');
 
-  // Don (Stripe, simulé et signé) : le compte passe Pro, le badge apparaît.
+  // Page Pro : usage du compte et prix conseillé (le don, lui, reste sans contrepartie).
+  await p4.goto(`${BASE}/pro`);
+  await p4.waitForSelector('text=Prix conseillé pour votre usage : 1 € / mois');
+  await shot(p4, '18-page-pro');
+
+  // Abonnement Pro (Stripe, simulé et signé) : 3 € pour un conseillé à 1 € = 3 mois de Pro.
   const accountId = await m.evaluate(() => JSON.parse(localStorage.getItem('wcy:account')).id);
-  const event = JSON.stringify({ id: 'evt_e2e', type: 'checkout.session.completed', data: { object: { client_reference_id: accountId, mode: 'payment', customer: null } } });
+  const event = JSON.stringify({ id: 'evt_e2e', type: 'checkout.session.completed', data: { object: { client_reference_id: accountId, mode: 'payment', amount_total: 300, customer: null } } });
   const ts = Math.floor(Date.now() / 1000);
   const signature = createHmac('sha256', 'whsec_e2e').update(`${ts}.${event}`).digest('hex');
   const hook = await fetch(`${BASE}/api/stripe/webhook`, { method: 'POST', headers: { 'Stripe-Signature': `t=${ts},v1=${signature}` }, body: event });
@@ -280,8 +285,32 @@ try {
   await p4.waitForSelector('.banner-ok:has-text("Pro jusqu")');
   await p4.goto(`${BASE}/m`);
   await p4.waitForSelector('.pro-line .badge:has-text("Pro")');
-  await shot(p4, '18-pro');
-  step('don reçu : statut Pro actif, visible dans l’espace commerçant');
+  step('abonnement Pro reçu : statut actif, visible dans l’espace commerçant');
+
+  // Options Pro : tickets de 30 jours et marque masquée, appliquées jusque chez le client.
+  await p4.getByRole('button', { name: 'Réglages' }).click();
+  await p4.selectOption('#st', '720');
+  await p4.check('#swl');
+  await p4.click('form.stack button[type=submit]');
+  await p4.waitForSelector('p.ok');
+  await shot(p4, '19-options-pro');
+  const brandless = await client.newPage();
+  await brandless.goto(`${BASE}/${tickets[11].c}`);
+  await brandless.waitForSelector('.choice');
+  assert.equal((await brandless.locator('footer').textContent()).trim(), 'Privacy');
+  step('options Pro : tickets 30 jours, marque masquée (seul le lien Confidentialité reste)');
+
+  // Statistiques sur un an et export CSV.
+  await p4.goto(`${BASE}/m`);
+  await p4.getByRole('button', { name: 'Stats' }).click();
+  await p4.waitForSelector('h3:has-text("12 derniers mois")');
+  const [csv] = await Promise.all([p4.waitForEvent('download'), p4.getByRole('button', { name: /Exporter en CSV/ }).click()]);
+  assert.match(csv.suggestedFilename(), /^wecallyou-stats-\d+\.csv$/);
+  const table = readFileSync(await csv.path(), 'utf8');
+  assert.match(table, /^﻿day;scan;sub_push;sub_sms/);
+  assert.match(table, /\n\d{4}-\d{2}-\d{2};\d+;/);
+  await shot(p4, '20-stats-pro');
+  step('statistiques Pro : 12 mois et export tableur');
 
   /* ------------------------------------------- disposition 24 par page */
   await m.goto(`${BASE}/m`);

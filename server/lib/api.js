@@ -2,7 +2,8 @@ import { Role, label } from './token.js';
 import { fail, readJson, readRaw, sendJson, clientIp, RateLimit } from './http.js';
 import { verifySignature, applyEvent } from './stripe.js';
 import { checkMessage, relay } from './relay.js';
-import { LIFETIMES, DEFAULT_LIFETIME } from './store.js';
+import { LIFETIMES, PRO_LIFETIMES, DEFAULT_LIFETIME } from './store.js';
+import { STATS_DAYS } from './pro.js';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import * as base32 from './base32.js';
 
@@ -128,6 +129,12 @@ function range(from, to, max = MAX_NUMBER) {
   return [a, b];
 }
 
+/** À la création, le lot n'a pas encore de compte : durées gratuites seulement (sauf installation « allPro »). */
+const freeLifetime = (value, allPro = false) => {
+  const ttl = lifetime(value);
+  return PRO_LIFETIMES.includes(ttl) && !allPro ? fail(403, 'pro_required') : ttl;
+};
+
 const lifetime = (value) => (value === undefined ? DEFAULT_LIFETIME : LIFETIMES.includes(Number(value)) ? Number(value) : fail(400, 'ttl'));
 
 function publicKey(value) {
@@ -144,7 +151,7 @@ const pick = (object, keys) => Object.fromEntries(keys.map((k) => [k, object[k]]
 
 /* ------------------------------------------------------------------ API */
 
-export function createApi({ config, store, accounts, tokens, events, gate }) {
+export function createApi({ config, store, accounts, plans, tokens, events, gate }) {
   const limits = new RateLimit();
 
   /* ---------------------------------------------------- comptes et priorité */
@@ -158,8 +165,9 @@ export function createApi({ config, store, accounts, tokens, events, gate }) {
     return fail(401, 'login');
   };
 
-  const accountView = (account) => ({
+  const accountView = async (account) => ({
     ok: true,
+    usage: await plans.usage(account), // tickets actifs sur 30 jours et prix Pro conseillé
     id: account.id,
     wrapPw: account.wrapPw,
     vault: account.vault,
@@ -169,6 +177,7 @@ export function createApi({ config, store, accounts, tokens, events, gate }) {
   });
 
   const lotIsPro = async (lotId) => {
+    if (config.allPro) return true;
     if (!Number.isInteger(lotId) || lotId < 1) return false;
     const lot = await store.lot(lotId);
     return lot?.owner ? accounts.isProId(lot.owner) : false;
@@ -212,7 +221,7 @@ export function createApi({ config, store, accounts, tokens, events, gate }) {
     return tickets;
   };
 
-  const publicLot = (lot) => ({
+  const publicLot = async (lot) => ({
     lot: lot.id,
     name: lot.name,
     // La seule « publicité » possible : celle du créateur du lot (partenaire, réseaux sociaux).
@@ -224,19 +233,29 @@ export function createApi({ config, store, accounts, tokens, events, gate }) {
     channels: lot.channels,
     pubEcdh: lot.pubEcdh,
     pubVapid: lot.pubVapid,
+    // Option Pro : sans mention de WeCallYou (le lien Confidentialité reste, il est obligatoire).
+    whiteLabel: Boolean(lot.whiteLabel) && (await plans.status(lot)).pro,
   });
 
   /** Nom du premier groupe du lot qui contient ce numéro ('' sinon). */
   const groupOf = (lot, n) => (lot.groups ?? []).find((g) => parseNumbers(g.numbers)?.includes(n))?.name ?? '';
 
-  /** Ce que seul le commerçant voit : modèle de message, listes, groupes, lien de l'écran public. */
-  const privateLot = (lot) => ({
-    ...publicLot(lot),
-    template: lot.template ?? '',
-    lists: lot.lists ?? [],
-    groups: lot.groups ?? [],
-    screen: screenToken(lot),
-  });
+  /** Ce que seul le commerçant voit : modèle, listes, groupes, écran public, statut Pro du lot. */
+  const privateLot = async (lot) => {
+    const status = await plans.status(lot);
+    return {
+      ...(await publicLot(lot)),
+      template: lot.template ?? '',
+      lists: lot.lists ?? [],
+      groups: lot.groups ?? [],
+      screen: screenToken(lot),
+      whiteLabelSetting: Boolean(lot.whiteLabel),
+      pro: status.pro,
+      proUntil: status.until,
+      // Durée de vie réellement appliquée (une durée Pro retombe à 48 h après la fin du Pro et de sa marge).
+      ttlApplied: await plans.lifetimeHours(lot, lot.ttl ?? DEFAULT_LIFETIME),
+    };
+  };
 
   /**
    * Lien de l'écran public : numéro de lot + signature (HMAC) ; rien à stocker.
@@ -292,7 +311,7 @@ export function createApi({ config, store, accounts, tokens, events, gate }) {
         name,
         promo: cleanText(body.promo, 140),
         link: cleanLink(body.link),
-        ttl: lifetime(body.ttl),
+        ttl: freeLifetime(body.ttl, config.allPro),
         channels: cleanChannels(body.channels),
         pubEcdh: publicKey(body.pubEcdh),
         pubVapid: publicKey(body.pubVapid),
@@ -303,7 +322,7 @@ export function createApi({ config, store, accounts, tokens, events, gate }) {
       });
       await store.countLot(to - from + 1);
       // Les tickets eux-mêmes sont demandés ensuite, cahier par cahier (POST /lot/tickets).
-      return { ok: true, ...publicLot(lot) };
+      return { ok: true, ...(await publicLot(lot)) };
     }],
 
     ['GET', /^\/lot$/, async (req) => {
@@ -311,7 +330,7 @@ export function createApi({ config, store, accounts, tokens, events, gate }) {
       const waiting = await store.waiting(lot.id);
       return {
         ok: true,
-        ...privateLot(lot),
+        ...(await privateLot(lot)),
         wrapped: lot.wrapped,
         owned: Boolean(lot.owner),
         pro: await lotIsPro(lot.id),
@@ -361,13 +380,19 @@ export function createApi({ config, store, accounts, tokens, events, gate }) {
       lot.name = cleanName(body.name) || lot.name;
       lot.promo = cleanText(body.promo, 140);
       lot.link = cleanLink(body.link);
-      lot.ttl = lifetime(body.ttl ?? lot.ttl);
+      // Options Pro (durées longues, marque masquée) : refusées si le lot n'est pas Pro.
+      const { pro } = await plans.status(lot);
+      const ttl = lifetime(body.ttl ?? lot.ttl);
+      if (PRO_LIFETIMES.includes(ttl) && ttl !== lot.ttl && !pro) fail(403, 'pro_required');
+      if (body.whiteLabel === true && !lot.whiteLabel && !pro) fail(403, 'pro_required');
+      lot.ttl = ttl;
+      if (body.whiteLabel !== undefined) lot.whiteLabel = body.whiteLabel === true;
       lot.channels = cleanChannels(body.channels);
       if (body.template !== undefined) lot.template = cleanText(body.template, 280);
       lot.lists = cleanLists(body.lists) ?? lot.lists ?? [];
       lot.groups = cleanGroups(body.groups) ?? lot.groups ?? [];
       await store.saveLot(lot);
-      return { ok: true, ...privateLot(lot) };
+      return { ok: true, ...(await privateLot(lot)) };
     }],
 
     // Suivi : tickets actifs (journal sans donnée personnelle) et statistiques des 30 derniers jours.
@@ -376,9 +401,12 @@ export function createApi({ config, store, accounts, tokens, events, gate }) {
       return { ok: true, tickets: (await store.history(lot.id)).map((t) => ({ ...t, label: label(t.n) })) };
     }],
 
+    // Statistiques : 90 jours au plus en gratuit, un an en Pro (l'export se fait depuis la page).
     ['GET', /^\/lot\/stats$/, async (req) => {
       const lot = await lotOf(req);
-      return { ok: true, days: await store.lotStats(lot.id) };
+      const max = (await plans.status(lot)).pro ? STATS_DAYS.pro : STATS_DAYS.free;
+      const asked = Number(new URL(req.url, 'http://x').searchParams.get('days') ?? 30);
+      return { ok: true, max, days: await store.lotStats(lot.id, Math.min(Math.max(Number.isInteger(asked) ? asked : 30, 1), max)) };
     }],
 
     // Le téléphone du commerçant signale qu'il a ouvert un SMS / WhatsApp / e-mail pour ce ticket.
@@ -405,7 +433,7 @@ export function createApi({ config, store, accounts, tokens, events, gate }) {
         role: ticket.role === Role.STUB ? 'stub' : 'client',
         n: ticket.n,
         label: label(ticket.n),
-        ...publicLot(lot),
+        ...(await publicLot(lot)),
         status: store.statusId(lot.id, ticket.n),
         called,
         // Le message de l'appel (ex. « attendus au Terrain 3 ») s'affiche aussi sur la page du client.
@@ -548,6 +576,7 @@ export function createApi({ config, store, accounts, tokens, events, gate }) {
       const account = await accountOf(req);
       const body = await readJson(req);
       const lot = (await store.lotByAuth(body.lotAuth)) ?? fail(404, 'invalid');
+      await accounts.addLot(account, lot.id);
       if (lot.owner !== account.id) {
         lot.owner = account.id;
         await store.saveLot(lot);
@@ -571,7 +600,11 @@ export function createApi({ config, store, accounts, tokens, events, gate }) {
         fail(400, 'bad_json');
       }
       if (await accounts.alreadyHandled(event.id)) return { ok: true, duplicate: true };
-      return { ok: true, result: await applyEvent(event, accounts) };
+      const pricing = {
+        proLinks: config.stripeProLinks ?? [],
+        suggested: async (id) => (await plans.usage(await accounts.get(id))).suggested,
+      };
+      return { ok: true, result: await applyEvent(event, accounts, pricing) };
     }],
   ];
 

@@ -122,6 +122,7 @@ function announcements(recent) {
 
 function show(data) {
   name.textContent = data.name;
+  document.title = data.name;
   promo.textContent = [data.promo, data.link?.replace(/^https:\/\//, '')].filter(Boolean).join(' · ');
   pace.textContent = data.avgMs ? t('e_pace', { min: Math.max(1, Math.round(data.avgMs / 60000)) }) : '';
   const list = announcements(data.recent);

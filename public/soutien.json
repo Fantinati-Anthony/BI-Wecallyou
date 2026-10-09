@@ -5,6 +5,21 @@
   "tax_deductible": false,
   "fee_percent": 1.5,
   "fee_fixed": 0.25,
+  "pro": {
+    "tiers": [
+      { "upTo": 500, "month": 1 },
+      { "upTo": 5000, "month": 3 },
+      { "upTo": 20000, "month": 8 },
+      { "upTo": null, "month": 15 }
+    ],
+    "monthly": [
+      { "amount": 1, "url": "" },
+      { "amount": 3, "url": "" },
+      { "amount": 8, "url": "" },
+      { "amount": 15, "url": "" }
+    ],
+    "once": { "min": 1, "url": "" }
+  },
   "roadmap": [
     {
       "month": 21,

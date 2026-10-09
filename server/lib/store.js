@@ -5,7 +5,9 @@ import { createHash, createHmac, randomBytes, randomInt } from 'node:crypto';
 export const MAX_SUBS_PER_TICKET = 3;
 
 /** Durée de vie d'un ticket à partir de son premier scan (réglable par lot, en heures). */
-export const LIFETIMES = [1, 3, 6, 12, 24, 48];
+export const FREE_LIFETIMES = [1, 3, 6, 12, 24, 48];
+export const PRO_LIFETIMES = [72, 168, 360, 720]; // 3, 7, 15 et 30 jours : lots Pro (pressing, SAV…)
+export const LIFETIMES = [...FREE_LIFETIMES, ...PRO_LIFETIMES];
 export const DEFAULT_LIFETIME = 6;
 
 /** Événements du journal d'un ticket et compteur statistique correspondant. */

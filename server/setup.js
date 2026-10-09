@@ -35,8 +35,12 @@ const config = {
   tokenKey: randomBytes(16).toString('hex'),
   // Clé des noms de fichiers d'état (impossibles à deviner sans elle).
   statusKey: randomBytes(32).toString('hex'),
-  // À remplir avec le secret du webhook Stripe (whsec_…) pour activer le Pro des donateurs.
+  // À remplir avec le secret du webhook Stripe (whsec_…) pour activer le Pro des abonnés.
   stripeWebhookSecret: '',
+  // Identifiants des liens de paiement de l'offre Pro (plink_…), pour ne pas confondre avec les dons.
+  stripeProLinks: [],
+  // true sur une installation indépendante : toutes les options Pro pour tout le monde.
+  allPro: false,
   capacity: 40,
 };
 

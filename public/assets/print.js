@@ -54,7 +54,7 @@ export function printPlan({ lot, auth, from, to, options, domain, lang, key = nu
       button.disabled = false;
       button.textContent = original;
       if (!res.ok) return;
-      const pages = ticketSheets(res.tickets, { ...options, lang, domain, name: lot.name });
+      const pages = ticketSheets(res.tickets, { ...options, lang, domain, name: lot.name, whiteLabel: Boolean(lot.whiteLabel) });
       fillPrintRoot(withKey ? [keySheet(key), ...pages] : pages);
       onPrint?.();
       window.print();

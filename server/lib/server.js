@@ -8,6 +8,7 @@ import { sendJson } from './http.js';
 import { purge } from './purge.js';
 import { Accounts } from './accounts.js';
 import { Gate } from './priority.js';
+import { Plans } from './pro.js';
 
 export async function createServer(config) {
   const store = new Store(config);
@@ -16,7 +17,8 @@ export async function createServer(config) {
   await accounts.init();
   const events = new Events(store);
   const gate = new Gate({ capacity: config.capacity ?? 40 });
-  const api = createApi({ config, store, accounts, tokens: new Tokens(config.tokenKey), events, gate });
+  const plans = new Plans({ config, store, accounts });
+  const api = createApi({ config, store, accounts, plans, tokens: new Tokens(config.tokenKey), events, gate });
   const serveStatic = config.serveStatic ? createStatic(config.publicDir) : null;
 
   const server = http.createServer(async (req, res) => {
@@ -35,8 +37,8 @@ export async function createServer(config) {
     }
   });
 
-  const timer = setInterval(() => purge(store, Date.now(), accounts).catch((err) => console.error('purge', err)), 10 * 60_000);
+  const timer = setInterval(() => purge(store, Date.now(), accounts, plans).catch((err) => console.error('purge', err)), 10 * 60_000);
   timer.unref();
   server.on('close', () => clearInterval(timer));
-  return { server, store, accounts, events, gate };
+  return { server, store, accounts, plans, events, gate };
 }

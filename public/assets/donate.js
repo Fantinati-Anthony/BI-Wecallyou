@@ -1,14 +1,10 @@
 // Encart de dons : sincère, chiffré, jamais bloquant.
 // Les paiements passent par des liens Stripe (Payment Links) déclarés dans /soutien.json :
 // notre serveur ne voit ni carte, ni montant, ni donateur.
+// Le DON est sans contrepartie : ses liens ne portent jamais d'identifiant de compte et n'activent rien.
+// Les options en plus relèvent de l'abonnement Pro (page /pro), une offre distincte.
 import { h, t, api, local } from './common.js';
 import { session } from './account.js';
-
-/** Lien Stripe : s'il y a un compte connecté, le don y activera le Pro (client_reference_id). */
-function withAccount(url) {
-  const account = session.get();
-  return account ? `${url}${url.includes('?') ? '&' : '?'}client_reference_id=${account.id}` : url;
-}
 
 let configPromise = null;
 
@@ -101,7 +97,7 @@ export async function supportCard({ context, count = 0, brand = 'WeCallYou' }) {
     }
     const label = amount === null ? t('don_cta_other') : t(mode === 'once' ? 'don_cta' : 'don_cta_monthly', { amount: euros(amount) });
     cta.textContent = choice?.url ? label : t('don_soon');
-    if (choice?.url) cta.setAttribute('href', withAccount(choice.url));
+    if (choice?.url) cta.setAttribute('href', choice.url);
     else cta.removeAttribute('href');
     cta.classList.toggle('btn-soft', !choice?.url);
   }
@@ -134,15 +130,14 @@ export async function supportCard({ context, count = 0, brand = 'WeCallYou' }) {
     toggle.append(btn);
   }
 
-  const account = session.get();
   card.append(
     toggle,
     chips,
     impact,
     cta,
     fees,
-    h('p', { class: 'small' }, '⭐ ', t('don_pro'), ' ', account ? h('strong', {}, t('don_pro_on', { ident: account.ident })) : h('a', { href: '/compte' }, t('don_pro_login'))),
     h('p', { class: 'small muted' }, t('don_secure'), ' ', t(cfg.tax_deductible ? 'don_tax_yes' : 'don_tax_no')),
+    h('p', { class: 'small' }, t('don_vs_pro'), ' ', h('a', { href: '/pro' }, t('pro_link'))),
   );
 
   if (context !== 'support') {

@@ -20,7 +20,7 @@ function accountLine(lot) {
     h('a', { href: '/compte' }, `👤 ${account.ident}`),
     pro || lot.pro
       ? h('span', { class: 'badge' }, t('m_account_pro', { date: new Date(account.premiumUntil).toLocaleDateString(LANG) }))
-      : h('a', { href: '/soutenir' }, t('m_account_free')),
+      : h('a', { href: '/pro' }, t('m_account_free')),
   );
 }
 
@@ -30,6 +30,7 @@ const app = document.getElementById('app');
 const CHANNELS = ['push', 'sms', 'wa', 'mail'];
 const ICON = { push: '🔔', sms: '💬', wa: '🟢', mail: '✉️' };
 const LIFETIMES = [1, 3, 6, 12, 24, 48];
+const PRO_LIFETIMES = [72, 168, 360, 720]; // 3, 7, 15 et 30 jours (Pro)
 let info = null;
 let refreshTimer = null;
 
@@ -355,16 +356,44 @@ function statCards(s) {
   );
 }
 
-async function statsTab(panel, { access }) {
+/** Export tableur (CSV) des statistiques jour par jour : option Pro. */
+function exportCsv(lot, days) {
+  const columns = ['day', 'scan', ...CHANNELS.map((c) => `sub_${c}`), 'unsub', 'call', 'recall', 'push_ok', 'push_fail', 'push_gone', 'seen', 'send_sms', 'send_wa', 'send_mail'];
+  const lines = [[...columns, 'wait_min'].join(';')];
+  for (const d of days) {
+    const wait = d.waits ? Math.round(d.wait_ms / d.waits / 60000) : '';
+    lines.push([...columns.map((c) => d[c] ?? (c === 'day' ? '' : 0)), wait].join(';'));
+  }
+  const link = h('a', { href: URL.createObjectURL(new Blob([`﻿${lines.join('\n')}\n`], { type: 'text/csv;charset=utf-8' })), download: `wecallyou-stats-${lot.lot}.csv` });
+  document.body.append(link);
+  link.click();
+  link.remove();
+}
+
+async function statsTab(panel, { lot, access }) {
   render(panel, h('p', { class: 'muted' }, t('loading')));
-  const res = await api('/lot/stats', { auth: access.auth });
+  const res = await api(`/lot/stats?days=${lot.pro ? 365 : 30}`, { auth: access.auth });
   const days = res.days ?? [];
   if (days.length === 0) return render(panel, h('section', { class: 'card' }, h('h2', {}, t('st_title')), h('p', {}, t('st_none'))));
-  const week = days.filter((d) => Date.now() - Date.parse(d.day) < 7 * 86_400_000);
+  const within = (n) => days.filter((d) => Date.now() - Date.parse(d.day) < n * 86_400_000);
   const rows = days.slice(0, 14).map((d) => h('tr', {}, h('td', {}, new Date(d.day).toLocaleDateString(LANG)), h('td', {}, d.scan ?? 0), h('td', {}, CHANNELS.reduce((s, c) => s + (d[`sub_${c}`] ?? 0), 0)), h('td', {}, d.call ?? 0)));
   render(
     panel,
-    h('section', { class: 'card stack' }, h('h2', {}, t('st_title')), h('h3', {}, t('st_7')), statCards(sumDays(week)), h('h3', {}, t('st_30')), statCards(sumDays(days)), h('p', { class: 'small muted' }, t('st_hint'))),
+    h(
+      'section',
+      { class: 'card stack' },
+      h('h2', {}, t('st_title')),
+      h('h3', {}, t('st_7')),
+      statCards(sumDays(within(7))),
+      h('h3', {}, t('st_30')),
+      statCards(sumDays(within(30))),
+      lot.pro && h('h3', {}, t('st_year')),
+      lot.pro && statCards(sumDays(days)),
+      lot.pro
+        ? h('button', { type: 'button', class: 'btn btn-soft btn-block', onclick: () => exportCsv(lot, days) }, t('st_export'))
+        : h('p', { class: 'small' }, h('a', { href: '/pro' }, t('st_pro_more'))),
+      h('p', { class: 'small muted' }, t('st_hint')),
+    ),
     h(
       'section',
       { class: 'card' },
@@ -412,7 +441,7 @@ async function printTab(panel, { lot, access }) {
   const reprintKey = h('button', { type: 'button', class: 'linklike small' }, t('plan_key_only'));
   reprintKey.addEventListener('click', () => {
     const secret = textToSecret(saved.key);
-    fillPrintRoot([keySheet({ lang: LANG, domain: info.domain, brand: info.brand, lot: lot.lot, name: lot.name, secret, from: lot.from, to: lot.to, monthlyCost, password: saved.password })]);
+    fillPrintRoot([keySheet({ lang: LANG, domain: info.domain, brand: info.brand, lot: lot.lot, name: lot.name, secret, from: lot.from, to: lot.to, monthlyCost, password: saved.password, pro: lot.pro })]);
     window.print();
   });
 
@@ -468,7 +497,21 @@ function settingsTab(panel, { lot, access, reload }) {
   const name = h('input', { id: 'sn', type: 'text', maxlength: 60, value: lot.name });
   const promo = h('input', { id: 'sp', type: 'text', maxlength: 140, value: lot.promo, placeholder: t('create_promo_ph') });
   const link = h('input', { id: 'sl', type: 'url', maxlength: 200, value: lot.link, placeholder: t('create_link_ph') });
-  const ttl = h('select', { id: 'st', class: 'select' }, LIFETIMES.map((hours) => h('option', { value: hours, selected: hours === lot.ttl }, t('ttl_option', { h: hours }))));
+  // Durées de plusieurs jours et marque masquée : options Pro (grisées sinon, avec le lien vers l'offre).
+  const ttl = h(
+    'select',
+    { id: 'st', class: 'select' },
+    LIFETIMES.map((hours) => h('option', { value: hours, selected: hours === lot.ttl }, t('ttl_option', { h: hours }))),
+    PRO_LIFETIMES.map((hours) => h('option', { value: hours, selected: hours === lot.ttl, disabled: !lot.pro && hours !== lot.ttl }, t('ttl_days', { d: hours / 24 }))),
+  );
+  const whiteLabel = h('input', { type: 'checkbox', id: 'swl', checked: lot.whiteLabelSetting, disabled: !lot.pro && !lot.whiteLabelSetting });
+  const proSection = h(
+    'section',
+    { class: 'card stack' },
+    h('h2', {}, `⭐ ${t('s_pro_options')}`),
+    h('label', { class: 'check', for: 'swl' }, whiteLabel, ' ', t('s_whitelabel')),
+    !lot.pro && h('p', { class: 'small' }, h('a', { href: '/pro' }, t('pro_link'))),
+  );
   const checks = CHANNELS.map((c) => h('label', { class: 'check' }, h('input', { type: 'checkbox', value: c, checked: lot.channels.includes(c) }), ` ${ICON[c]} `, t(`ch_${c}`)));
   const template = h('input', { id: 'stp', type: 'text', maxlength: 280, value: lot.template, placeholder: t('s_template_ph') });
   const lists = h('textarea', { id: 'sli', class: 'textarea', rows: 3, placeholder: t('s_lists_ph') });
@@ -509,13 +552,15 @@ function settingsTab(panel, { lot, access, reload }) {
       h('div', { class: 'checks' }, checks),
       h('label', { for: 'st' }, t('create_ttl')),
       ttl,
-      h('p', { class: 'small muted' }, t('ttl_hint')),
+      h('p', { class: 'small muted' }, t('ttl_hint'), ' ', t('ttl_pro_hint')),
+      lot.ttlApplied !== lot.ttl && h('p', { class: 'small error' }, t('ttl_applied', { h: lot.ttlApplied })),
       h('label', { for: 'sp' }, t('create_promo')),
       promo,
       h('label', { for: 'sl' }, t('create_link')),
       link,
       h('p', { class: 'small muted' }, t('promo_hint')),
     ),
+    proSection,
     h(
       'section',
       { class: 'card stack' },
@@ -542,6 +587,7 @@ function settingsTab(panel, { lot, access, reload }) {
         promo: promo.value,
         link: link.value,
         ttl: Number(ttl.value),
+        whiteLabel: whiteLabel.checked,
         channels: checks.map((c) => c.querySelector('input')).filter((i) => i.checked).map((i) => i.value),
         template: template.value,
         lists: textToLists(lists.value),

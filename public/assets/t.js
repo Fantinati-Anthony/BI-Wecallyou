@@ -295,6 +295,11 @@ if (!data.ok) {
   errorView(data.error === 'network' ? 'network' : 'invalid');
 } else {
   document.title = `${data.label} · ${data.name}`;
+  // Option Pro « marque masquée » : seul le lien Confidentialité reste (il est obligatoire).
+  if (data.whiteLabel) {
+    const footer = document.querySelector('footer');
+    footer.replaceChildren(footer.querySelector('a[href="/confidentialite"]'));
+  }
   if (data.role === 'stub') await stub();
   else {
     if (data.channels.includes('push') && 'serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});

@@ -4,11 +4,12 @@ import { loadConfig } from './lib/config.js';
 import { Store } from './lib/store.js';
 import { Accounts } from './lib/accounts.js';
 import { purge } from './lib/purge.js';
+import { Plans } from './lib/pro.js';
 
 const config = loadConfig();
 const store = new Store(config);
 await store.init();
 const accounts = new Accounts(config);
 await accounts.init();
-const done = await purge(store, Date.now(), accounts);
+const done = await purge(store, Date.now(), accounts, new Plans({ config, store, accounts }));
 if (process.argv.includes('--verbose')) console.log(done);

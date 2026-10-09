@@ -157,6 +157,15 @@ export class Accounts {
     return true;
   }
 
+  /** Lots rattachés au compte (numéros seulement) : sert à mesurer l'usage pour le prix conseillé. */
+  async addLot(account, lotId) {
+    account.lots ??= [];
+    if (!account.lots.includes(lotId)) {
+      account.lots.push(lotId);
+      await this.save(account);
+    }
+  }
+
   async linkCustomer(customerId, accountId) {
     if (!/^cus_\w{1,64}$/.test(customerId)) return;
     await fs.writeFile(path.join(this.customersDir, customerId), accountId, { mode: 0o600 });

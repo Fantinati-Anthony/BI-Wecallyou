@@ -149,7 +149,7 @@ async function accountView() {
   const s = session.get();
   const status = synced.pro
     ? h('p', { class: 'banner-ok' }, t('acc_pro', { date: new Date(synced.premiumUntil).toLocaleDateString(LANG) }))
-    : h('div', { class: 'notice stack' }, h('strong', {}, t('acc_free')), h('p', { class: 'small' }, t('acc_free_hint')), h('a', { class: 'btn btn-gold', href: '/soutenir' }, t('acc_become_pro')));
+    : h('div', { class: 'notice stack' }, h('strong', {}, t('acc_free')), h('p', { class: 'small' }, t('acc_free_hint')), h('a', { class: 'btn btn-gold', href: '/pro' }, t('acc_become_pro')));
 
   const list = Object.entries(lots.all()).map(([id, lot]) =>
     h(
