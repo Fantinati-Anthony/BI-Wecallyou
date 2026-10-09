@@ -62,7 +62,7 @@ export function createStatic(publicDir) {
     const ext = path.extname(file);
     const headers = { 'Content-Type': TYPES[ext] ?? 'application/octet-stream', ...SECURITY_HEADERS };
     if (pathname.startsWith('/etat/')) headers['Cache-Control'] = 'public, max-age=2';
-    else if (ext === '.html' || rel === 'sw.js' || rel === 'soutien.json') headers['Cache-Control'] = 'no-cache';
+    else if (ext === '.html' || rel === 'sw.js' || rel === 'soutien.json' || rel === 'papiers.json') headers['Cache-Control'] = 'no-cache';
     else headers['Cache-Control'] = 'public, max-age=3600';
     res.writeHead(200, headers);
     res.end(req.method === 'HEAD' ? undefined : body);

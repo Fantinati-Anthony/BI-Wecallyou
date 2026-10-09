@@ -123,6 +123,22 @@ export const isIOS = () => /iP(hone|ad|od)/.test(navigator.userAgent) || (naviga
 export const isStandalone = () => navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
 export const fmtTime = (ms) => new Date(ms).toLocaleTimeString(LANG, { hour: '2-digit', minute: '2-digit' });
 
+/* ----------------------------------------------------------------- couleurs */
+
+/** Texte lisible sur un fond : noir sur clair, blanc sur foncé (luminance relative WCAG). */
+export function inkOn(background) {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(background.slice(i, i + 2), 16) / 255).map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.4 ? '#111111' : '#ffffff';
+}
+
+/** Couleurs personnalisées (option Pro) : { '--variable': '#rrggbb' | null } ; null rend la couleur d'origine. */
+export function setColors(vars) {
+  for (const [name, value] of Object.entries(vars)) {
+    if (value) document.documentElement.style.setProperty(name, value);
+    else document.documentElement.style.removeProperty(name);
+  }
+}
+
 /* ----------------------------------------------------------------- QR codes */
 
 /** QR code en SVG. Les adresses en majuscules utilisent le mode « alphanumérique », plus compact. */

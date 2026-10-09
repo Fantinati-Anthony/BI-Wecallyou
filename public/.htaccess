@@ -37,7 +37,7 @@ AddType application/manifest+json .webmanifest
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
   Header always set Strict-Transport-Security "max-age=31536000"
 
-  <FilesMatch "\.(html|webmanifest)$|^(sw\.js|soutien\.json)$">
+  <FilesMatch "\.(html|webmanifest)$|^(sw\.js|soutien\.json|papiers\.json)$">
     Header set Cache-Control "no-cache"
   </FilesMatch>
   <FilesMatch "\.(css|js|png|svg)$">

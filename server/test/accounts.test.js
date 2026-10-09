@@ -130,6 +130,8 @@ test('don pur : aucune contrepartie ; abonnement Pro : durée selon le montant e
   const settings = (extra) => call('POST', '/lot/settings', { name: 'Boulangerie', channels: ['sms'], ...extra }, lotAuth);
   assert.equal((await settings({ ttl: 720 })).status, 403);
   assert.equal((await settings({ whiteLabel: true })).status, 403);
+  assert.equal((await settings({ theme: { screenBg: '#102030' } })).status, 403);
+  assert.equal((await settings({ theme: null })).status, 200); // les couleurs d'origine, toujours permises
   assert.equal((await call('GET', '/lot/stats?days=365', undefined, lotAuth)).max, 90);
 
   // Usage et prix conseillé : peu de tickets actifs → palier à 1 €.
@@ -158,6 +160,14 @@ test('don pur : aucune contrepartie ; abonnement Pro : durée selon le montant e
   const ticket = (await call('POST', '/lot/tickets', { from: 1, to: 1 }, lotAuth)).tickets[0];
   assert.equal((await call('GET', `/t/${ticket.c}`)).whiteLabel, true);
 
+  // Couleurs personnalisées : seules des couleurs valides sont gardées, écran public et page client les reçoivent.
+  const themed = await settings({ theme: { screenBg: '#102030', screenNumber: '#FFCC00', accent: 'red', script: '#000000' } });
+  const theme = { screenBg: '#102030', screenNumber: '#ffcc00' };
+  assert.deepEqual(themed.themeSetting, theme);
+  assert.deepEqual((await call('GET', `/t/${ticket.c}`)).theme, theme);
+  assert.deepEqual((await call('GET', `/screen/${themed.screen}`)).theme, theme);
+  assert.deepEqual((await settings({})).themeSetting, theme); // réglages enregistrés sans toucher aux couleurs
+
   // Abonnement mensuel : le 1er paiement lie le client Stripe, chaque facture prolonge.
   await stripe({ id: 'evt_2', type: 'checkout.session.completed', data: { object: { client_reference_id: id, mode: 'subscription', amount_total: 100, customer: 'cus_ABC' } } });
   const periodEnd = Math.floor(Date.now() / 1000) + 200 * 86_400;
@@ -174,6 +184,12 @@ test('don pur : aucune contrepartie ; abonnement Pro : durée selon le montant e
   state = await call('GET', '/lot', undefined, lotAuth);
   assert.equal(state.ttlApplied, 720);
   assert.equal(state.whiteLabel, false);
+  // Couleurs gardées mais plus appliquées ; les changer redemande le Pro, les retirer reste possible.
+  assert.equal(state.theme, null);
+  assert.deepEqual(state.themeSetting, theme);
+  assert.equal((await call('GET', `/screen/${state.screen}`)).theme, null);
+  assert.equal((await settings({ theme: { screenBg: '#000000' } })).status, 403);
+  assert.equal((await settings({ theme: null })).themeSetting, null);
   account.premiumUntil = Date.now() - 31 * 86_400_000;
   await accounts.save(account);
   assert.equal((await call('GET', '/lot', undefined, lotAuth)).ttlApplied, 48);

@@ -116,6 +116,15 @@ function cleanLink(value) {
 
 const cleanChannels = (value) => (Array.isArray(value) ? CHANNELS.filter((c) => value.includes(c)) : []);
 
+/** Couleurs personnalisées (option Pro) : écran public et page du client. null = couleurs d'origine. */
+const THEME_KEYS = ['screenBg', 'screenText', 'screenNumber', 'accent'];
+function cleanTheme(value) {
+  if (!value || typeof value !== 'object') return null;
+  const theme = {};
+  for (const key of THEME_KEYS) if (/^#[0-9a-f]{6}$/i.test(value[key] ?? '')) theme[key] = value[key].toLowerCase();
+  return Object.keys(theme).length ? theme : null;
+}
+
 function number(value) {
   const n = Number(value);
   return Number.isInteger(n) && n >= 1 && n <= MAX_NUMBER ? n : fail(400, 'number');
@@ -221,21 +230,26 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
     return tickets;
   };
 
-  const publicLot = async (lot) => ({
-    lot: lot.id,
-    name: lot.name,
-    // La seule « publicité » possible : celle du créateur du lot (partenaire, réseaux sociaux).
-    promo: lot.promo ?? '',
-    link: lot.link ?? '',
-    ttl: lot.ttl ?? DEFAULT_LIFETIME,
-    from: lot.from,
-    to: lot.to,
-    channels: lot.channels,
-    pubEcdh: lot.pubEcdh,
-    pubVapid: lot.pubVapid,
-    // Option Pro : sans mention de WeCallYou (le lien Confidentialité reste, il est obligatoire).
-    whiteLabel: Boolean(lot.whiteLabel) && (await plans.status(lot)).pro,
-  });
+  const publicLot = async (lot) => {
+    const { pro } = await plans.status(lot);
+    return {
+      lot: lot.id,
+      name: lot.name,
+      // La seule « publicité » possible : celle du créateur du lot (partenaire, réseaux sociaux).
+      promo: lot.promo ?? '',
+      link: lot.link ?? '',
+      ttl: lot.ttl ?? DEFAULT_LIFETIME,
+      from: lot.from,
+      to: lot.to,
+      channels: lot.channels,
+      pubEcdh: lot.pubEcdh,
+      pubVapid: lot.pubVapid,
+      // Options Pro : sans mention de WeCallYou (le lien Confidentialité reste, il est obligatoire)
+      // et couleurs personnalisées. Hors Pro, elles restent enregistrées mais ne s'appliquent plus.
+      whiteLabel: Boolean(lot.whiteLabel) && pro,
+      theme: pro ? cleanTheme(lot.theme) : null,
+    };
+  };
 
   /** Nom du premier groupe du lot qui contient ce numéro ('' sinon). */
   const groupOf = (lot, n) => (lot.groups ?? []).find((g) => parseNumbers(g.numbers)?.includes(n))?.name ?? '';
@@ -250,6 +264,7 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
       groups: lot.groups ?? [],
       screen: screenToken(lot),
       whiteLabelSetting: Boolean(lot.whiteLabel),
+      themeSetting: cleanTheme(lot.theme),
       pro: status.pro,
       proUntil: status.until,
       // Durée de vie réellement appliquée (une durée Pro retombe à 48 h après la fin du Pro et de sa marge).
@@ -351,7 +366,9 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
     ['GET', /^\/screen\/([A-Za-z2-7]{23})$/, async (req, [token]) => {
       limits.check(`screen:${clientIp(req)}`, 300, 10 * MINUTE);
       const lot = await lotOfScreen(token.toUpperCase());
-      return { ok: true, name: lot.name, promo: lot.promo ?? '', link: lot.link ?? '', ...queueView(await store.queue(lot.id), null) };
+      const { pro } = await plans.status(lot);
+      const theme = pro ? cleanTheme(lot.theme) : null;
+      return { ok: true, name: lot.name, promo: lot.promo ?? '', link: lot.link ?? '', theme, ...queueView(await store.queue(lot.id), null) };
     }],
 
     // Écran d'affichage (tablette, TV) : seulement des numéros, rafraîchi toutes les quelques secondes.
@@ -380,13 +397,18 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
       lot.name = cleanName(body.name) || lot.name;
       lot.promo = cleanText(body.promo, 140);
       lot.link = cleanLink(body.link);
-      // Options Pro (durées longues, marque masquée) : refusées si le lot n'est pas Pro.
+      // Options Pro (durées longues, marque masquée, couleurs) : refusées si le lot n'est pas Pro.
+      // Revenir aux réglages gratuits reste toujours possible.
       const { pro } = await plans.status(lot);
       const ttl = lifetime(body.ttl ?? lot.ttl);
+      const theme = body.theme === undefined ? cleanTheme(lot.theme) : cleanTheme(body.theme);
       if (PRO_LIFETIMES.includes(ttl) && ttl !== lot.ttl && !pro) fail(403, 'pro_required');
       if (body.whiteLabel === true && !lot.whiteLabel && !pro) fail(403, 'pro_required');
+      if (theme && JSON.stringify(theme) !== JSON.stringify(cleanTheme(lot.theme)) && !pro) fail(403, 'pro_required');
       lot.ttl = ttl;
       if (body.whiteLabel !== undefined) lot.whiteLabel = body.whiteLabel === true;
+      if (theme) lot.theme = theme;
+      else delete lot.theme;
       lot.channels = cleanChannels(body.channels);
       if (body.template !== undefined) lot.template = cleanText(body.template, 280);
       lot.lists = cleanLists(body.lists) ?? lot.lists ?? [];

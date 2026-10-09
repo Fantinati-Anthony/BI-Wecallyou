@@ -1,11 +1,12 @@
 // Espace commerçant : connexion par la page 1 du PDF (et le mot de passe du lot s'il y en a un),
 // appels, suivi des tickets, statistiques, impression, réglages et écran d'affichage.
-import { h, t, LANG, api, render, translatePage, errorText, lots, local, fmtTime, qrSvg } from './common.js';
+import { h, t, LANG, api, render, translatePage, errorText, lots, local, fmtTime, qrSvg, inkOn } from './common.js';
 import { textToSecret, secretToText, lotMaterial, authTokenOf, openLot, b64u, openFromClient } from './crypto.js';
 import { unlock, callTickets } from './call.js';
 import { composer, needsComposer, groupOf, parseNumbers } from './message.js';
-import { LAYOUTS, keySheet, fillPrintRoot } from './sheets.js';
-import { printPlan, printOptions, readLogo } from './print.js';
+import { keySheet, fillPrintRoot, contentOf, keyPage, setPrintPage } from './sheets.js';
+import { printPlan, printOptions } from './print.js';
+import { designControls, livePreview } from './studio.js';
 import { supportCard, loadSupport } from './donate.js';
 import { session, sync, removeLot } from './account.js';
 
@@ -31,6 +32,8 @@ const CHANNELS = ['push', 'sms', 'wa', 'mail'];
 const ICON = { push: '🔔', sms: '💬', wa: '🟢', mail: '✉️' };
 const LIFETIMES = [1, 3, 6, 12, 24, 48];
 const PRO_LIFETIMES = [72, 168, 360, 720]; // 3, 7, 15 et 30 jours (Pro)
+/** Couleurs d'origine de l'écran public et de la page client (personnalisables en Pro). */
+const THEME_DEFAULTS = { screenBg: '#0f0e0c', screenText: '#ffffff', screenNumber: '#ffb347', accent: '#e8572a' };
 let info = null;
 let refreshTimer = null;
 
@@ -123,6 +126,7 @@ async function dashboard(lotId) {
   const TABS = { call: 'm_tab_call', history: 'm_tab_history', stats: 'm_tab_stats', print: 'm_tab_print', settings: 'm_tab_settings' };
   const show = (name) => {
     clearInterval(refreshTimer);
+    app.classList.toggle('wrap-studio', name === 'print'); // le studio d'impression a besoin de largeur
     for (const b of tabs.children) b.setAttribute('aria-pressed', String(b.dataset.tab === name));
     ({ call: callTab, history: historyTab, stats: statsTab, print: printTab, settings: settingsTab })[name](panel, { lot, access, reload });
   };
@@ -411,59 +415,62 @@ async function printTab(panel, { lot, access }) {
   const monthlyCost = support ? support.costs.reduce((sum, c) => sum + c.month, 0) : 20;
   const from = h('input', { id: 'pf', type: 'number', min: 1, max: 999999, value: lot.from ?? 1 });
   const to = h('input', { id: 'pt', type: 'number', min: 1, max: 999999, value: lot.to ?? 120 });
-  const perPage = h('select', { id: 'pp', class: 'select' }, Object.keys(LAYOUTS).map((n) => h('option', { value: n, selected: Number(n) === options.perPage }, t('layout_option', { n }))));
-  const showNumber = h('input', { type: 'checkbox', checked: options.showNumber });
-  const logo = h('input', { id: 'logo', type: 'file', accept: 'image/png,image/jpeg,image/webp,image/svg+xml' });
-  const removeLogo = h('button', { type: 'button', class: 'linklike small', hidden: !options.logo }, '✕ logo');
   const plan = h('div');
+  const preview = livePreview();
+  const secret = textToSecret(saved.key);
+  const keyCtx = { lang: LANG, domain: info.domain, brand: info.brand, lot: lot.lot, name: lot.name, secret, from: lot.from, to: lot.to, monthlyCost, password: saved.password, pro: lot.pro };
 
-  const drawPlan = () => {
-    const a = Number(from.value);
-    const b = Number(to.value);
-    if (!Number.isInteger(a) || !Number.isInteger(b) || a < 1 || b < a || b > 999_999) return render(plan, h('p', { class: 'error' }, t('err_range')));
-    render(plan, printPlan({ lot, auth: access.auth, from: a, to: b, options: printOptions.get(lot.lot), domain: info.domain, lang: LANG }));
+  const range = () => [Number(from.value), Number(to.value)];
+  const draw = () => {
+    const [a, b] = range();
+    const valid = Number.isInteger(a) && Number.isInteger(b) && a >= 1 && b >= a && b <= 999_999;
+    const ok = preview.update({ design: controls.get(), lang: LANG, domain: info.domain, name: lot.name, from: valid ? a : lot.from, count: valid ? b - a + 1 : 1, whiteLabel: Boolean(lot.whiteLabel), key: keyCtx });
+    if (!valid) return render(plan, h('p', { class: 'error' }, t('err_range')));
+    render(plan, ok && printPlan({ lot, auth: access.auth, from: a, to: b, options: controls.get(), domain: info.domain, lang: LANG }));
   };
-  const saveOptions = async () => {
-    const changes = { perPage: Number(perPage.value), showNumber: showNumber.checked };
-    if (logo.files[0]) changes.logo = await readLogo(logo.files[0]).catch(() => null);
-    printOptions.set(lot.lot, changes);
-    removeLogo.hidden = !printOptions.get(lot.lot).logo;
-    drawPlan();
-  };
-  for (const el of [perPage, showNumber, logo]) el.addEventListener('change', saveOptions);
-  for (const el of [from, to]) el.addEventListener('input', drawPlan);
-  removeLogo.addEventListener('click', () => {
-    printOptions.set(lot.lot, { logo: null });
-    removeLogo.hidden = true;
-    drawPlan();
-  });
+  // Mise en page commune à tout le lot : calculée pour son plus grand numéro.
+  const contentFor = (design) => contentOf(design, { lang: LANG, domain: info.domain, name: lot.name, whiteLabel: Boolean(lot.whiteLabel), last: lot.to });
+  const controls = designControls(
+    options,
+    (design) => {
+      printOptions.set(lot.lot, design);
+      draw();
+    },
+    contentFor,
+  );
+  for (const el of [from, to]) el.addEventListener('input', draw);
 
   const reprintKey = h('button', { type: 'button', class: 'linklike small' }, t('plan_key_only'));
   reprintKey.addEventListener('click', () => {
-    const secret = textToSecret(saved.key);
-    fillPrintRoot([keySheet({ lang: LANG, domain: info.domain, brand: info.brand, lot: lot.lot, name: lot.name, secret, from: lot.from, to: lot.to, monthlyCost, password: saved.password, pro: lot.pro })]);
+    setPrintPage(keyPage(controls.get()));
+    fillPrintRoot([keySheet({ ...keyCtx, design: controls.get() })]);
     window.print();
   });
 
   render(
     panel,
     h(
-      'section',
-      { class: 'card stack' },
-      h('h2', {}, t('m_print_title')),
-      h('p', { class: 'small muted' }, t('m_print_hint')),
-      h('div', { class: 'inline-fields' }, h('div', {}, h('label', { for: 'pf' }, t('create_first')), from), h('div', {}, h('label', { for: 'pt' }, t('create_to')), to)),
-      h('label', { for: 'pp' }, t('create_layout')),
-      perPage,
-      h('label', { class: 'check' }, showNumber, ' ', t('create_show_number')),
-      h('label', { for: 'logo' }, t('create_logo')),
-      logo,
-      removeLogo,
-      plan,
-      reprintKey,
+      'div',
+      { class: 'studio' },
+      h(
+        'div',
+        { class: 'studio-form' },
+        h(
+          'section',
+          { class: 'card stack' },
+          h('h2', {}, t('m_print_title')),
+          h('p', { class: 'small muted' }, t('m_print_hint')),
+          h('div', { class: 'inline-fields' }, h('div', {}, h('label', { for: 'pf' }, t('create_first')), from), h('div', {}, h('label', { for: 'pt' }, t('create_to')), to)),
+        ),
+        h('details', { class: 'card', open: true }, h('summary', {}, t('m_print_layout')), controls.layout),
+        h('details', { class: 'card' }, h('summary', {}, t('m_print_colors')), controls.colors),
+        h('section', { class: 'card stack' }, plan, reprintKey),
+      ),
+      preview.element,
     ),
+    preview.fab,
   );
-  drawPlan();
+  draw();
 }
 
 /* ----------------------------------------------------------------- réglages */
@@ -505,11 +512,44 @@ function settingsTab(panel, { lot, access, reload }) {
     PRO_LIFETIMES.map((hours) => h('option', { value: hours, selected: hours === lot.ttl, disabled: !lot.pro && hours !== lot.ttl }, t('ttl_days', { d: hours / 24 }))),
   );
   const whiteLabel = h('input', { type: 'checkbox', id: 'swl', checked: lot.whiteLabelSetting, disabled: !lot.pro && !lot.whiteLabelSetting });
+  // Couleurs de l'écran public et de la page client (Pro) : aperçu en direct, retour aux couleurs d'origine toujours possible.
+  let themeTouched = false;
+  const themePreview = h('div', { class: 'theme-preview', 'aria-hidden': 'true' }, h('div', { class: 'tp-screen' }, h('span', {}, lot.name), h('b', {}, '042')), h('div', { class: 'tp-btn' }, t('theme_button')));
+  const themeInputs = Object.entries(THEME_DEFAULTS).map(([key, fallback]) => {
+    const input = h('input', { type: 'color', class: 'color', id: `th-${key}`, value: lot.themeSetting?.[key] ?? fallback, disabled: !lot.pro });
+    input.addEventListener('input', () => {
+      themeTouched = true;
+      drawTheme();
+    });
+    return { key, input, element: h('div', { class: 'field' }, h('label', { for: `th-${key}` }, t(`theme_${key}`)), input) };
+  });
+  const drawTheme = () => {
+    for (const { key, input } of themeInputs) themePreview.style.setProperty(`--tp-${key}`, input.value);
+    themePreview.style.setProperty('--tp-ink', inkOn(themeInputs.find((i) => i.key === 'accent').input.value));
+  };
+  drawTheme();
+  const resetTheme = h('button', { type: 'button', class: 'linklike small' }, t('theme_reset'));
+  resetTheme.addEventListener('click', () => {
+    for (const { key, input } of themeInputs) input.value = THEME_DEFAULTS[key];
+    themeTouched = true;
+    drawTheme();
+  });
+  /** Couleurs à envoyer : undefined si rien n'a changé, null pour les couleurs d'origine. */
+  const themeValue = () => {
+    if (!themeTouched) return undefined;
+    const theme = Object.fromEntries(themeInputs.map(({ key, input }) => [key, input.value]));
+    return Object.entries(theme).every(([key, value]) => value === THEME_DEFAULTS[key]) ? null : theme;
+  };
   const proSection = h(
     'section',
     { class: 'card stack' },
     h('h2', {}, `⭐ ${t('s_pro_options')}`),
     h('label', { class: 'check', for: 'swl' }, whiteLabel, ' ', t('s_whitelabel')),
+    h('h3', {}, t('s_theme')),
+    h('p', { class: 'small muted' }, t('s_theme_hint')),
+    themePreview,
+    h('div', { class: 'grid-4' }, themeInputs.map((i) => i.element)),
+    resetTheme,
     !lot.pro && h('p', { class: 'small' }, h('a', { href: '/pro' }, t('pro_link'))),
   );
   const checks = CHANNELS.map((c) => h('label', { class: 'check' }, h('input', { type: 'checkbox', value: c, checked: lot.channels.includes(c) }), ` ${ICON[c]} `, t(`ch_${c}`)));
@@ -588,6 +628,7 @@ function settingsTab(panel, { lot, access, reload }) {
         link: link.value,
         ttl: Number(ttl.value),
         whiteLabel: whiteLabel.checked,
+        theme: themeValue(),
         channels: checks.map((c) => c.querySelector('input')).filter((i) => i.checked).map((i) => i.value),
         template: template.value,
         lists: textToLists(lists.value),

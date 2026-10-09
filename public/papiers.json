@@ -1,0 +1,122 @@
+{
+  "_doc": "Catalogue des papiers compatibles, affiché dans le studio d'impression. Chaque produit porte ses réglages (design : voir public/assets/layout.js) et, facultatif, un lien d'achat https:// (lien affilié accepté : il est signalé comme tel). Les cotes des étiquettes suivent les formats les plus courants : faites une page d'essai sur papier ordinaire avant d'imprimer sur les étiquettes.",
+  "products": [
+    {
+      "id": "a4-standard",
+      "kind": "sheet",
+      "name": { "fr": "Papier A4 standard 80 g", "en": "Standard A4 paper 80 gsm" },
+      "note": { "fr": "Le plus simple : toute imprimante, découpe aux ciseaux ou au massicot.", "en": "The simplest: any printer, cut with scissors or a guillotine." },
+      "design": { "paper": "a4", "cols": 2, "rows": 6, "stub": "auto" },
+      "shop": "Amazon",
+      "url": ""
+    },
+    {
+      "id": "a4-thick",
+      "kind": "sheet",
+      "name": { "fr": "Papier A4 épais 160 à 200 g", "en": "Thick A4 paper 160–200 gsm" },
+      "note": { "fr": "Des tickets rigides qui ne se froissent pas : vestiaires, événements, jetons réutilisables.", "en": "Stiff tickets that don’t crumple: cloakrooms, events, reusable tokens." },
+      "design": { "paper": "a4", "cols": 2, "rows": 5, "stub": "auto" },
+      "shop": "Amazon",
+      "url": ""
+    },
+    {
+      "id": "a4-perf-8",
+      "kind": "perforated",
+      "name": { "fr": "A4 micro-perforé, 8 parts (105 × 74,25 mm)", "en": "Micro-perforated A4, 8 parts (105 × 74.25 mm)" },
+      "note": { "fr": "Se détache à la main, sans ciseaux. Le contenu s’écarte seul des bords non imprimables.", "en": "Tears off by hand, no scissors. Content keeps clear of the unprintable edges." },
+      "design": { "paper": "a4", "margins": [0, 0, 0, 0], "cols": 2, "rows": 4, "stub": "bottom", "cut": false },
+      "shop": "Amazon",
+      "url": ""
+    },
+    {
+      "id": "a4-perf-4",
+      "kind": "perforated",
+      "name": { "fr": "A4 micro-perforé, 4 parts (A6)", "en": "Micro-perforated A4, 4 parts (A6)" },
+      "note": { "fr": "Grands tickets lisibles de loin, souche détachable en dessous.", "en": "Large tickets readable from afar, tear-off stub below." },
+      "design": { "paper": "a4", "margins": [0, 0, 0, 0], "cols": 2, "rows": 2, "stub": "bottom", "cut": false },
+      "shop": "Amazon",
+      "url": ""
+    },
+    {
+      "id": "cards-10",
+      "kind": "perforated",
+      "name": { "fr": "Cartes prédécoupées 85 × 54 mm, 10 par feuille", "en": "Pre-cut cards 85 × 54 mm, 10 per sheet" },
+      "note": { "fr": "Carton épais au format carte de visite. Le ticket et sa souche sont deux cartes voisines.", "en": "Thick business-card stock. Ticket and stub are two neighbouring cards." },
+      "design": { "paper": "a4", "margins": [13.5, 20, 13.5, 20], "cols": 2, "rows": 5, "stub": "cell", "cut": false },
+      "shop": "Amazon",
+      "url": ""
+    },
+    {
+      "id": "labels-8",
+      "kind": "labels",
+      "name": { "fr": "Étiquettes 99,1 × 67,7 mm, 8 par feuille", "en": "Labels 99.1 × 67.7 mm, 8 per sheet" },
+      "note": { "fr": "Format type L7165. Ticket à remettre, souche à coller sur la commande ou le vêtement.", "en": "L7165-type layout. Hand over the ticket, stick the stub on the order or garment." },
+      "design": { "paper": "a4", "margins": [13.1, 4.65, 13.1, 4.65], "gapX": 2.5, "cols": 2, "rows": 4, "stub": "cell", "cut": false },
+      "shop": "Amazon",
+      "url": ""
+    },
+    {
+      "id": "labels-10",
+      "kind": "labels",
+      "name": { "fr": "Étiquettes 99,1 × 57 mm, 10 par feuille", "en": "Labels 99.1 × 57 mm, 10 per sheet" },
+      "note": { "fr": "Format type L7173. Le ticket et sa souche autocollante côte à côte.", "en": "L7173-type layout. Ticket and sticky stub side by side." },
+      "design": { "paper": "a4", "margins": [6, 4.65, 6, 4.65], "gapX": 2.5, "cols": 2, "rows": 5, "stub": "cell", "cut": false },
+      "shop": "Amazon",
+      "url": ""
+    },
+    {
+      "id": "labels-14",
+      "kind": "labels",
+      "name": { "fr": "Étiquettes 99,1 × 38,1 mm, 14 par feuille", "en": "Labels 99.1 × 38.1 mm, 14 per sheet" },
+      "note": { "fr": "Format type L7163 : bandeaux idéaux pour les sacs de commande.", "en": "L7163-type layout: strips ideal for order bags." },
+      "design": { "paper": "a4", "margins": [15.15, 4.65, 15.15, 4.65], "gapX": 2.5, "cols": 2, "rows": 7, "stub": "cell", "cut": false },
+      "shop": "Amazon",
+      "url": ""
+    },
+    {
+      "id": "labels-21",
+      "kind": "labels",
+      "name": { "fr": "Étiquettes 63,5 × 38,1 mm, 21 par feuille", "en": "Labels 63.5 × 38.1 mm, 21 per sheet" },
+      "note": { "fr": "Format type L7160, le plus répandu. Dix paires ticket + souche par feuille.", "en": "L7160-type layout, the most common. Ten ticket + stub pairs per sheet." },
+      "design": { "paper": "a4", "margins": [15.15, 7.21, 15.15, 7.21], "gapX": 2.54, "cols": 3, "rows": 7, "stub": "cell", "cut": false },
+      "shop": "Amazon",
+      "url": ""
+    },
+    {
+      "id": "labels-24",
+      "kind": "labels",
+      "name": { "fr": "Étiquettes 63,5 × 33,9 mm, 24 par feuille", "en": "Labels 63.5 × 33.9 mm, 24 per sheet" },
+      "note": { "fr": "Format type L7159. Douze paires, la souche sous son ticket.", "en": "L7159-type layout. Twelve pairs, stub under its ticket." },
+      "design": { "paper": "a4", "margins": [12.9, 7.21, 12.9, 7.21], "gapX": 2.54, "cols": 3, "rows": 8, "stub": "cell", "cut": false },
+      "shop": "Amazon",
+      "url": ""
+    },
+    {
+      "id": "roll-80",
+      "kind": "roll",
+      "name": { "fr": "Rouleau thermique 80 mm (imprimante à tickets)", "en": "80 mm thermal roll (receipt printer)" },
+      "note": { "fr": "Un ticket par coupe, souche détachable en dessous. Sans encre, en noir.", "en": "One ticket per cut, tear-off stub below. Inkless, black only." },
+      "design": { "paper": "roll80", "ph": 100, "cols": 1, "rows": 1, "stub": "bottom" },
+      "shop": "Amazon",
+      "url": ""
+    },
+    {
+      "id": "roll-58",
+      "kind": "roll",
+      "name": { "fr": "Rouleau thermique 58 mm (petite imprimante à tickets)", "en": "58 mm thermal roll (small receipt printer)" },
+      "note": { "fr": "Pour les imprimantes portables et compactes. Sans encre, en noir.", "en": "For portable and compact printers. Inkless, black only." },
+      "design": { "paper": "roll58", "ph": 80, "cols": 1, "rows": 1, "stub": "bottom" },
+      "shop": "Amazon",
+      "url": ""
+    },
+    {
+      "id": "thermal-labels-50x30",
+      "kind": "roll",
+      "name": { "fr": "Étiquettes thermiques 50 × 30 mm (imprimante d’étiquettes)", "en": "50 × 30 mm thermal labels (label printer)" },
+      "note": { "fr": "Une étiquette par ticket, à coller sur un gobelet ou un colis.", "en": "One label per ticket, to stick on a cup or a parcel." },
+      "design": { "paper": "custom", "pw": 50, "ph": 30, "margins": [1, 1, 1, 1], "cols": 1, "rows": 1, "stub": "none", "mono": true, "cut": false },
+      "shop": "Amazon",
+      "url": ""
+    }
+  ]
+}

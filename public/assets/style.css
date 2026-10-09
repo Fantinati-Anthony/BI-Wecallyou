@@ -1,4 +1,4 @@
-/* WeCallYou — feuille de style unique (écran + impression A4) */
+/* WeCallYou — feuille de style unique (écran + impression) */
 
 :root {
   --bg: #faf7f2;
@@ -212,6 +212,60 @@ details[open] > summary { margin-bottom: 10px; }
 
 @keyframes bump { 0% { transform: scale(0.85); opacity: 0.4; } 60% { transform: scale(1.06); } 100% { transform: scale(1); } }
 
+/* ------------------------------------------------------------ studio d'impression */
+
+.studio { display: grid; grid-template-columns: minmax(320px, 430px) minmax(0, 1fr); gap: 20px; align-items: start; }
+.studio-form > details { margin-bottom: 12px; }
+.studio-form > details > summary { font-size: 1.05rem; }
+.studio-preview { position: sticky; top: 12px; margin: 0; }
+.studio-preview .row { align-items: center; margin-bottom: 6px; }
+.studio-preview h3 { margin: 0; }
+.pv-frame { position: relative; overflow: hidden; background: var(--surface-2); border-radius: 10px; }
+.pv-frame > .sheet { transform-origin: top left; box-shadow: var(--shadow); flex: none; }
+.pv-close, .pv-fab { display: none; }
+.warn { color: var(--gold); font-weight: 600; }
+.color { width: 52px; height: 40px; padding: 0; border: 1.5px solid var(--line); border-radius: 10px; background: none; cursor: pointer; }
+.swatches { display: flex; flex-wrap: wrap; gap: 6px; }
+.swatch { width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--line); cursor: pointer; padding: 0; }
+.wrap-studio { max-width: 1240px; }
+.segmented.wrap { display: flex; flex-wrap: wrap; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.grid-4 label { font-size: 0.85rem; }
+.advanced > summary { cursor: pointer; font-weight: 600; padding: 6px 0; }
+.product-line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; padding: 8px 12px; border-radius: 10px; background: var(--gold-soft); font-weight: 600; }
+.product-line .linklike { padding: 0; }
+
+/* Couleurs personnalisées (Pro) : aperçu de l'écran public et d'un bouton client */
+.theme-preview { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; }
+.tp-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 120px; border-radius: 12px; background: var(--tp-screenBg); color: var(--tp-screenText); font-weight: 700; }
+.tp-screen b { color: var(--tp-screenNumber); font-size: 3.2rem; font-weight: 900; line-height: 1; }
+.tp-btn { display: grid; place-items: center; padding: 12px; border-radius: 12px; background: var(--tp-accent); color: var(--tp-ink); font-weight: 700; text-align: center; }
+
+/* Catalogue des papiers compatibles */
+dialog.catalog { width: min(980px, calc(100vw - 24px)); max-height: calc(100vh - 24px); border: 0; border-radius: var(--radius); padding: 20px; background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
+dialog.catalog::backdrop { background: rgb(0 0 0 / 0.45); }
+dialog.catalog h2 { margin: 0; }
+.catalog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
+.product { display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1.5px solid var(--line); border-radius: 12px; background: var(--surface); }
+.product h3 { font-size: 1rem; margin: 0; }
+.product p { margin: 0; }
+.product .btn:first-of-type { margin-top: auto; }
+.thumb-box { display: flex; align-items: center; justify-content: center; height: 130px; background: var(--surface-2); border-radius: 8px; }
+.thumb { max-height: 116px; max-width: 90%; }
+.thumb .th-page { fill: #fff; stroke: #b9b1a5; stroke-width: 1; vector-effect: non-scaling-stroke; }
+.thumb .th-cell { fill: #fde9e1; stroke: #e8572a; stroke-width: 0.8; vector-effect: non-scaling-stroke; }
+.thumb .th-stub { fill: #fdf3e1; stroke: #b7791f; stroke-width: 0.8; vector-effect: non-scaling-stroke; }
+
+@media (max-width: 900px) {
+  .studio { grid-template-columns: 1fr; }
+  /* Sur téléphone, l'aperçu s'ouvre en plein écran par un bouton flottant. */
+  .studio-preview { display: none; position: fixed; inset: 0; z-index: 30; border-radius: 0; overflow: auto; }
+  .studio-preview.open { display: block; }
+  .pv-close { display: inline-flex; }
+  .pv-fab { display: inline-flex; position: fixed; right: 16px; bottom: 16px; z-index: 25; box-shadow: var(--shadow); }
+  .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
 /* ------------------------------------------------------------ message d'appel */
 
 .textarea {
@@ -240,17 +294,17 @@ details[open] > summary { margin-bottom: 10px; }
 
 /* ------------------------------------------------------------ écran public */
 
-.screen-body { background: #0f0e0c; color: #fff; }
+.screen-body { background: var(--screen-bg, #0f0e0c); color: var(--screen-text, #fff); }
 .screen {
   min-height: 100vh; display: grid; grid-template-rows: auto 1fr auto; gap: 2vh;
-  padding: 3vh 4vw; background: #0f0e0c; color: #fff; font-family: var(--font);
+  padding: 3vh 4vw; background: var(--screen-bg, #0f0e0c); color: var(--screen-text, #fff); font-family: var(--font);
 }
 .s-head { display: flex; justify-content: space-between; align-items: center; font-size: clamp(1rem, 3.4vh, 2.2rem); }
 .s-name { font-weight: 800; letter-spacing: -0.01em; }
 .s-clock { opacity: 0.7; font-variant-numeric: tabular-nums; }
 .s-main { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
 .s-label { text-transform: uppercase; letter-spacing: 0.12em; opacity: 0.65; font-size: clamp(1rem, 3.6vh, 2.4rem); }
-.s-number { font-size: clamp(5rem, 32vh, 24rem); font-weight: 900; line-height: 1; color: #ffb347; font-variant-numeric: tabular-nums; letter-spacing: -0.03em; }
+.s-number { font-size: clamp(5rem, 32vh, 24rem); font-weight: 900; line-height: 1; color: var(--screen-number, #ffb347); font-variant-numeric: tabular-nums; letter-spacing: -0.03em; }
 .s-number.many { font-size: clamp(2.4rem, 11vh, 8rem); letter-spacing: 0; }
 .s-number.bump { animation: bump 0.9s ease; }
 .s-tag { font-size: clamp(1.4rem, 6.5vh, 4.4rem); font-weight: 700; margin-top: 1vh; max-width: 90vw; }
@@ -264,7 +318,7 @@ details[open] > summary { margin-bottom: 10px; }
 .s-live.off::before { background: #ff7b6b; }
 .s-toggles { display: flex; gap: 0.5rem; opacity: 0.35; margin-left: auto; margin-right: 2vw; }
 .s-toggles:hover, .s-toggles:focus-within { opacity: 1; }
-.s-toggles button { border: 0; border-radius: 10px; padding: 6px 12px; background: rgb(255 255 255 / 0.12); color: #fff; font: 600 0.9rem var(--font); cursor: pointer; }
+.s-toggles button { border: 0; border-radius: 10px; padding: 6px 12px; background: rgb(128 128 128 / 0.2); color: inherit; font: 600 0.9rem var(--font); cursor: pointer; }
 .s-toggles button[aria-pressed='false'] { text-decoration: line-through; opacity: 0.6; }
 .s-start {
   position: fixed; left: 50%; bottom: 12vh; transform: translateX(-50%);
@@ -309,44 +363,77 @@ details[open] > summary { margin-bottom: 10px; }
 .cost-table td { padding: 8px 0; border-bottom: 1px solid var(--line); }
 .cost-table td:last-child { text-align: right; font-weight: 700; white-space: nowrap; }
 
-/* ------------------------------------------------------------ impression A4 */
+/* ------------------------------------------------------------ impression (tout papier) */
 
 .print-root { display: none; }
 
 @media print {
-  @page { size: A4; margin: 8mm; }
+  /* Le format exact (A4, rouleau, étiquettes…) est posé par sheets.js juste avant d'imprimer. */
+  @page { margin: 0; }
   html, body { background: #fff !important; color: #000 !important; }
   body > *:not(.print-root) { display: none !important; }
   .print-root { display: block !important; }
 }
 
+/* Une page = une feuille ; un fil plus courte que le papier, pour ne jamais créer de page blanche. */
 .sheet {
-  width: 194mm; height: 281mm; overflow: hidden;
+  width: var(--page-w, 210mm); height: calc(var(--page-h, 297mm) - 0.3mm); overflow: hidden;
   page-break-after: always; break-after: page;
-  color: #000; background: #fff; font-family: var(--font);
+  color: #000; background: #fff; line-height: 1.2;
+  font-family: Arial, 'Liberation Sans', Helvetica, Roboto, sans-serif; /* métriques connues : la mise en page calculée tombe juste */
+  -webkit-print-color-adjust: exact; print-color-adjust: exact; /* les couleurs s'impriment */
 }
 .sheet:last-child { page-break-after: auto; break-after: auto; }
 
-/* Tailles calculées par sheets.js selon le nombre de tickets par feuille (variables CSS). */
+/* Grille et tailles calculées par layout.js, transmises en variables CSS. */
 .sheet-tickets {
-  display: grid;
+  display: grid; align-content: start; justify-content: start;
+  padding: var(--m-top, 8mm) 0 0 var(--m-left, 8mm);
   grid-template-columns: repeat(var(--cols, 2), var(--cell-w, 97mm));
   grid-template-rows: repeat(var(--rows, 6), var(--cell-h, 46.8mm));
+  column-gap: var(--gap-x, 0); row-gap: var(--gap-y, 0);
 }
-.pair { display: grid; grid-template-columns: var(--client-w, 57mm) var(--stub-w, 40mm); border: 0.2mm dashed #999; overflow: hidden; }
-.part { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 1.5mm; min-width: 0; overflow: hidden; }
-.part + .part { border-left: 0.2mm dashed #999; }
-.part .p-logo { max-width: 90%; max-height: calc(var(--cell-h, 46.8mm) * 0.16); object-fit: contain; margin-bottom: 0.4mm; }
-.part .p-name { font-size: var(--txt, 2.6mm); font-weight: 700; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.part .p-num { font-size: var(--num, 8.5mm); font-weight: 900; line-height: 1; margin: 0.4mm 0 0.8mm; letter-spacing: -0.02em; }
-.part .p-qr svg { width: var(--qr, 24mm); height: var(--qr, 24mm); }
-.part.stub .p-qr svg { width: var(--qr-stub, 19mm); height: var(--qr-stub, 19mm); }
-.part .p-hint { font-size: calc(var(--txt, 2.6mm) * 0.88); line-height: 1.2; margin-top: 0.8mm; }
-.part .p-hint b { display: block; font-size: var(--txt, 2.6mm); }
-.part .p-domain { font-size: calc(var(--txt, 2.6mm) * 0.8); color: #555; margin-top: 0.3mm; }
-.part.stub .p-tag { font-size: calc(var(--txt, 2.6mm) * 0.85); letter-spacing: 0.3mm; font-weight: 800; color: #555; }
+.pair { display: grid; overflow: hidden; min-width: 0; min-height: 0; }
+.pair.cut { outline: 0.2mm dashed #999; outline-offset: -0.1mm; } /* traits de découpe, sans prendre de place */
+.pair.stub-right { grid-template-columns: var(--client-w) 1fr; }
+.pair.stub-bottom { grid-template-rows: var(--client-h) 1fr; }
+.part {
+  position: relative; display: flex; align-items: center; justify-content: center;
+  min-width: 0; min-height: 0; overflow: hidden; text-align: center;
+  padding: var(--pad); gap: var(--gap);
+}
+.part.client { --pad: var(--c-pad); --t: var(--c-t); --n: var(--c-n); --q: var(--c-q); --qp: var(--c-qp); --gap: var(--c-gap); --gaph: var(--c-gaph); --head: var(--c-head); background: var(--t-bg, #fff); color: var(--t-ink, #111); }
+.part.stub { --pad: var(--s-pad); --t: var(--s-t); --n: var(--s-n); --q: var(--s-q); --qp: var(--s-qp); --gap: var(--s-gap); --gaph: var(--s-gaph); background: var(--s-bg, #fff); color: var(--s-ink, #111); }
+/* Trait de la souche, dessiné par-dessus : il ne prend aucune place au contenu. */
+.pair.stub-right .part.stub::before, .pair.stub-bottom .part.stub::before { content: ''; position: absolute; border: 0 dashed #999; }
+.pair.stub-right .part.stub::before { left: 0; top: 0; bottom: 0; border-left-width: 0.2mm; }
+.pair.stub-bottom .part.stub::before { left: 0; right: 0; top: 0; border-top-width: 0.2mm; }
 
-.sheet-key { padding: 4mm 6mm; font-size: 3.6mm; line-height: 1.45; display: flex; flex-direction: column; gap: 4mm; }
+/* En colonne : tout empilé et centré. En ligne : QR à gauche, textes à droite. */
+.part.v { flex-direction: column; }
+.part.v .p-text { display: contents; }
+.part.v .p-logo, .part.v .p-name, .part.stub.v .p-tag { order: 1; }
+.part.v .p-num { order: 2; }
+.part.v .p-qr { order: 3; }
+.part.v .p-scan, .part.v .p-hint { order: 4; }
+.part.v .p-sub { order: 5; }
+.part.v .p-domain { order: 6; }
+.part.h { flex-direction: row; gap: var(--gaph); text-align: left; }
+.part.h .p-text { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: var(--gap); flex: 1 1 0; min-width: 0; }
+
+.part .p-qr { flex: none; background: #fff; padding: var(--qp); border-radius: 0.8mm; line-height: 0; } /* marge blanche : lecture fiable sur fond coloré */
+.part .p-qr svg { display: block; width: var(--q); height: var(--q); }
+.part .p-logo { height: var(--head); max-width: 100%; object-fit: contain; }
+.part .p-name { font-size: var(--head); font-weight: 700; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.part .p-num { font-size: var(--n); font-weight: 900; line-height: 1; letter-spacing: -0.02em; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.part.client .p-num { color: var(--t-accent, inherit); }
+.part .p-scan { font-size: var(--t); font-weight: 700; max-width: 100%; }
+.part .p-sub, .part .p-hint { font-size: calc(var(--t) * 0.88); max-width: 100%; }
+.part .p-domain { font-size: calc(var(--t) * 0.8); opacity: 0.7; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.part .p-tag { font-size: calc(var(--t) * 0.85); letter-spacing: 0.3mm; font-weight: 800; opacity: 0.75; white-space: nowrap; }
+.sheet.mono .p-logo { filter: grayscale(1) contrast(1.3); }
+
+.sheet-key { padding: 12mm 14mm; font-size: 3.6mm; line-height: 1.45; display: flex; flex-direction: column; gap: 4mm; }
 .sheet-key h1 { font-size: 8mm; margin: 0; }
 .sheet-key h2 { font-size: 4.6mm; margin: 0 0 1.5mm; }
 .sheet-key .k-head { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 0.4mm solid #000; padding-bottom: 2mm; }
@@ -358,8 +445,3 @@ details[open] > summary { margin-bottom: 10px; }
 .sheet-key .k-donate { border: 0.5mm solid #000; border-radius: 3mm; padding: 3.5mm 4mm; display: grid; grid-template-columns: 1fr 30mm; gap: 4mm; align-items: center; }
 .sheet-key .k-donate svg { width: 30mm; height: 30mm; }
 .sheet-key .k-foot { margin-top: auto; font-size: 2.8mm; color: #444; }
-
-/* Aperçu à l'écran d'une page imprimée (réduite) */
-.preview { overflow: auto; background: var(--surface-2); border-radius: 12px; padding: 12px; }
-.preview .sheet { transform: scale(0.42); transform-origin: top left; margin-bottom: calc(-281mm * 0.58); box-shadow: var(--shadow); }
-.preview-box { width: calc(194mm * 0.42); }

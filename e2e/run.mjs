@@ -64,7 +64,7 @@ try {
   await m.fill('#count', '30');
   await m.fill('#password', 'motdepasse-tres-long');
   await m.fill('#password2', 'motdepasse-tres-long');
-  await m.click('summary');
+  await m.click('summary[data-i18n=studio_message]');
   await m.fill('#promo', 'Suivez-nous sur Instagram @snacktony');
   await m.fill('#link', 'https://instagram.com/snacktony');
   await m.click('button[type=submit]');
@@ -291,6 +291,9 @@ try {
   await p4.getByRole('button', { name: 'Réglages' }).click();
   await p4.selectOption('#st', '720');
   await p4.check('#swl');
+  await p4.fill('#th-screenBg', '#14325a');
+  await p4.fill('#th-screenNumber', '#ffd60a');
+  await p4.fill('#th-accent', '#0a7d4f');
   await p4.click('form.stack button[type=submit]');
   await p4.waitForSelector('p.ok');
   await shot(p4, '19-options-pro');
@@ -299,6 +302,17 @@ try {
   await brandless.waitForSelector('.choice');
   assert.equal((await brandless.locator('footer').textContent()).trim(), 'Privacy');
   step('options Pro : tickets 30 jours, marque masquée (seul le lien Confidentialité reste)');
+
+  // Couleurs Pro : l'écran public et la page du client prennent les couleurs du commerce.
+  assert.equal(await brandless.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--brand').trim()), '#0a7d4f');
+  await tab.reload();
+  await tab.waitForSelector('.s-number');
+  const screenColors = async () => tab.evaluate(() => [getComputedStyle(document.getElementById('screen')).backgroundColor, getComputedStyle(document.querySelector('.s-number')).color]);
+  for (let i = 0; i < 50 && (await screenColors())[0] !== 'rgb(20, 50, 90)'; i++) await tab.waitForTimeout(200);
+  assert.deepEqual(await screenColors(), ['rgb(20, 50, 90)', 'rgb(255, 214, 10)']);
+  await tab.screenshot({ path: path.join(out, '21-ecran-couleurs-pro.png') });
+  await brandless.screenshot({ path: path.join(out, '22-client-couleurs-pro.png'), fullPage: true });
+  step('couleurs Pro : écran public et page du client aux couleurs du commerce');
 
   // Statistiques sur un an et export CSV.
   await p4.goto(`${BASE}/m`);
@@ -312,17 +326,94 @@ try {
   await shot(p4, '20-stats-pro');
   step('statistiques Pro : 12 mois et export tableur');
 
-  /* ------------------------------------------- disposition 24 par page */
+  /* ------------------------------------------- studio d'impression */
   await m.goto(`${BASE}/m`);
   await m.getByRole('button', { name: 'Imprimer' }).click();
-  await m.selectOption('#pp', '24');
-  await m.waitForTimeout(200);
-  await m.locator('.btn-big').first().click();
-  await m.waitForSelector('.print-root .sheet', { state: 'attached' });
+  const printAll = async () => {
+    await m.waitForTimeout(150);
+    await m.locator('.studio-form .btn-big').first().click();
+    await m.waitForSelector('.print-root .sheet', { state: 'attached' });
+  };
+  const sheet = (i = 0) => m.locator('.print-root .sheet').nth(i);
+
+  // Grille proposée : 24 tickets par page.
+  await m.locator('.chips .chip', { hasText: /^24$/ }).first().click();
+  await printAll();
+  assert.equal(await sheet().locator('.pair').count(), 24);
   await m.emulateMedia({ media: 'print' });
-  await m.locator('.print-root .sheet').first().screenshot({ path: path.join(out, '13-page-24-tickets.png') });
+  await sheet().screenshot({ path: path.join(out, '13-page-24-tickets.png') });
   await m.emulateMedia({ media: 'screen' });
   step('impression 24 tickets par page');
+
+  // Papier du catalogue : étiquettes 63,5 × 38,1 mm, le ticket et sa souche sur deux étiquettes voisines.
+  await m.click('#d-catalog');
+  await m.locator('dialog.catalog .product', { hasText: '63,5 × 38,1' }).getByRole('button', { name: 'Utiliser ce papier' }).click();
+  await m.waitForSelector('.product-line:has-text("63,5 × 38,1")');
+  await printAll();
+  assert.equal(await sheet().locator('.pair.stub-cell').count(), 20); // 10 paires + 1 étiquette libre
+  assert.equal(await sheet().locator('.pair.empty').count(), 1);
+  await m.emulateMedia({ media: 'print' });
+  const labelCell = await sheet().locator('.pair').first().boundingBox();
+  assert.ok(Math.abs(labelCell.width / labelCell.height - 63.5 / 38.1) < 0.02);
+  await sheet().screenshot({ path: path.join(out, '23-etiquettes-21.png') });
+  await m.emulateMedia({ media: 'screen' });
+  step('papier du catalogue : planche de 21 étiquettes, ticket et souche côte à côte');
+
+  // Imprimante à tickets : rouleau 80 mm, un ticket par page, en noir.
+  await m.selectOption('#d-paper', 'roll80');
+  await printAll();
+  assert.equal(await m.locator('.print-root .sheet').count(), 30);
+  assert.equal(await sheet().evaluate((el) => el.classList.contains('mono')), true);
+  assert.equal(await sheet().locator('.part.stub').count(), 1);
+  await m.emulateMedia({ media: 'print' });
+  await sheet().screenshot({ path: path.join(out, '24-rouleau-80mm.png') });
+  await m.emulateMedia({ media: 'screen' });
+  step('rouleau 80 mm : un ticket par page, souche détachable, noir seul');
+
+  // Aucun débordement : chaque élément reste dans sa case, quels que soient papier, grille et souche.
+  const overflow = await m.evaluate(async () => {
+    const { ticketSheets, contentOf } = await import('/assets/sheets.js');
+    const { normalizeDesign, presetGrids, gridLimits } = await import('/assets/layout.js');
+    const papers = [{ paper: 'a4' }, { paper: 'a4', orientation: 'landscape' }, { paper: 'letter' }, { paper: 'a6' }, { paper: 'roll80' }, { paper: 'roll58' }, { paper: 'custom', pw: 50, ph: 30, margins: [1, 1, 1, 1] }, { paper: 'a4', margins: [0, 0, 0, 0] }];
+    const variants = [{ name: 'Snack', last: 120 }, { name: 'Le Grand Restaurant de la Place du Marché — Service continu', last: 999999 }, { name: 'Pressing', last: 4500, whiteLabel: true }];
+    const box = document.createElement('div');
+    document.body.append(box);
+    const problems = [];
+    let checked = 0;
+    for (const paper of papers) {
+      for (const stub of ['auto', 'right', 'bottom', 'cell', 'none']) {
+        for (const v of variants) {
+          const base = normalizeDesign({ ...paper, stub });
+          const c = contentOf(base, { lang: 'fr', domain: 'wecallyou.fantinati.fr', ...v });
+          const grids = presetGrids(base, c);
+          const lim = gridLimits({ ...base, cols: 1, rows: 1 }, c);
+          for (const g of [grids[0], grids[Math.floor(grids.length / 2)], grids.at(-1), { cols: lim.cols, rows: 1 }, { cols: 1, rows: lim.rows }]) {
+            if (!g?.cols || !g?.rows) continue;
+            const tickets = [0, 1].map((i) => ({ label: String(v.last - i).padStart(3, '0'), c: 'A'.repeat(26), s: 'B'.repeat(26) }));
+            const [page] = ticketSheets(tickets, { ...base, cols: g.cols, rows: g.rows, lang: 'fr', domain: 'wecallyou.fantinati.fr', ...v });
+            if (!page) continue;
+            box.replaceChildren(page);
+            checked++;
+            for (const part of page.querySelectorAll('.part')) {
+              const r = part.getBoundingClientRect();
+              const cs = getComputedStyle(part);
+              const inner = { l: r.left + parseFloat(cs.paddingLeft) - 1, t: r.top + parseFloat(cs.paddingTop) - 1, r: r.right - parseFloat(cs.paddingRight) + 1, b: r.bottom - parseFloat(cs.paddingBottom) + 1 };
+              for (const el of part.querySelectorAll('.p-qr, .p-logo, .p-name, .p-num, .p-scan, .p-sub, .p-domain, .p-tag, .p-hint')) {
+                const e = el.getBoundingClientRect();
+                const cut = el.matches('.p-name, .p-domain'); // coupés volontairement par « … »
+                const over = Math.max(inner.t - e.top, e.bottom - inner.b, cut ? 0 : inner.l - e.left, cut ? 0 : e.right - inner.r, cut ? 0 : el.scrollWidth - el.clientWidth - 1);
+                if (over > 0.5) problems.push(`${JSON.stringify(paper)} ${stub} ${g.cols}×${g.rows} ${el.className}`);
+              }
+            }
+          }
+        }
+      }
+    }
+    box.remove();
+    return { checked, problems };
+  });
+  assert.deepEqual(overflow.problems, []);
+  step(`mise en page : aucun débordement sur ${overflow.checked} combinaisons (papier, grille, souche, nom long, 6 chiffres)`);
 
   assert.deepEqual(errors, []);
   step('aucune erreur JavaScript');

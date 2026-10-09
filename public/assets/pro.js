@@ -18,7 +18,7 @@ const withAccount = (url) => (url && account ? `${url}${url.includes('?') ? '&' 
 const options = h(
   'ul',
   { class: 'steps' },
-  [t('pro_opt_brand'), t('pro_opt_ttl'), t('pro_opt_stats'), t('pro_opt_priority')].map((text) => h('li', {}, text)),
+  [t('pro_opt_brand'), t('pro_opt_colors'), t('pro_opt_ttl'), t('pro_opt_stats'), t('pro_opt_priority')].map((text) => h('li', {}, text)),
 );
 
 function payment(usage) {

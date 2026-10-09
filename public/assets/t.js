@@ -1,6 +1,6 @@
 // Page d'un ticket. Ticket client : choisir comment être prévenu, voir sa place, être averti.
 // Souche : si ce téléphone est connecté au lot, l'appel part tout de suite.
-import { h, t, LANG, api, render, translatePage, errorText, local, isIOS, isStandalone, ordinal } from './common.js';
+import { h, t, LANG, api, render, translatePage, errorText, local, isIOS, isStandalone, ordinal, setColors, inkOn } from './common.js';
 import { sealForLot, b64u } from './crypto.js';
 import { unlock, callTickets } from './call.js';
 import { composer, needsComposer, groupOf } from './message.js';
@@ -295,6 +295,8 @@ if (!data.ok) {
   errorView(data.error === 'network' ? 'network' : 'invalid');
 } else {
   document.title = `${data.label} · ${data.name}`;
+  // Option Pro : la couleur du commerçant remplace l'orange de WeCallYou (boutons, accents).
+  if (data.theme?.accent) setColors({ '--brand': data.theme.accent, '--brand-ink': inkOn(data.theme.accent) });
   // Option Pro « marque masquée » : seul le lien Confidentialité reste (il est obligatoire).
   if (data.whiteLabel) {
     const footer = document.querySelector('footer');

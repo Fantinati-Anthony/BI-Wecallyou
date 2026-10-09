@@ -22,7 +22,7 @@
     </span>
   </header>
 
-  <main class="wrap wrap-wide">
+  <main class="wrap wrap-wide wrap-studio">
     <section class="hero">
       <h1 data-i18n="hero_title">Le ticket papier qui prévient vos clients.</h1>
       <p data-i18n="hero_text">Votre client garde son petit ticket. S’il le scanne, il est prévenu quand c’est son tour.</p>
@@ -49,72 +49,76 @@
       </ol>
     </section>
 
-    <section class="card" id="creer">
+    <section id="creer">
       <h2 data-i18n="create_title">Créer mes tickets</h2>
-      <form id="create-form" novalidate>
-        <div class="field">
-          <label for="name" data-i18n="create_name">Nom affiché aux clients</label>
-          <input id="name" name="name" type="text" maxlength="60" required autocomplete="organization" data-i18n-placeholder="create_name_ph">
-        </div>
-        <div class="inline-fields field">
-          <div>
-            <label for="count" data-i18n="create_count">Nombre de tickets</label>
-            <input id="count" name="count" type="number" min="1" max="999999" value="120" inputmode="numeric" required>
-          </div>
-          <div>
-            <label for="first" data-i18n="create_first">Premier numéro</label>
-            <input id="first" name="first" type="number" min="1" max="999999" value="1" inputmode="numeric" required>
-          </div>
-        </div>
-        <div class="field">
-          <label for="per-page" data-i18n="create_layout">Tickets par feuille A4</label>
-          <select id="per-page" name="perPage" class="select"></select>
-        </div>
-        <p class="badge" id="summary" aria-live="polite"></p>
-        <div class="field">
-          <label for="ttl" data-i18n="create_ttl">Durée de vie d’un ticket après son premier scan</label>
-          <select id="ttl" name="ttl" class="select"></select>
-          <p class="small muted" data-i18n="ttl_hint"></p>
-        </div>
-        <fieldset class="field">
-          <legend><label data-i18n="create_channels">Moyens proposés à vos clients</label></legend>
-          <div class="checks">
-            <label class="check"><input type="checkbox" name="channels" value="push" checked> 🔔 <span data-i18n="ch_push"></span></label>
-            <label class="check"><input type="checkbox" name="channels" value="sms" checked> 💬 <span data-i18n="ch_sms"></span></label>
-            <label class="check"><input type="checkbox" name="channels" value="wa" checked> 🟢 <span data-i18n="ch_wa"></span></label>
-            <label class="check"><input type="checkbox" name="channels" value="mail" checked> ✉️ <span data-i18n="ch_mail"></span></label>
-          </div>
-        </fieldset>
-        <div class="field">
-          <label for="password" data-i18n="create_password">Mot de passe du lot (facultatif, conseillé)</label>
-          <input id="password" name="password" type="password" autocomplete="new-password" minlength="8">
-          <div class="field" id="password2-field" hidden>
-            <label for="password2" data-i18n="create_password2">Confirmez le mot de passe</label>
-            <input id="password2" name="password2" type="password" autocomplete="new-password">
-          </div>
-          <p class="small muted" data-i18n="create_password_hint"></p>
-        </div>
-        <details class="field">
-          <summary data-i18n="create_options">Options</summary>
-          <label class="check field"><input type="checkbox" name="showNumber" checked> <span data-i18n="create_show_number"></span></label>
-          <div class="field">
-            <label for="logo" data-i18n="create_logo">Logo sur les tickets (facultatif)</label>
-            <input id="logo" name="logo" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml">
-          </div>
-          <div class="field">
-            <label for="promo" data-i18n="create_promo">Votre message (facultatif)</label>
-            <input id="promo" name="promo" type="text" maxlength="140" data-i18n-placeholder="create_promo_ph">
-          </div>
-          <div class="field">
-            <label for="link" data-i18n="create_link">Votre lien (facultatif)</label>
-            <input id="link" name="link" type="url" maxlength="200" inputmode="url" data-i18n-placeholder="create_link_ph">
-          </div>
-          <p class="small muted" data-i18n="promo_hint"></p>
-        </details>
-        <p class="error" id="create-error" role="alert" hidden></p>
-        <button class="btn btn-big btn-block" type="submit" data-i18n="create_btn">Créer mes tickets</button>
-        <p class="small muted center" data-i18n="service_note"></p>
-      </form>
+      <div class="studio">
+        <form id="create-form" class="studio-form" novalidate>
+          <details class="card" open>
+            <summary data-i18n="studio_lot">1 · Votre lot</summary>
+            <div class="field">
+              <label for="name" data-i18n="create_name">Nom affiché aux clients</label>
+              <input id="name" name="name" type="text" maxlength="60" required autocomplete="organization" data-i18n-placeholder="create_name_ph">
+            </div>
+            <div class="inline-fields field">
+              <div>
+                <label for="count" data-i18n="create_count">Nombre de tickets</label>
+                <input id="count" name="count" type="number" min="1" max="999999" value="120" inputmode="numeric" required>
+              </div>
+              <div>
+                <label for="first" data-i18n="create_first">Premier numéro</label>
+                <input id="first" name="first" type="number" min="1" max="999999" value="1" inputmode="numeric" required>
+              </div>
+            </div>
+            <fieldset class="field">
+              <legend><label data-i18n="create_channels">Moyens proposés à vos clients</label></legend>
+              <div class="checks">
+                <label class="check"><input type="checkbox" name="channels" value="push" checked> 🔔 <span data-i18n="ch_push"></span></label>
+                <label class="check"><input type="checkbox" name="channels" value="sms" checked> 💬 <span data-i18n="ch_sms"></span></label>
+                <label class="check"><input type="checkbox" name="channels" value="wa" checked> 🟢 <span data-i18n="ch_wa"></span></label>
+                <label class="check"><input type="checkbox" name="channels" value="mail" checked> ✉️ <span data-i18n="ch_mail"></span></label>
+              </div>
+            </fieldset>
+            <div class="field">
+              <label for="ttl" data-i18n="create_ttl">Durée de vie d’un ticket après son premier scan</label>
+              <select id="ttl" name="ttl" class="select"></select>
+              <p class="small muted" data-i18n="ttl_hint"></p>
+            </div>
+            <div class="field">
+              <label for="password" data-i18n="create_password">Mot de passe du lot (facultatif, conseillé)</label>
+              <input id="password" name="password" type="password" autocomplete="new-password" minlength="8">
+              <div class="field" id="password2-field" hidden>
+                <label for="password2" data-i18n="create_password2">Confirmez le mot de passe</label>
+                <input id="password2" name="password2" type="password" autocomplete="new-password">
+              </div>
+              <p class="small muted" data-i18n="create_password_hint"></p>
+            </div>
+          </details>
+          <details class="card" open>
+            <summary data-i18n="studio_layout">2 · Mise en page</summary>
+            <div id="design-layout"></div>
+          </details>
+          <details class="card" open>
+            <summary data-i18n="studio_colors">3 · Couleurs et logo</summary>
+            <div id="design-colors"></div>
+          </details>
+          <details class="card">
+            <summary data-i18n="studio_message">4 · Votre message (facultatif)</summary>
+            <div class="field">
+              <label for="promo" data-i18n="create_promo">Votre message (facultatif)</label>
+              <input id="promo" name="promo" type="text" maxlength="140" data-i18n-placeholder="create_promo_ph">
+            </div>
+            <div class="field">
+              <label for="link" data-i18n="create_link">Votre lien (facultatif)</label>
+              <input id="link" name="link" type="url" maxlength="200" inputmode="url" data-i18n-placeholder="create_link_ph">
+            </div>
+            <p class="small muted" data-i18n="promo_hint"></p>
+          </details>
+          <p class="error" id="create-error" role="alert" hidden></p>
+          <button class="btn btn-big btn-block" type="submit" data-i18n="create_btn">Créer mes tickets</button>
+          <p class="small muted center" data-i18n="service_note"></p>
+        </form>
+        <div id="preview-slot"></div>
+      </div>
     </section>
 
     <section id="created" hidden></section>

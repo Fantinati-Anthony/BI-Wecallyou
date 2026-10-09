@@ -1,6 +1,6 @@
 // Écran public (tablette, TV) : les numéros appelés en grand, en direct, annoncés par un carillon
 // et une voix. Aucune donnée de client : seulement des numéros et les repères choisis à l'appel.
-import { h, t, LANG, api, render, translatePage, local } from './common.js';
+import { h, t, LANG, api, render, translatePage, local, setColors } from './common.js';
 
 translatePage();
 
@@ -121,6 +121,9 @@ function announcements(recent) {
 }
 
 function show(data) {
+  // Couleurs du commerçant (option Pro) : fond, textes, numéro appelé.
+  const theme = data.theme ?? {};
+  setColors({ '--screen-bg': theme.screenBg, '--screen-text': theme.screenText, '--screen-number': theme.screenNumber });
   name.textContent = data.name;
   document.title = data.name;
   promo.textContent = [data.promo, data.link?.replace(/^https:\/\//, '')].filter(Boolean).join(' · ');

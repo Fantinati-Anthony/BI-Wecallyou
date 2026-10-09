@@ -12,7 +12,9 @@ Snacks, food trucks, boulangeries, buvettes, tournois sportifs, vestiaires, cord
 
 ## Ce que ça fait
 
-- **Création sans compte** : nom affiché, nombre de tickets (jusqu’à 999 999), premier numéro, 4 à 24 tickets par feuille A4, logo, numéro affiché ou non. Un PDF : page 1 = votre clé de lot et le mode d’emploi, puis les tickets avec leurs souches. Les gros lots s’impriment par cahiers de 50 pages.
+- **Création sans compte** : nom affiché, nombre de tickets (jusqu’à 999 999), premier numéro. Un PDF : page 1 = votre clé de lot et le mode d’emploi, puis les tickets avec leurs souches. Les gros lots s’impriment par cahiers.
+- **Studio d’impression** (réglages à gauche, aperçu en direct à droite) : A4, Letter, A5, A6, A3, format libre ou **rouleau d’imprimante à tickets** (80 / 58 mm), portrait ou paysage, colonnes et lignes libres. Le maximum est calculé pour que le QR code reste lisible (10 mm au moins, 14 mm en thermique). Souche à droite, en dessous, sur l’étiquette voisine, ou sans souche ; marges et espacements au dixième de millimètre ; couleurs du ticket, du numéro et de la souche, logo, noir et blanc. Dans chaque case, le logo, le nom, le numéro, le QR et les consignes passent **en colonne ou en ligne** selon la place, à la plus grande taille qui tient : **jamais de débordement** (vérifié sur des centaines de combinaisons à chaque test).
+- **Papiers compatibles** : un catalogue (feuilles, A4 micro-perforé, cartes et étiquettes prédécoupées, rouleaux thermiques) règle tout en un appui, avec un lien d’achat facultatif.
 - **Mot de passe de lot (facultatif)** : il entre dans le chiffrement ; sans lui, la page 1 ne vaut rien.
 - **Le client choisit** parmi les moyens autorisés par le commerçant : notification (Android direct, iPhone après ajout à l’écran d’accueil), SMS, WhatsApp, e-mail, ou rien.
 - **File d’attente en direct** : « Vous êtes le 3e · attente estimée ≈ 6 min », calculé sur le rythme réel des appels. La page du client passe au vert en temps réel quand c’est son tour.
@@ -24,7 +26,7 @@ Snacks, food trucks, boulangeries, buvettes, tournois sportifs, vestiaires, cord
 - **Français et anglais**, selon la langue du téléphone ; chaque client reçoit son message dans sa langue.
 - **Dons** ponctuels ou mensuels via Stripe, présentés au moment de la création des tickets, sans jamais bloquer.
 - **Compte facultatif, chiffré** : un identifiant et un mot de passe (pas d’e-mail) pour retrouver tous ses lots sur n’importe quel téléphone. Mot de passe oublié → **fiche de secours** imprimable et téléchargeable (identifiant + clé de secours + QR).
-- **Deux offres bien séparées** : le **don**, sans aucune contrepartie, et **WeCallYou Pro**, un petit abonnement avec options : marque masquée, tickets actifs jusqu’à 30 jours (pressing, SAV, réparations), statistiques sur un an et export CSV, priorité en cas d’affluence. Prix conseillé selon l’usage (tickets actifs sur 30 jours) ; payer moins raccourcit le Pro en proportion, personne n’est bloqué. Tout le reste reste gratuit, et tout le code reste libre (`"allPro": true` dans `config.json` débloque tout sur une installation indépendante).
+- **Deux offres bien séparées** : le **don**, sans aucune contrepartie, et **WeCallYou Pro**, un petit abonnement avec options qui sollicitent le serveur : marque masquée, couleurs du commerce sur l’écran public et la page du client, tickets actifs jusqu’à 30 jours (pressing, SAV, réparations), statistiques sur un an et export CSV, priorité en cas d’affluence. Ce qui se calcule dans le navigateur (mise en page et couleurs des tickets imprimés) reste gratuit. Prix conseillé selon l’usage (tickets actifs sur 30 jours) ; payer moins raccourcit le Pro en proportion, personne n’est bloqué. Tout le reste reste gratuit, et tout le code reste libre (`"allPro": true` dans `config.json` débloque tout sur une installation indépendante).
 
 ## Sécurité et vie privée
 
@@ -71,6 +73,8 @@ public/            pages statiques servies par Apache (ou par Node en local)
   assets/          JS en modules ES, sans dépendance (sauf qrcode.js, MIT, hébergé ici)
   etat/            fichiers « prêt », secours du temps réel
   soutien.json     dons : liens Stripe, objectif, frais (à éditer à la main)
+  papiers.json     catalogue des papiers compatibles et leurs liens d’achat (à éditer à la main)
+  assets/layout.js mise en page des tickets (sans navigateur, testée côté serveur)
 server/            API Node.js 24, AUCUNE dépendance npm
   app.cjs          fichier de démarrage (cPanel / Passenger)
   start.js         démarrage direct (node start.js)
@@ -139,17 +143,30 @@ La page `/pro` ajoute l’identifiant du compte connecté au lien (`client_refer
 
 **Conformité** : complétez `public/mentions.html` (éditeur, SIRET, mention de TVA, rétractation) avant d’ouvrir le Pro au public, et faites valider par un comptable.
 
+### Catalogue de papiers et liens affiliés
+
+`public/papiers.json` liste les papiers proposés dans le studio. Chaque produit porte ses réglages (`design` : papier, marges, espacements, grille, souche) et un lien d’achat facultatif :
+
+```json
+{ "id": "labels-21", "kind": "labels", "shop": "Amazon",
+  "url": "https://www.amazon.fr/dp/XXXXXXXXXX?tag=votre-id-21", ... }
+```
+
+- Collez vos liens affiliés dans `url` (https uniquement) ; sans lien, le papier reste proposé pour ses réglages.
+- Les liens sont marqués `rel="sponsored"` et la mention « Liens affiliés… En tant que Partenaire Amazon… » s’affiche dès qu’un lien existe (elle figure aussi dans `mentions.html`). Aucune image ni aucun script du marchand n’est chargé : pas de traceur.
+- Pour ajouter un papier : mesurez les marges (haut, droite, bas, gauche), l’espace entre les étiquettes et la grille ; `npm test` vérifie que chaque papier du catalogue tient avec des numéros à 6 chiffres. Faites toujours une page d’essai sur papier ordinaire.
+
 ## Développer
 
 ```sh
 cd server
 node setup.js --local --domain=localhost:3000   # crée config.json (serveStatic: true)
 node start.js                                    # http://localhost:3000
-npm test                                         # tests serveur + cryptographie
+npm test                                         # tests serveur, cryptographie, mise en page
 cd ../e2e && npm install && node run.mjs         # parcours complet dans Chromium
 ```
 
-La cryptographie du navigateur (`public/assets/crypto.js`) est testée dans Node contre une implémentation indépendante (déchiffrement RFC 8291 et vérification VAPID avec `node:crypto`). Le test de bout en bout relit les QR imprimés avec un décodeur indépendant.
+La cryptographie du navigateur (`public/assets/crypto.js`) est testée dans Node contre une implémentation indépendante (déchiffrement RFC 8291 et vérification VAPID avec `node:crypto`). Le test de bout en bout relit les QR imprimés avec un décodeur indépendant et mesure, dans le navigateur, que rien ne déborde de sa case sur des centaines de mises en page.
 
 ## Contribuer, soutenir
 
