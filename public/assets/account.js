@@ -1,7 +1,7 @@
 // Compte facultatif : retrouver tous ses lots sur n'importe quel téléphone, et profiter du statut Pro
 // activé par les dons. Tout est chiffré ici, dans le navigateur ; le serveur ne garde que des
 // empreintes et un coffre illisible. Mot de passe oublié → fiche de secours (imprimée/téléchargée).
-import { h, tl, api, local, lots, qrSvg } from './common.js';
+import { h, tl, api, local, lots, qrSvg, icon } from './common.js';
 import {
   createAccount,
   loginKeys,
@@ -17,7 +17,7 @@ import {
   b64u,
   normalizeIdent,
 } from './crypto.js';
-import { fillPrintRoot } from './sheets.js';
+import { fillPrintRoot, docBand, docFoot, keyPage, setPrintPage } from './sheets.js';
 
 const KEY = 'wcy:account';
 
@@ -165,28 +165,43 @@ const recoveryUrl = (domain, ident, key) => `https://${domain}/compte#secours=${
 /** Page A4 à imprimer : identifiant, clé de secours en clair et en QR code, mode d'emploi. */
 export function printKit({ lang, domain, brand, ident, recovery }) {
   const key = secretToText(recovery);
+  setPrintPage(keyPage({})); // toujours en A4, même après une impression sur rouleau
   fillPrintRoot([
     h(
       'section',
-      { class: 'sheet sheet-key' },
-      h('div', { class: 'k-head' }, h('h1', {}, tl(lang, 'kit_sheet_title')), h('div', { class: 'small' }, brand)),
+      { class: 'sheet sheet-key sheet-doc' },
+      docBand({ brand, kind: tl(lang, 'kit_sheet_title'), aside: new Date().toLocaleDateString(lang) }),
+      h('div', { class: 'doc-title' }, h('div', { class: 'grow' }, h('h1', {}, tl(lang, 'kit_for', { ident })), h('p', {}, tl(lang, 'kit_sheet_keep')))),
       h(
         'div',
         { class: 'k-box' },
-        qrSvg(recoveryUrl(domain, ident, key), 'M'),
+        h('div', { class: 'k-qr' }, qrSvg(recoveryUrl(domain, ident, key), 'M')),
         h(
           'div',
-          {},
-          h('p', {}, h('b', {}, tl(lang, 'kit_sheet_keep'))),
-          h('p', {}, `${tl(lang, 'acc_ident')} :`),
+          { class: 'k-text' },
+          h('h2', {}, icon('lifebuoy'), tl(lang, 'kit_key')),
+          h('p', { class: 'k-label' }, tl(lang, 'acc_ident')),
           h('div', { class: 'k-code' }, ident),
-          h('p', {}, `${tl(lang, 'kit_key')} :`),
+          h('p', { class: 'k-label' }, tl(lang, 'kit_key')),
           h('div', { class: 'k-code' }, secretToText(recovery, true)),
         ),
       ),
-      h('div', {}, h('h2', {}, tl(lang, 'rec_title')), h('p', {}, tl(lang, 'kit_sheet_how', { url: `https://${domain}/compte` }))),
-      h('div', { class: 'k-warn' }, tl(lang, 'kit_sheet_warn')),
-      h('div', { class: 'k-foot' }, new Date().toLocaleDateString(lang), ` · https://${domain}`),
+      h(
+        'div',
+        { class: 'k-how' },
+        h('h2', {}, tl(lang, 'rec_title')),
+        h(
+          'ol',
+          { class: 'k-steps' },
+          [
+            ['user-circle', 'kit_s1_t', tl(lang, 'kit_s1', { url: `${domain}/compte` })],
+            ['qr-code', 'kit_s2_t', tl(lang, 'kit_s2')],
+            ['key', 'kit_s3_t', tl(lang, 'kit_s3')],
+          ].map(([glyph, title, text], i) => h('li', {}, h('div', { class: 'k-step-head' }, h('span', { class: 'k-num' }, String(i + 1)), icon(glyph), h('b', {}, tl(lang, title))), h('p', {}, text))),
+        ),
+      ),
+      h('div', { class: 'k-warn' }, icon('warning'), h('span', {}, tl(lang, 'kit_sheet_warn'))),
+      docFoot(lang, domain),
     ),
   ]);
   window.print();

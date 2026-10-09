@@ -32,6 +32,33 @@ export function parseNumbers(text, max = 200) {
 
 export const groupOf = (lot, n) => (lot.groups ?? []).find((g) => parseNumbers(g.numbers)?.includes(n))?.name ?? '';
 
+/**
+ * Variables à insérer d'un appui dans un champ de message, à l'endroit du curseur.
+ * names() : liste à jour des variables (intégrées + listes du lot). Renvoie { element, refresh }.
+ */
+export function variableChips(target, names) {
+  const chips = h('div', { class: 'pills var-chips' });
+  const refresh = () => {
+    chips.replaceChildren(
+      ...names().map((name) => {
+        const chip = h('button', { type: 'button', class: 'chip' }, `{${name}}`);
+        chip.addEventListener('click', () => {
+          const at = target.selectionStart ?? target.value.length;
+          target.setRangeText(`{${name}}`, at, target.selectionEnd ?? at, 'end');
+          target.focus();
+          target.dispatchEvent(new Event('input', { bubbles: true })); // aperçu et brouillon à jour
+        });
+        return chip;
+      }),
+    );
+  };
+  refresh();
+  return { element: h('div', { class: 'var-box' }, h('p', { class: 'small muted' }, t('msg_vars')), chips), refresh };
+}
+
+/** Variables intégrées, dans la langue de l'interface : {nom} {numero} {groupe}. */
+export const builtinNames = () => t('var_builtins').split(',').filter(Boolean);
+
 /** Le compositeur n'apparaît que si le lot a un modèle ou des listes ; sinon, message par défaut traduit. */
 export const needsComposer = (lot) => Boolean(lot.template) || (lot.lists ?? []).length > 0;
 
@@ -85,7 +112,7 @@ export function composer(lot, example = {}) {
   const reset = h('button', { type: 'button', class: 'linklike small', hidden: true }, t('msg_reset'));
 
   const refreshPreview = () => {
-    preview.textContent = t('msg_preview', { text: fill(text.value, builtins({ name: lot.name, label: example.label, group: example.group })) });
+    preview.textContent = t('msg_preview', { text: fill(fill(text.value, values), builtins({ name: lot.name, label: example.label, group: example.group })) });
   };
   const rebuild = () => {
     if (!dirty) text.value = fill(baseTemplate(lot), values);
@@ -111,10 +138,12 @@ export function composer(lot, example = {}) {
     rebuild();
   });
   rebuild();
+  // Variables d'un appui : une variable de liste prend la valeur choisie plus haut.
+  const chips = variableChips(text, () => [...builtinNames(), ...(lot.lists ?? []).map((l) => l.name)]);
 
   return {
-    element: h('div', { class: 'composer stack' }, fields, h('label', {}, t('msg_title')), text, preview, reset, h('p', { class: 'small muted' }, t('msg_hint'))),
-    message: () => text.value.trim(),
+    element: h('div', { class: 'composer stack' }, fields, h('label', {}, t('msg_title')), text, chips.element, preview, reset, h('p', { class: 'small muted' }, t('msg_hint'))),
+    message: () => fill(text.value.trim(), values),
     /** Repère court pour l'écran public : valeurs choisies dans les listes. */
     tag: (group = '') => [...new Set([group, ...Object.values(values)].filter(Boolean))].join(' · '),
   };

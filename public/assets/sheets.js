@@ -1,6 +1,6 @@
 // Pages imprimables : page 1 « clé du lot » + pages de tickets, sur tout papier (A4, Letter,
 // format libre, rouleau d'imprimante à tickets, étiquettes…). La mise en page vient de layout.js.
-import { h, tl, qrSvg, ticketUrl, inkOn } from './common.js';
+import { h, tl, qrSvg, ticketUrl, inkOn, icon } from './common.js';
 import { secretToText } from './crypto.js';
 import { normalizeDesign, fitDesign, headSize, pageOf } from './layout.js';
 
@@ -168,52 +168,82 @@ export function keyShares(design) {
   return Math.abs(page.w - key.w) < 0.5 && Math.abs(page.h - key.h) < 0.5;
 }
 
+/* ----------------------------------------------- documents : page clé, fiche de secours */
+
+// Logo WeCallYou dessiné dans la page (et non chargé comme image) : il s'imprime à coup sûr.
+const LOGO = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#e8572a"/><path d="M12 19H52V28A4 4 0 0 0 52 36V45H12V36A4 4 0 0 0 12 28Z" fill="#fff"/><path d="M41 21V43" stroke="#e8572a" stroke-width="1.6" stroke-dasharray="2.4 2.4"/><circle cx="22" cy="32" r="3.6" fill="#e8572a"/><path d="M26.9 27.1A7 7 0 0 1 26.9 36.9M29.8 24.2A11 11 0 0 1 29.8 39.8" fill="none" stroke="#e8572a" stroke-width="2.6" stroke-linecap="round"/></svg>';
+
+export function brandMark(cls = 'doc-logo') {
+  const box = h('span', { class: cls });
+  box.innerHTML = LOGO;
+  return box;
+}
+
+/** Bandeau du document : logo, marque et nature du document à gauche, repère à droite. */
+export function docBand({ brand, kind, aside = '' }) {
+  return h('header', { class: 'doc-band' }, brandMark(), h('div', { class: 'grow' }, h('div', { class: 'doc-brand' }, brand), h('div', { class: 'doc-kind' }, kind)), aside && h('div', { class: 'doc-aside' }, aside));
+}
+
+/** Pied du document : date, adresse du service. */
+export const docFoot = (lang, domain) => h('footer', { class: 'doc-foot' }, brandMark('doc-logo small'), h('span', {}, tl(lang, 'k_foot', { date: new Date().toLocaleDateString(lang) })), h('span', {}, `https://${domain}`));
+
 /** Page 1 : la clé du lot (QR vers l'espace commerçant), le mode d'emploi et l'appel aux dons. */
 export function keySheet({ lang, domain, brand, lot, name, secret, from, to, monthlyCost, password = false, pro = false, design = {} }) {
   const key = secretToText(secret);
   // « ! » final : l'espace commerçant demandera directement le mot de passe du lot.
   const spaceUrl = `https://${domain}/m#${key}${password ? '!' : ''}`;
   const page = keyPage(design);
+  const merchantLogo = normalizeDesign(design).logo;
+  const steps = [
+    ['ticket', 'k_how_t1', 'k_how_1'],
+    ['qr-code', 'k_how_t2', 'k_how_2'],
+    ['megaphone', 'k_how_t3', 'k_how_3'],
+  ];
   const sheet = h(
     'section',
-    { class: 'sheet sheet-key' },
+    { class: 'sheet sheet-key sheet-doc' },
+    docBand({ brand, kind: tl(lang, 'k_doc'), aside: tl(lang, 'k_lot', { id: lot }) }),
     h(
       'div',
-      { class: 'k-head' },
-      h('div', {}, h('h1', {}, name), h('div', {}, tl(lang, 'k_range', { from, to }))),
-      h('div', { class: 'small' }, brand, ' · ', tl(lang, 'k_lot', { id: lot })),
+      { class: 'doc-title' },
+      h('div', { class: 'grow' }, h('h1', {}, name), h('p', {}, tl(lang, 'k_range', { from: labelOf(from), to: labelOf(to) }))),
+      merchantLogo && h('img', { class: 'doc-merchant', src: merchantLogo, alt: '' }),
     ),
     h(
       'div',
       { class: 'k-box' },
-      qrSvg(spaceUrl, 'M'),
+      h('div', { class: 'k-qr' }, qrSvg(spaceUrl, 'M')),
       h(
         'div',
-        {},
-        h('h2', {}, tl(lang, 'k_title')),
-        h('p', {}, h('b', {}, tl(lang, 'k_keep'))),
+        { class: 'k-text' },
+        h('h2', {}, icon('key'), tl(lang, 'k_title')),
+        h('p', { class: 'k-keep' }, tl(lang, 'k_keep')),
         h('p', {}, tl(lang, 'k_scan')),
-        h('p', {}, tl(lang, 'k_code')),
+        h('p', { class: 'k-label' }, tl(lang, 'k_code')),
         h('div', { class: 'k-code' }, secretToText(secret, true)),
-        password && h('p', {}, h('b', {}, tl(lang, 'k_password'))),
+        password && h('p', { class: 'k-pass' }, icon('lock-key'), tl(lang, 'k_password')),
       ),
     ),
-    h('div', { class: 'k-warn' }, tl(lang, 'k_warn')),
+    h('div', { class: 'k-warn' }, icon('warning'), h('span', {}, tl(lang, 'k_warn'))),
     h(
       'div',
-      {},
+      { class: 'k-how' },
       h('h2', {}, tl(lang, 'k_how')),
-      h('ol', {}, h('li', {}, tl(lang, 'k_how_1')), h('li', {}, tl(lang, 'k_how_2')), h('li', {}, tl(lang, 'k_how_3'))),
+      h(
+        'ol',
+        { class: 'k-steps' },
+        steps.map(([glyph, title, text], i) => h('li', {}, h('div', { class: 'k-step-head' }, h('span', { class: 'k-num' }, String(i + 1)), icon(glyph), h('b', {}, tl(lang, title))), h('p', {}, tl(lang, text)))),
+      ),
     ),
-    h('div', {}, tl(lang, 'k_privacy')),
+    h('p', { class: 'k-privacy' }, icon('lock-key'), h('span', {}, tl(lang, 'k_privacy'))),
     // Abonnés Pro : pas d'appel au don sur leur page clé.
     !pro && h(
       'div',
       { class: 'k-donate' },
-      h('div', {}, h('h2', {}, tl(lang, 'k_donate_title')), h('div', {}, tl(lang, 'k_donate_text', { brand, cost: monthlyCost }))),
-      qrSvg(`HTTPS://${domain.toUpperCase()}/SOUTENIR`, 'M'),
+      h('div', {}, h('h2', {}, icon('hand-heart'), tl(lang, 'k_donate_title')), h('p', {}, tl(lang, 'k_donate_text', { brand, cost: monthlyCost }))),
+      h('div', { class: 'k-qr small' }, qrSvg(`HTTPS://${domain.toUpperCase()}/SOUTENIR`, 'M')),
     ),
-    h('div', { class: 'k-foot' }, tl(lang, 'k_foot', { date: new Date().toLocaleDateString(lang) }), ` · https://${domain}`),
+    docFoot(lang, domain),
   );
   sheet.style.setProperty('--page-w', mm(page.w));
   sheet.style.setProperty('--page-h', mm(page.h));

@@ -3,7 +3,7 @@
 import { h, t, LANG, api, render, translatePage, errorText, lots, local, fmtTime, qrSvg, icon } from './common.js';
 import { textToSecret, secretToText, lotMaterial, authTokenOf, openLot, b64u, openFromClient } from './crypto.js';
 import { unlock, callTickets } from './call.js';
-import { composer, needsComposer, groupOf, parseNumbers } from './message.js';
+import { composer, needsComposer, groupOf, parseNumbers, variableChips, builtinNames } from './message.js';
 import { keySheet, fillPrintRoot, contentOf, keyPage, setPrintPage } from './sheets.js';
 import { printPlan, printOptions } from './print.js';
 import { designControls, livePreview } from './studio.js';
@@ -380,7 +380,14 @@ function eventText([at, type, detail]) {
 async function historyTab(panel, { lot, access }) {
   render(panel, h('p', { class: 'muted' }, t('loading')));
   const res = await api('/lot/history', { auth: access.auth });
-  const items = (res.tickets ?? []).map((ticket) => h('li', {}, h('span', { class: 'num' }, ticket.label), h('div', { class: 'pills grow' }, ticket.events.map(eventText))));
+  // Combien de fois chaque ticket a été notifié (appels et rappels), en tête de sa ligne.
+  const items = (res.tickets ?? []).map((ticket) => {
+    const calls = ticket.events.filter(([, type]) => type === 'call' || type === 'recall').length;
+    const count = calls
+      ? h('span', { class: 'badge notif-count' }, icon('megaphone'), t(calls === 1 ? 'h_notified_one' : 'h_notified', { n: calls }))
+      : h('span', { class: 'badge notif-none' }, t('h_not_notified'));
+    return h('li', {}, h('span', { class: 'num' }, ticket.label), h('div', { class: 'grow stack' }, h('div', {}, count), h('div', { class: 'pills' }, ticket.events.map(eventText))));
+  });
   render(
     panel,
     h(
@@ -581,28 +588,17 @@ function settingsTab(panel, { lot, access, reload }) {
     !lot.pro && proLock(!lot.owned),
   );
   const checks = CHANNELS.map((c) => h('label', { class: 'check' }, h('input', { type: 'checkbox', value: c, checked: lot.channels.includes(c) }), icon(ICON[c]), t(`ch_${c}`)));
-  const template = h('input', { id: 'stp', type: 'text', maxlength: 280, value: lot.template, placeholder: t('s_template_ph') });
+  const template = h('textarea', { id: 'stp', class: 'textarea', rows: 3, maxlength: 280, placeholder: t('s_template_ph') });
+  template.value = lot.template;
   const lists = h('textarea', { id: 'sli', class: 'textarea', rows: 3, placeholder: t('s_lists_ph') });
   const groups = h('textarea', { id: 'sgr', class: 'textarea', rows: 3, placeholder: t('s_groups_ph') });
   lists.value = listsToText(lot.lists);
   groups.value = groupsToText(lot.groups);
 
-  // Insertion d'une variable dans le modèle d'un simple appui.
-  const chips = h('div', { class: 'pills' });
-  const drawChips = () => {
-    const names = [...t('var_builtins').split(','), ...textToLists(lists.value).map((l) => l.name)].filter(Boolean);
-    render(
-      chips,
-      names.map((n) => {
-        const chip = h('button', { type: 'button', class: 'chip' }, `{${n}}`);
-        chip.addEventListener('click', () => {
-          template.setRangeText(`{${n}}`, template.selectionStart ?? template.value.length, template.selectionEnd ?? template.value.length, 'end');
-          template.focus();
-        });
-        return chip;
-      }),
-    );
-  };
+  // Insertion d'une variable dans le modèle d'un simple appui (les listes saisies apparaissent aussitôt).
+  const vars = variableChips(template, () => [...builtinNames(), ...textToLists(lists.value).map((l) => l.name)].filter(Boolean));
+  const chips = vars.element;
+  const drawChips = vars.refresh;
   lists.addEventListener('input', drawChips);
   drawChips();
 

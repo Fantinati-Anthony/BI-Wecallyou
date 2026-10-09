@@ -163,6 +163,7 @@ try {
   assert.match(history, /scanné/);
   assert.match(history, /inscrit · SMS/);
   assert.match(history, /appelé/);
+  assert.match(history, /Notifié 1 fois/); // nombre de notifications du ticket
   await shot(m, '10-suivi');
   await m.getByRole('button', { name: 'Stats' }).click();
   await m.waitForSelector('.stats strong');
@@ -172,7 +173,12 @@ try {
   /* ------------------- listes, modèle, groupe, écran public, appel de groupe */
   await m.getByRole('button', { name: 'Réglages' }).click();
   await m.fill('#sli', 'Terrain : Terrain 1, Terrain 2, Terrain 3\nÉquipe : U11 > Rouge, U11 > Bleu, U13 > Vert');
-  await m.fill('#stp', '{groupe} : attendus au {Terrain} !');
+  // Le modèle se compose aussi d'un appui sur les variables disponibles sous le champ.
+  await m.fill('#stp', '{groupe} : attendus au ');
+  await m.locator('.var-chips .chip', { hasText: '{Terrain}' }).click();
+  await m.locator('#stp').press('End');
+  await m.locator('#stp').pressSequentially(' !');
+  assert.equal(await m.locator('#stp').inputValue(), '{groupe} : attendus au {Terrain} !');
   await m.fill('#sgr', 'U11 Rouge : 6-8');
   await m.click('form.stack button[type=submit]');
   await m.waitForSelector('p.ok');
@@ -217,6 +223,11 @@ try {
   await m.goto(`${BASE}/${tickets[8].s}`);
   await m.waitForSelector('.composer');
   await m.locator('.composer select').nth(0).selectOption('Terrain 1');
+  // Au moment de l'appel aussi, une variable s'insère d'un appui (et prend sa valeur dans l'aperçu).
+  await m.locator('.composer textarea').press('End');
+  await m.locator('.composer textarea').pressSequentially(' n°');
+  await m.locator('.composer .var-chips .chip', { hasText: '{numero}' }).click();
+  assert.match(await m.locator('.composer p', { hasText: 'Aperçu' }).textContent(), /Terrain 1 ! n°009/);
   await m.getByRole('button', { name: /Appeler le 009/ }).click();
   await m.waitForSelector('.result .call-title');
   await waitText(tab.locator('.s-number'), '009');
