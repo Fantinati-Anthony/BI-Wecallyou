@@ -24,7 +24,7 @@ Snacks, food trucks, boulangeries, buvettes, tournois sportifs, vestiaires, cord
 - **Français et anglais**, selon la langue du téléphone ; chaque client reçoit son message dans sa langue.
 - **Dons** ponctuels ou mensuels via Stripe, présentés au moment de la création des tickets, sans jamais bloquer.
 - **Compte facultatif, chiffré** : un identifiant et un mot de passe (pas d’e-mail) pour retrouver tous ses lots sur n’importe quel téléphone. Mot de passe oublié → **fiche de secours** imprimable et téléchargeable (identifiant + clé de secours + QR).
-- **Deux offres bien séparées** : le **don**, sans aucune contrepartie, et **WeCallYou Pro**, un petit abonnement avec options : marque masquée, tickets actifs jusqu’à 30 jours (pressing, SAV, réparations), statistiques sur un an et export CSV, priorité en cas d’affluence. Prix conseillé selon l’usage (tickets actifs sur 30 jours) ; payer moins raccourcit le Pro en proportion, personne n’est bloqué. Tout le reste reste gratuit, et tout le code reste libre ( débloque tout sur une installation indépendante).
+- **Deux offres bien séparées** : le **don**, sans aucune contrepartie, et **WeCallYou Pro**, un petit abonnement avec options : marque masquée, tickets actifs jusqu’à 30 jours (pressing, SAV, réparations), statistiques sur un an et export CSV, priorité en cas d’affluence. Prix conseillé selon l’usage (tickets actifs sur 30 jours) ; payer moins raccourcit le Pro en proportion, personne n’est bloqué. Tout le reste reste gratuit, et tout le code reste libre (`"allPro": true` dans `config.json` débloque tout sur une installation indépendante).
 
 ## Sécurité et vie privée
 
@@ -129,15 +129,15 @@ Tant qu’un lien est vide, le bouton affiche « Les dons ouvrent très bientôt
 Le **don** et le **Pro** sont deux offres distinctes : les liens de don n’activent jamais rien.
 
 1. Dans Stripe, créez les **liens de paiement Pro** :
-   - abonnements mensuels aux prix des paliers (1 €, 3 €, 8 €, 15 € par défaut, modifiables dans , rubrique ) ;
+   - abonnements mensuels aux prix des paliers (1 €, 3 €, 8 €, 15 € par défaut, modifiables dans `public/soutien.json`, rubrique `pro`) ;
    - un paiement unique « le client choisit le montant », 1 € minimum.
 
-   Collez leurs adresses dans  (, ), et leurs identifiants () dans , champ  : seuls ces liens activent le Pro.
-2. *Développeurs* > *Webhooks* > *Ajouter un endpoint* : , événements  et . Copiez le secret  dans  (), puis redémarrez.
+   Collez leurs adresses dans `public/soutien.json` (`pro.monthly[].url`, `pro.once.url`), et leurs identifiants (`plink_…`) dans `server/config.json`, champ `stripeProLinks` : seuls ces liens activent le Pro.
+2. *Développeurs* > *Webhooks* > *Ajouter un endpoint* : `https://votre-domaine/api/stripe/webhook`, événements `checkout.session.completed` et `invoice.paid`. Copiez le secret `whsec_…` dans `server/config.json` (`stripeWebhookSecret`), puis redémarrez.
 
-La page  ajoute l’identifiant du compte connecté au lien (). Règles : durée du Pro = montant payé ÷ prix conseillé pour l’usage du compte (un mois par tranche, 12 mois au plus pour un paiement unique) ; un abonnement prolonge le Pro jusqu’à la fin de chaque période payée (+ 3 jours de marge) ; à l’arrêt, les tickets de longue durée en cours ont encore 30 jours, puis les options se désactivent sans rien effacer. Chaque événement n’est traité qu’une fois, et seule une signature valide est acceptée.
+La page `/pro` ajoute l’identifiant du compte connecté au lien (`client_reference_id`). Règles : durée du Pro = montant payé ÷ prix conseillé pour l’usage du compte (un mois par tranche, 12 mois au plus pour un paiement unique) ; un abonnement prolonge le Pro jusqu’à la fin de chaque période payée (+ 3 jours de marge) ; à l’arrêt, les tickets de longue durée en cours ont encore 30 jours, puis les options se désactivent sans rien effacer. Chaque événement n’est traité qu’une fois, et seule une signature valide est acceptée.
 
-**Conformité** : complétez  (éditeur, SIRET, mention de TVA, rétractation) avant d’ouvrir le Pro au public, et faites valider par un comptable.
+**Conformité** : complétez `public/mentions.html` (éditeur, SIRET, mention de TVA, rétractation) avant d’ouvrir le Pro au public, et faites valider par un comptable.
 
 ## Développer
 
