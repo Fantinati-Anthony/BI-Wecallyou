@@ -1,6 +1,6 @@
 // Page d'un ticket. Ticket client : choisir comment être prévenu, voir sa place, être averti.
 // Souche : si ce téléphone est connecté au lot, l'appel part tout de suite.
-import { h, t, LANG, api, render, translatePage, errorText, local, isIOS, isStandalone, ordinal, setColors, inkOn } from './common.js';
+import { h, t, LANG, api, render, translatePage, errorText, local, isIOS, isStandalone, ordinal, setColors, inkOn, icon } from './common.js';
 import { sealForLot, b64u } from './crypto.js';
 import { unlock, callTickets } from './call.js';
 import { composer, needsComposer, groupOf } from './message.js';
@@ -9,7 +9,7 @@ translatePage();
 
 const app = document.getElementById('app');
 const token = (location.pathname.split('/')[1] || '').toUpperCase();
-const ICON = { push: '🔔', sms: '💬', wa: '🟢', mail: '✉️' };
+const ICON = { push: 'bell-ringing', sms: 'chat-circle-text', wa: 'whatsapp-logo', mail: 'envelope-simple' };
 const storageKey = `wcy:t:${token}`;
 
 // Manifeste propre à ce ticket : l'icône ajoutée à l'écran d'accueil (iPhone) rouvre ce ticket.
@@ -67,7 +67,7 @@ function promo() {
   return h(
     'div',
     { class: 'promo-card small' },
-    h('span', {}, '📣'),
+    icon('megaphone'),
     h('div', {}, data.promo, data.promo && data.link && ' ', data.link && h('a', { href: data.link, target: '_blank', rel: 'noopener nofollow ugc' }, data.link.replace(/^https:\/\//, ''))),
   );
 }
@@ -125,7 +125,7 @@ async function ready() {
   if (readyShown) return;
   readyShown = true;
   clearInterval(refreshTimer);
-  document.title = `🔔 ${t('ready_title')}`;
+  document.title = t('ready_title');
   ring();
   // Le message de l'appel (ex. « attendus au Terrain 3 ») vient avec l'état à jour du ticket.
   if (!data.called) {
@@ -159,7 +159,7 @@ async function register(kind, value) {
 
 function choose() {
   const enabled = ['push', 'sms', 'wa', 'mail'].filter((c) => data.channels.includes(c));
-  const choices = enabled.map((c) => h('button', { type: 'button', class: 'btn choice', onclick: () => (c === 'push' ? pushFlow() : contactForm(c)) }, h('span', { class: 'icon' }, ICON[c]), t(`ch_${c}`)));
+  const choices = enabled.map((c) => h('button', { type: 'button', class: 'btn choice', onclick: () => (c === 'push' ? pushFlow() : contactForm(c)) }, h('span', { class: 'icon' }, icon(ICON[c])), t(`ch_${c}`)));
   view(
     h('p', { class: 'lead center' }, t(enabled.length ? 'how' : 'no_channels')),
     h('div', { class: 'stack' }, choices, h('button', { type: 'button', class: 'linklike', onclick: waitOnly }, t('wait_only'))),
@@ -244,8 +244,8 @@ function registered() {
     choose();
   });
   view(
-    h('div', { class: 'banner-ok center' }, `✅ ${t('registered_title')}`),
-    h('p', { class: 'lead center' }, `${ICON[saved.kind]} ${t(`registered_${saved.kind}`)}`),
+    h('div', { class: 'banner-ok center' }, icon('check-circle'), t('registered_title')),
+    h('p', { class: 'lead center' }, icon(ICON[saved.kind]), ' ', t(`registered_${saved.kind}`)),
     h('p', { class: 'muted center' }, t('keep_open')),
     h('div', { class: 'center' }, cancel),
   );
@@ -283,7 +283,7 @@ async function stub() {
   if (!needsComposer(lot)) return run();
   const group = groupOf(lot, data.n);
   const box = composer(lot, { label: data.label, group });
-  const go = h('button', { type: 'button', class: 'btn btn-big btn-block' }, `📣 ${t('call_this', { n: data.label })}`);
+  const go = h('button', { type: 'button', class: 'btn btn-big btn-block' }, icon('megaphone'), t('call_this', { n: data.label }));
   go.addEventListener('click', () => run(box.message(), box.tag(group)));
   view(h('div', { class: 'card stack' }, h('p', { class: 'small muted' }, t('stub_compose')), box.element, go), dashboard);
 }
@@ -296,7 +296,10 @@ if (!data.ok) {
 } else {
   document.title = `${data.label} · ${data.name}`;
   // Option Pro : la couleur du commerçant remplace l'orange de WeCallYou (boutons, accents).
-  if (data.theme?.accent) setColors({ '--brand': data.theme.accent, '--brand-ink': inkOn(data.theme.accent) });
+  if (data.theme?.accent) {
+    const accent = data.theme.accent;
+    setColors({ '--brand': accent, '--brand-hover': accent, '--brand-ink': inkOn(accent), '--brand-text': `color-mix(in srgb, ${accent} 70%, var(--text))`, '--brand-soft': `color-mix(in srgb, ${accent} 16%, var(--surface))` });
+  }
   // Option Pro « marque masquée » : seul le lien Confidentialité reste (il est obligatoire).
   if (data.whiteLabel) {
     const footer = document.querySelector('footer');

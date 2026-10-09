@@ -6,6 +6,8 @@ Options -Indexes -MultiViews
 DirectoryIndex index.html
 AddDefaultCharset utf-8
 AddType application/manifest+json .webmanifest
+AddType font/woff2 .woff2
+AddType image/webp .webp
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
@@ -40,8 +42,11 @@ AddType application/manifest+json .webmanifest
   <FilesMatch "\.(html|webmanifest)$|^(sw\.js|soutien\.json|papiers\.json)$">
     Header set Cache-Control "no-cache"
   </FilesMatch>
-  <FilesMatch "\.(css|js|png|svg)$">
+  <FilesMatch "\.(css|js|png|svg|webp)$">
     Header set Cache-Control "public, max-age=3600"
+  </FilesMatch>
+  <FilesMatch "\.woff2$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
   </FilesMatch>
   <Files "sw.js">
     Header set Cache-Control "no-cache"

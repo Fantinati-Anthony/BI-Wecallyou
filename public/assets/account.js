@@ -166,7 +166,7 @@ export function printKit({ lang, domain, brand, ident, recovery }) {
     h(
       'section',
       { class: 'sheet sheet-key' },
-      h('div', { class: 'k-head' }, h('h1', {}, `🛟 ${tl(lang, 'kit_sheet_title')}`), h('div', { class: 'small' }, brand)),
+      h('div', { class: 'k-head' }, h('h1', {}, tl(lang, 'kit_sheet_title')), h('div', { class: 'small' }, brand)),
       h(
         'div',
         { class: 'k-box' },
@@ -192,7 +192,7 @@ export function printKit({ lang, domain, brand, ident, recovery }) {
 /** La même fiche en simple fichier texte, à garder dans ses documents ou un gestionnaire de mots de passe. */
 export function downloadKit({ lang, domain, brand, ident, recovery }) {
   const text = [
-    `${brand} — ${tl(lang, 'kit_sheet_title')}`,
+    `${brand} : ${tl(lang, 'kit_sheet_title')}`,
     '',
     `${tl(lang, 'acc_ident')} : ${ident}`,
     `${tl(lang, 'kit_key')} : ${secretToText(recovery, true)}`,

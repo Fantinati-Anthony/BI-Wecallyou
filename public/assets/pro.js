@@ -72,7 +72,7 @@ function payment(usage) {
 
 render(
   app,
-  h('h1', {}, `⭐ ${t('pro_title')}`),
+  h('h1', {}, t('pro_title')),
   h('p', { class: 'lead' }, t('pro_intro')),
   h('section', { class: 'card' }, options),
   payment(synced?.usage),

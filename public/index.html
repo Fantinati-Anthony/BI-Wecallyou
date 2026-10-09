@@ -5,56 +5,115 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="referrer" content="no-referrer">
   <meta name="description" content="Des tickets papier qui préviennent vos clients quand c'est leur tour. Gratuit, sans compte, sans pub, open source, et les coordonnées sont illisibles pour le serveur.">
-  <meta name="theme-color" content="#e8572a">
+  <meta name="theme-color" content="#f2f3f5" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0e1013" media="(prefers-color-scheme: dark)">
   <title>WeCallYou · le ticket qui prévient</title>
   <link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <link rel="preload" href="/assets/fonts/bricolage-grotesque.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/assets/style.css">
   <script src="/assets/qrcode.js" defer></script>
+  <script type="module" src="/assets/landing.js"></script>
   <script type="module" src="/assets/create.js"></script>
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="/"><img src="/assets/icon.svg" alt="" width="28" height="28">WeCallYou</a>
-    <span class="row">
-      <a href="/compte" class="small" data-i18n="acc_link">Mon compte</a>
-      <a class="btn btn-ghost" href="/m" data-i18n="to_dashboard">Espace commerçant</a>
-    </span>
+    <a class="brand" href="/"><img src="/assets/icon.svg" alt="" width="30" height="30">WeCallYou</a>
+    <nav class="topnav">
+      <a class="btn btn-ghost" href="/compte"><span data-icon="user-circle"></span><span class="label" data-i18n="acc_link">Mon compte</span></a>
+      <a class="btn btn-ghost" href="/m"><span data-icon="storefront"></span><span class="label" data-i18n="to_dashboard">Espace commerçant</span></a>
+    </nav>
   </header>
 
-  <main class="wrap wrap-wide wrap-studio">
+  <main class="wrap wrap-studio">
     <section class="hero">
-      <h1 data-i18n="hero_title">Le ticket papier qui prévient vos clients.</h1>
-      <p data-i18n="hero_text">Votre client garde son petit ticket. S’il le scanne, il est prévenu quand c’est son tour.</p>
-      <div class="row">
-        <a class="btn btn-big" href="#creer" data-i18n="create_title">Créer mes tickets</a>
-        <a class="btn btn-ghost" href="/soutenir">💛 <span data-i18n="support_link">Soutenir le projet</span></a>
+      <div>
+        <h1 data-i18n="hero_title">Le ticket papier qui prévient vos clients.</h1>
+        <p class="lede" data-i18n="hero_text">Votre client garde son ticket. S’il le scanne, il est prévenu quand c’est son tour. Sinon, vous l’appelez comme avant.</p>
+        <div class="hero-cta">
+          <a class="btn btn-big" href="#creer"><span data-i18n="create_title">Créer mes tickets</span><span data-icon="arrow-right"></span></a>
+          <a class="btn btn-big btn-ghost" href="#comment" data-i18n="how_title">Comment ça marche</a>
+        </div>
+      </div>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="hv-ticket" id="hero-ticket"></div>
+        <figure class="hv-phone">
+          <img src="/assets/img/client-pret.webp" alt="" width="780" height="1240" fetchpriority="high">
+        </figure>
       </div>
     </section>
 
-    <div class="feature-grid">
-      <div class="feature"><b data-i18n="f_free_t"></b><span data-i18n="f_free"></span></div>
-      <div class="feature"><b data-i18n="f_private_t"></b><span data-i18n="f_private"></span></div>
-      <div class="feature"><b data-i18n="f_paper_t"></b><span data-i18n="f_paper"></span></div>
-      <div class="feature"><b data-i18n="f_queue_t"></b><span data-i18n="f_queue"></span></div>
-    </div>
-    <p class="muted" data-i18n="uses"></p>
+    <div class="uses"><ul class="uses-track" data-i18n-list="uses_list"></ul></div>
 
-    <section class="card">
-      <h2 data-i18n="how_title">Comment ça marche</h2>
-      <ol class="steps">
-        <li data-i18n="how_1"></li>
-        <li data-i18n="how_2"></li>
-        <li data-i18n="how_3"></li>
+    <section class="how" id="comment">
+      <div class="how-aside">
+        <h2 data-i18n="how_title">Comment ça marche</h2>
+        <p data-i18n="how_lede">Trois gestes. Ni compte, ni appli à installer, pour vous comme pour vos clients.</p>
+      </div>
+      <ol class="how-steps">
+        <li class="how-step">
+          <figure><img src="/assets/img/planche.webp" alt="" width="900" height="675" loading="lazy"></figure>
+          <div><h3 data-i18n="how_t1">Imprimez</h3><p data-i18n="how_1"></p></div>
+        </li>
+        <li class="how-step">
+          <figure>
+            <picture>
+              <source srcset="/assets/img/client-choix-dark.webp" media="(prefers-color-scheme: dark)">
+              <img src="/assets/img/client-choix-light.webp" alt="" width="780" height="1240" loading="lazy">
+            </picture>
+          </figure>
+          <div><h3 data-i18n="how_t2">Distribuez</h3><p data-i18n="how_2"></p></div>
+        </li>
+        <li class="how-step">
+          <figure>
+            <picture>
+              <source srcset="/assets/img/commercant-dark.webp" media="(prefers-color-scheme: dark)">
+              <img src="/assets/img/commercant-light.webp" alt="" width="780" height="1240" loading="lazy">
+            </picture>
+          </figure>
+          <div><h3 data-i18n="how_t3">Appelez</h3><p data-i18n="how_3"></p></div>
+        </li>
       </ol>
     </section>
 
+    <section class="bento" aria-label="WeCallYou">
+      <article class="bento-cell b-privacy">
+        <h3 data-i18n="f_private_t">Illisible, même pour nous</h3>
+        <p data-i18n="f_private"></p>
+        <div class="cipher">
+          <div><span data-i18n="cipher_plain">Ce que tape votre client</span><code class="plain" id="cipher-plain">06 12 34 56 78</code></div>
+          <div><span data-i18n="cipher_sealed">Ce que reçoit notre serveur</span><code class="sealed" id="cipher-sealed">…</code></div>
+        </div>
+      </article>
+      <article class="bento-cell b-free">
+        <h3 data-i18n="f_free_t">Gratuit, sans compte</h3>
+        <p data-i18n="f_free"></p>
+        <div class="big" data-i18n="free_big">0 €</div>
+      </article>
+      <article class="bento-cell b-paper">
+        <h3 data-i18n="f_paper_t">Le papier reste roi</h3>
+        <p data-i18n="f_paper"></p>
+        <div class="big">042</div>
+      </article>
+      <article class="bento-cell b-queue">
+        <div>
+          <h3 data-i18n="f_queue_t">File d’attente en direct</h3>
+          <p data-i18n="f_queue"></p>
+        </div>
+        <figure><img src="/assets/img/ecran.webp" alt="" width="1280" height="720" loading="lazy"></figure>
+      </article>
+    </section>
+
     <section id="creer">
-      <h2 data-i18n="create_title">Créer mes tickets</h2>
+      <div class="section-head">
+        <h2 data-i18n="create_title">Créer mes tickets</h2>
+        <p data-i18n="studio_lede">Réglez à gauche, l’aperçu suit en direct. Vos réglages d’impression restent sur cet appareil.</p>
+      </div>
       <div class="studio">
         <form id="create-form" class="studio-form" novalidate>
           <details class="card" open>
-            <summary data-i18n="studio_lot">1 · Votre lot</summary>
+            <summary data-i18n="studio_lot">Votre lot</summary>
             <div class="field">
               <label for="name" data-i18n="create_name">Nom affiché aux clients</label>
               <input id="name" name="name" type="text" maxlength="60" required autocomplete="organization" data-i18n-placeholder="create_name_ph">
@@ -72,10 +131,10 @@
             <fieldset class="field">
               <legend><label data-i18n="create_channels">Moyens proposés à vos clients</label></legend>
               <div class="checks">
-                <label class="check"><input type="checkbox" name="channels" value="push" checked> 🔔 <span data-i18n="ch_push"></span></label>
-                <label class="check"><input type="checkbox" name="channels" value="sms" checked> 💬 <span data-i18n="ch_sms"></span></label>
-                <label class="check"><input type="checkbox" name="channels" value="wa" checked> 🟢 <span data-i18n="ch_wa"></span></label>
-                <label class="check"><input type="checkbox" name="channels" value="mail" checked> ✉️ <span data-i18n="ch_mail"></span></label>
+                <label class="check"><input type="checkbox" name="channels" value="push" checked><span data-icon="bell-ringing"></span><span data-i18n="ch_push"></span></label>
+                <label class="check"><input type="checkbox" name="channels" value="sms" checked><span data-icon="chat-circle-text"></span><span data-i18n="ch_sms"></span></label>
+                <label class="check"><input type="checkbox" name="channels" value="wa" checked><span data-icon="whatsapp-logo"></span><span data-i18n="ch_wa"></span></label>
+                <label class="check"><input type="checkbox" name="channels" value="mail" checked><span data-icon="envelope-simple"></span><span data-i18n="ch_mail"></span></label>
               </div>
             </fieldset>
             <div class="field">
@@ -94,15 +153,15 @@
             </div>
           </details>
           <details class="card" open>
-            <summary data-i18n="studio_layout">2 · Mise en page</summary>
+            <summary data-i18n="studio_layout">Papier et mise en page</summary>
             <div id="design-layout"></div>
           </details>
           <details class="card" open>
-            <summary data-i18n="studio_colors">3 · Couleurs et logo</summary>
+            <summary data-i18n="studio_colors">Couleurs et logo</summary>
             <div id="design-colors"></div>
           </details>
           <details class="card">
-            <summary data-i18n="studio_message">4 · Votre message (facultatif)</summary>
+            <summary data-i18n="studio_message">Votre message (facultatif)</summary>
             <div class="field">
               <label for="promo" data-i18n="create_promo">Votre message (facultatif)</label>
               <input id="promo" name="promo" type="text" maxlength="140" data-i18n-placeholder="create_promo_ph">
@@ -122,13 +181,25 @@
     </section>
 
     <section id="created" hidden></section>
+
+    <section class="closing">
+      <h2 data-i18n="closing_title">Gratuit, libre et sans pub</h2>
+      <p data-i18n="closing_text">Financé par les dons de celles et ceux qui s’en servent. Le code est ouvert : chacun peut le vérifier.</p>
+      <div class="row">
+        <a class="btn btn-big" href="/soutenir"><span data-icon="hand-heart"></span><span data-i18n="support_link">Soutenir le projet</span></a>
+        <a class="btn btn-big btn-ghost" href="https://github.com/Fantinati-Anthony/BI-Wecallyou"><span data-icon="github-logo"></span><span data-i18n="open_source">Code source</span></a>
+      </div>
+    </section>
   </main>
 
   <footer class="footer">
-    <a href="/soutenir" data-i18n="support_link">Soutenir le projet</a> ·
-    <a href="/confidentialite" data-i18n="privacy">Confidentialité</a> ·
-    <a href="/mentions" data-i18n="legal">Mentions légales et CGV</a> ·
-    <a href="https://github.com/Fantinati-Anthony/BI-Wecallyou" data-i18n="open_source">Code source</a>
+    <span data-i18n="service_note">Service gratuit, sans pub, financé par les dons.</span>
+    <nav>
+      <a href="/soutenir" data-i18n="support_link">Soutenir le projet</a>
+      <a href="/confidentialite" data-i18n="privacy">Confidentialité</a>
+      <a href="/mentions" data-i18n="legal">Mentions légales et CGV</a>
+      <a href="https://github.com/Fantinati-Anthony/BI-Wecallyou" data-i18n="open_source">Code source</a>
+    </nav>
   </footer>
 </body>
 </html>

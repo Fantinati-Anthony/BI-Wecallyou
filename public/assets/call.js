@@ -1,7 +1,7 @@
 // Appel d'un ticket ou d'un groupe depuis le téléphone du commerçant (scan de la souche ou numéro) :
 // le serveur rend des blocs chiffrés, ce téléphone les déchiffre, envoie les notifications
 // via le relais aveugle et propose un bouton pour chaque SMS, WhatsApp ou e-mail.
-import { h, t, tl, api, isIOS, fmtTime, lots } from './common.js';
+import { h, t, tl, api, isIOS, fmtTime, lots, icon } from './common.js';
 import { b64u, authTokenOf, openLot, openFromClient, buildPush } from './crypto.js';
 import { fill, builtins, groupOf } from './message.js';
 
@@ -98,8 +98,8 @@ async function sendPushes({ lot, access, contact, message }, call, pushes) {
 function manualButton({ lot, access, message, showLabel }, { data, lang, call }) {
   const body = textFor(lot, call.label, lang, message);
   const to = String(data.v);
-  const [href, cls, text] = data.c === 'sms' ? [smsHref(to, body), 'btn-sms', `💬 ${t('send_sms')}`] : [waHref(to, body), 'btn-wa', `🟢 ${t('send_wa')}`];
-  const btn = h('a', { class: `btn btn-block btn-big ${cls}`, href, target: data.c === 'wa' ? '_blank' : false, rel: 'noopener' }, showLabel ? `${call.label} · ` : '', `${text} ${masked(to)}`);
+  const [href, cls, text, glyph] = data.c === 'sms' ? [smsHref(to, body), 'btn-sms', t('send_sms'), 'chat-circle-text'] : [waHref(to, body), 'btn-wa', t('send_wa'), 'whatsapp-logo'];
+  const btn = h('a', { class: `btn btn-block btn-big ${cls}`, href, target: data.c === 'wa' ? '_blank' : false, rel: 'noopener' }, icon(glyph), showLabel ? `${call.label} · ` : '', `${text} ${masked(to)}`);
   btn.addEventListener('click', () => {
     if (!btn.classList.contains('done')) api('/lot/event', { body: { n: call.n, type: 'send', detail: data.c }, auth: access.auth });
     btn.classList.add('done');
@@ -116,8 +116,8 @@ function mailButton({ lot, access, message, brand }, mails) {
   const foot = lot.whiteLabel ? tl(lang, 'msg_mail_foot_plain') : tl(lang, 'msg_mail_foot', { brand });
   const body = `${textFor(lot, labels.join(', '), lang, message)}\n\n${foot}`;
   const subject = tl(lang, 'msg_subject', { m: lot.name, n: labels.join(', ') });
-  const label = mails.length === 1 ? `✉️ ${t('send_mail')} ${masked(String(mails[0].data.v))}` : t('g_mail', { count: mails.length });
-  const btn = h('a', { class: 'btn btn-block btn-big btn-mail', href: mailHref(mails.map((m) => m.data.v), subject, body) }, label);
+  const label = mails.length === 1 ? `${t('send_mail')} ${masked(String(mails[0].data.v))}` : t('g_mail', { count: mails.length });
+  const btn = h('a', { class: 'btn btn-block btn-big btn-mail', href: mailHref(mails.map((m) => m.data.v), subject, body) }, icon('envelope-simple'), label);
   btn.addEventListener('click', () => {
     if (!btn.classList.contains('done')) for (const m of mails) api('/lot/event', { body: { n: m.call.n, type: 'send', detail: 'mail' }, auth: access.auth });
     btn.classList.add('done');
@@ -156,8 +156,8 @@ export async function callTickets({ lot, access, target, brand, contact, message
     if (call.subs.length === 0) nobody.push(call.label);
   }
 
-  if (sent) box.append(h('p', { class: 'ok' }, `🔔 ${t('push_sent')}${sent > 1 ? ` ×${sent}` : ''}`));
-  if (lost) box.append(h('p', { class: 'muted' }, `🔕 ${t('push_lost')}${lost > 1 ? ` ×${lost}` : ''}`));
+  if (sent) box.append(h('p', { class: 'ok' }, icon('bell-ringing'), ` ${t('push_sent')}${sent > 1 ? ` ×${sent}` : ''}`));
+  if (lost) box.append(h('p', { class: 'muted' }, icon('bell-simple-slash'), ` ${t('push_lost')}${lost > 1 ? ` ×${lost}` : ''}`));
   for (const entry of manual.filter((m) => m.data.c !== 'mail')) box.append(manualButton(ctx, entry));
   box.append(mailButton(ctx, manual.filter((m) => m.data.c === 'mail')) ?? '');
   if (manual.length) box.append(h('p', { class: 'small muted' }, t('manual_hint')));

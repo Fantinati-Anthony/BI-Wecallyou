@@ -2,7 +2,7 @@
 // logo et aperçu en direct. Utilisé à la création d'un lot et dans l'espace commerçant (onglet
 // Imprimer). Tout se passe dans le navigateur : ces réglages ne coûtent rien au serveur, ils
 // restent donc gratuits pour tous.
-import { h, t, LANG, render } from './common.js';
+import { h, t, LANG, render, icon } from './common.js';
 import { PAPERS, LIMITS, QR_WARN_MM, normalizeDesign, fitDesign, fitGrid, gridLimits, presetGrids, pageOf, gridOf, contentKey } from './layout.js';
 import { contentOf, ticketSheets, keySheet, labelOf } from './sheets.js';
 import { readLogo, pagesFor } from './print.js';
@@ -341,7 +341,7 @@ function paperCatalog(onUse) {
   const list = h('div', { class: 'catalog-grid' });
   const filters = h('div', { class: 'chips', role: 'group' });
   const disclosure = h('p', { class: 'small muted' }, t('cat_affiliate'));
-  const close = h('button', { type: 'button', class: 'btn btn-ghost' }, t('cat_close'));
+  const close = h('button', { type: 'button', class: 'btn btn-ghost' }, icon('x'), t('cat_close'));
   const dialog = h('dialog', { class: 'catalog', 'aria-label': t('cat_title') }, h('div', { class: 'row' }, h('h2', { class: 'grow' }, t('cat_title')), close), h('p', { class: 'small muted' }, t('cat_intro')), filters, list, disclosure);
   close.addEventListener('click', () => dialog.close());
   dialog.addEventListener('click', (event) => event.target === dialog && dialog.close());
@@ -379,14 +379,14 @@ function paperCatalog(onUse) {
             h('p', { class: 'small muted' }, t('cat_specs', { count: fit.perPage, w: mmText(page.w), h: mmText(page.h) })),
             product.note && h('p', { class: 'small' }, product.note[LANG] ?? product.note.en),
             use,
-            /^https:\/\//.test(product.url ?? '') && h('a', { class: 'btn btn-soft btn-block', href: product.url, target: '_blank', rel: 'sponsored noopener noreferrer' }, t('cat_buy', { shop: product.shop ?? '' })),
+            /^https:\/\//.test(product.url ?? '') && h('a', { class: 'btn btn-soft btn-block', href: product.url, target: '_blank', rel: 'sponsored noopener noreferrer' }, t('cat_buy', { shop: product.shop ?? '' }), icon('arrow-up-right')),
           );
         }),
     );
     disclosure.hidden = !products.some((p) => /^https:\/\//.test(p.url ?? ''));
   };
 
-  const button = h('button', { type: 'button', class: 'btn btn-soft', id: 'd-catalog' }, t('cat_open'));
+  const button = h('button', { type: 'button', class: 'btn btn-soft', id: 'd-catalog' }, icon('package'), t('cat_open'));
   button.addEventListener('click', async () => {
     await loadProducts();
     draw();
@@ -410,7 +410,7 @@ const sampleCodes = (n) => {
  */
 export function livePreview() {
   const frame = h('div', { class: 'pv-frame' });
-  const info = h('p', { class: 'small muted' });
+  const info = h('ul', { class: 'pv-info' });
   const alert = h('p', { class: 'small', role: 'status' });
   let tab = 'tickets';
   let last = null;
@@ -428,9 +428,9 @@ export function livePreview() {
       return button;
     }),
   );
-  const close = h('button', { type: 'button', class: 'btn btn-ghost pv-close' }, t('pv_close'));
+  const close = h('button', { type: 'button', class: 'btn btn-ghost pv-close' }, icon('x'), t('pv_close'));
   const panel = h('aside', { class: 'studio-preview card', 'aria-label': t('pv_title') }, h('div', { class: 'row' }, h('h3', { class: 'grow' }, t('pv_title')), tabs, close), info, alert, frame, h('p', { class: 'small muted' }, t('pv_sample')));
-  const fab = h('button', { type: 'button', class: 'btn pv-fab' }, t('pv_open'));
+  const fab = h('button', { type: 'button', class: 'btn pv-fab' }, icon('eye'), t('pv_open'));
   fab.addEventListener('click', () => panel.classList.add('open'));
   close.addEventListener('click', () => panel.classList.remove('open'));
 
@@ -461,7 +461,7 @@ export function livePreview() {
     const layout = fitDesign(design, contentOf(design, { ...ctx, last: lastNumber }));
     const page = pageOf(design);
     if (!layout.ok) {
-      info.textContent = t('pv_paper', { w: mmText(page.w), h: mmText(page.h) });
+      render(info, h('li', {}, t('pv_size', { w: mmText(page.w), h: mmText(page.h) })));
       alert.className = 'small error';
       alert.textContent = t('pv_impossible');
       clearTimeout(timer);
@@ -469,7 +469,13 @@ export function livePreview() {
       fit();
       return false;
     }
-    info.textContent = t('pv_info', { per: layout.perPage, pages: pagesFor(Math.max(1, ctx.count || layout.perPage), layout.perPage).toLocaleString(LANG), w: mmText(page.w), h: mmText(page.h), qr: Math.floor(layout.qr) });
+    render(
+      info,
+      h('li', {}, t('pv_per', { n: layout.perPage })),
+      h('li', {}, t('pv_pages', { n: pagesFor(Math.max(1, ctx.count || layout.perPage), layout.perPage).toLocaleString(LANG) })),
+      h('li', {}, t('pv_size', { w: mmText(page.w), h: mmText(page.h) })),
+      h('li', {}, t('pv_qr', { qr: Math.floor(layout.qr) })),
+    );
     const small = layout.qr < QR_WARN_MM;
     alert.className = `small ${small ? 'warn' : 'muted'}`;
     alert.textContent = [small && t('pv_qr_warn', { qr: Math.floor(layout.qr) }), PAPERS[design.paper].roll && t('pv_roll')].filter(Boolean).join(' ');

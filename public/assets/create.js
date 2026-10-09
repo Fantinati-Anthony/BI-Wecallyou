@@ -1,6 +1,6 @@
 // Page d'accueil : création d'un lot de tickets, entièrement dans le navigateur.
 // À gauche les réglages, à droite l'aperçu A4 en direct (studio d'impression).
-import { h, t, LANG, api, render, translatePage, errorText, lots, local } from './common.js';
+import { h, t, LANG, api, render, translatePage, errorText, lots, local, icon } from './common.js';
 import { createLot, secretToText, b64u, randomBytes } from './crypto.js';
 import { printPlan, printOptions } from './print.js';
 import { contentOf } from './sheets.js';
@@ -63,6 +63,8 @@ document.getElementById('design-layout').append(design.layout);
 document.getElementById('design-colors').append(design.colors);
 document.getElementById('preview-slot').replaceWith(preview.element);
 document.body.append(preview.fab);
+// Sur téléphone, le bouton « Aperçu » n'apparaît qu'une fois arrivé au studio.
+new IntersectionObserver(([entry]) => preview.fab.classList.toggle('near', entry.isIntersecting)).observe(document.getElementById('creer'));
 for (const el of [form.elements.name, count, first]) {
   el.addEventListener('input', () => {
     design.refresh();
@@ -132,9 +134,9 @@ async function showCreated({ res, lot, options, hasPassword }) {
     h(
       'div',
       { class: 'card stack' },
-      h('h2', {}, '✅ ', t('created_title', { count: (res.to - res.from + 1).toLocaleString() })),
+      h('h2', { class: 'row' }, icon('check-circle', 'i ok'), t('created_title', { count: (res.to - res.from + 1).toLocaleString() })),
       h('p', {}, t('created_text')),
-      hasPassword && h('p', { class: 'banner-warn' }, t('created_password')),
+      hasPassword && h('p', { class: 'banner-warn' }, icon('lock-key'), t('created_password')),
       printPlan({ lot: res, auth: lot.authToken, from: res.from, to: res.to, options, domain, lang: LANG, key }),
       h('a', { class: 'btn btn-ghost btn-block', href: '/m' }, t('open_space')),
     ),

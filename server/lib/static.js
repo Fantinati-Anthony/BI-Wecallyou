@@ -12,6 +12,8 @@ const TYPES = {
   '.webmanifest': 'application/manifest+json',
   '.png': 'image/png',
   '.svg': 'image/svg+xml',
+  '.webp': 'image/webp',
+  '.woff2': 'font/woff2',
   '.txt': 'text/plain; charset=utf-8',
 };
 
@@ -63,6 +65,7 @@ export function createStatic(publicDir) {
     const headers = { 'Content-Type': TYPES[ext] ?? 'application/octet-stream', ...SECURITY_HEADERS };
     if (pathname.startsWith('/etat/')) headers['Cache-Control'] = 'public, max-age=2';
     else if (ext === '.html' || rel === 'sw.js' || rel === 'soutien.json' || rel === 'papiers.json') headers['Cache-Control'] = 'no-cache';
+    else if (ext === '.woff2') headers['Cache-Control'] = 'public, max-age=31536000, immutable';
     else headers['Cache-Control'] = 'public, max-age=3600';
     res.writeHead(200, headers);
     res.end(req.method === 'HEAD' ? undefined : body);

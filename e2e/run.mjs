@@ -113,9 +113,9 @@ try {
   await m.goto(`${BASE}/m`);
   await m.waitForSelector('.waiting-list li .num');
   assert.equal(await m.locator('.waiting-list li .num').first().textContent(), '005');
-  assert.match(await m.locator('.waiting-list li').first().textContent(), /💬/);
+  assert.match(await m.locator('.waiting-list li .kinds').first().getAttribute('aria-label'), /SMS/);
   await shot(m, '07-espace-commercant');
-  step('le commerçant voit le 005 inscrit par 💬, sans numéro affiché');
+  step('le commerçant voit le 005 inscrit par SMS, sans numéro affiché');
 
   // Quelques appels pour donner un rythme à la file d'attente.
   for (const n of ['1', '2', '3']) {

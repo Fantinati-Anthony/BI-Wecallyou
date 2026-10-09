@@ -4,7 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="referrer" content="no-referrer">
-  <meta name="theme-color" content="#e8572a">
+  <meta name="theme-color" content="#f2f3f5" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0e1013" media="(prefers-color-scheme: dark)">
   <title>Mentions légales et CGV · WeCallYou</title>
   <link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/style.css">
@@ -12,7 +13,10 @@
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="/"><img src="/assets/icon.svg" alt="" width="28" height="28">WeCallYou</a>
+    <a class="brand" href="/"><img src="/assets/icon.svg" alt="" width="30" height="30">WeCallYou</a>
+    <nav class="topnav">
+      <a class="btn btn-ghost" href="/"><span data-icon="ticket"></span><span class="label" data-i18n="create_title">Créer mes tickets</span></a>
+    </nav>
   </header>
   <main class="wrap">
     <!-- À COMPLÉTER : tout ce qui est entre crochets, avant d'ouvrir l'abonnement Pro au public. -->
@@ -50,6 +54,12 @@
       <p>[Adresse e-mail de contact]. [Médiateur de la consommation, si vous vendez à des particuliers.]</p>
     </article>
   </main>
-  <footer class="footer"><a href="/pro" data-i18n="pro_link">WeCallYou Pro</a> · <a href="/confidentialite" data-i18n="privacy">Confidentialité</a></footer>
+  <footer class="footer">
+    <span data-i18n="service_note">Service gratuit, sans pub, financé par les dons.</span>
+    <nav>
+      <a href="/pro" data-i18n="pro_link">WeCallYou Pro</a>
+      <a href="/confidentialite" data-i18n="privacy">Confidentialité</a>
+    </nav>
+  </footer>
 </body>
 </html>

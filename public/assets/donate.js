@@ -3,7 +3,7 @@
 // notre serveur ne voit ni carte, ni montant, ni donateur.
 // Le DON est sans contrepartie : ses liens ne portent jamais d'identifiant de compte et n'activent rien.
 // Les options en plus relèvent de l'abonnement Pro (page /pro), une offre distincte.
-import { h, t, api, local } from './common.js';
+import { h, t, api, local, icon } from './common.js';
 import { session } from './account.js';
 
 let configPromise = null;
@@ -46,7 +46,7 @@ export async function supportCard({ context, count = 0, brand = 'WeCallYou' }) {
   if (context === 'dashboard') {
     const open = h('button', { type: 'button', class: 'btn btn-gold' }, t('support_link'));
     card.classList.add('donate-mini');
-    card.append(h('span', {}, '💛 ', intro), open);
+    card.append(h('span', { class: 'donor-thanks' }, icon('hand-heart'), intro), open);
     open.addEventListener('click', async () => {
       const full = await supportCard({ context: 'dashboard-open', count, brand });
       card.replaceWith(full);
@@ -54,7 +54,7 @@ export async function supportCard({ context, count = 0, brand = 'WeCallYou' }) {
     return card;
   }
 
-  card.append(h('h3', { id: 'don-title' }, '💛 ', t('don_title')), h('p', { class: 'why' }, intro ?? t('don_dashboard')));
+  card.append(h('h3', { id: 'don-title' }, icon('hand-heart'), t('don_title')), h('p', { class: 'why' }, intro ?? t('don_dashboard')));
 
   if (stats && stats.tickets > 0) {
     const key = stats.lots === 1 ? 'don_stats_one' : 'don_stats';
@@ -143,7 +143,7 @@ export async function supportCard({ context, count = 0, brand = 'WeCallYou' }) {
   if (context !== 'support') {
     const later = h('button', { type: 'button', class: 'linklike small' }, t('don_later'));
     later.addEventListener('click', () => {
-      card.replaceChildren(h('a', { href: '/soutenir', class: 'small' }, '💛 ', t('support_link')));
+      card.replaceChildren(h('a', { href: '/soutenir', class: 'small' }, t('support_link')));
       card.classList.remove('donate');
     });
     card.append(h('div', { class: 'row' }, later, h('a', { href: '/soutenir', class: 'small' }, t('don_more'))));

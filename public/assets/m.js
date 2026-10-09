@@ -1,6 +1,6 @@
 // Espace commerçant : connexion par la page 1 du PDF (et le mot de passe du lot s'il y en a un),
 // appels, suivi des tickets, statistiques, impression, réglages et écran d'affichage.
-import { h, t, LANG, api, render, translatePage, errorText, lots, local, fmtTime, qrSvg, inkOn } from './common.js';
+import { h, t, LANG, api, render, translatePage, errorText, lots, local, fmtTime, qrSvg, inkOn, icon } from './common.js';
 import { textToSecret, secretToText, lotMaterial, authTokenOf, openLot, b64u, openFromClient } from './crypto.js';
 import { unlock, callTickets } from './call.js';
 import { composer, needsComposer, groupOf, parseNumbers } from './message.js';
@@ -13,12 +13,12 @@ import { session, sync, removeLot } from './account.js';
 /** Ligne du compte en haut de l'espace commerçant : Pro, gratuit, ou invitation (facultative). */
 function accountLine(lot) {
   const account = session.get();
-  if (!account) return h('p', { class: 'small' }, h('a', { href: '/compte' }, `👤 ${t('acc_login_link')}`));
+  if (!account) return h('p', { class: 'small' }, h('a', { href: '/compte' }, t('acc_login_link')));
   const pro = account.premiumUntil && account.premiumUntil > Date.now();
   return h(
     'div',
     { class: 'pro-line small' },
-    h('a', { href: '/compte' }, `👤 ${account.ident}`),
+    h('a', { href: '/compte', class: 'row' }, icon('user-circle'), account.ident),
     pro || lot.pro
       ? h('span', { class: 'badge' }, t('m_account_pro', { date: new Date(account.premiumUntil).toLocaleDateString(LANG) }))
       : h('a', { href: '/pro' }, t('m_account_free')),
@@ -29,11 +29,11 @@ translatePage();
 
 const app = document.getElementById('app');
 const CHANNELS = ['push', 'sms', 'wa', 'mail'];
-const ICON = { push: '🔔', sms: '💬', wa: '🟢', mail: '✉️' };
+const ICON = { push: 'bell-ringing', sms: 'chat-circle-text', wa: 'whatsapp-logo', mail: 'envelope-simple' };
 const LIFETIMES = [1, 3, 6, 12, 24, 48];
 const PRO_LIFETIMES = [72, 168, 360, 720]; // 3, 7, 15 et 30 jours (Pro)
 /** Couleurs d'origine de l'écran public et de la page client (personnalisables en Pro). */
-const THEME_DEFAULTS = { screenBg: '#0f0e0c', screenText: '#ffffff', screenNumber: '#ffb347', accent: '#e8572a' };
+const THEME_DEFAULTS = { screenBg: '#0e1013', screenText: '#f4f5f7', screenNumber: '#ff8a5c', accent: '#c8461c' };
 let info = null;
 let refreshTimer = null;
 
@@ -87,7 +87,7 @@ function connectView({ key = '', needsPassword = false, message = '' } = {}) {
     app,
     form,
     others.length > 0 && lotSwitcher(),
-    !session.get() && h('p', { class: 'center' }, h('a', { href: '/compte' }, `👤 ${t('acc_login_link')}`)),
+    !session.get() && h('p', { class: 'center' }, h('a', { href: '/compte' }, t('acc_login_link'))),
     h('p', { class: 'center' }, h('a', { href: '/' }, t('m_new_lot'))),
   );
   (needsPassword && key ? pwInput : keyInput).focus();
@@ -167,7 +167,7 @@ async function waitingItems(lot, access, onCall, onlyGroup = '') {
           { class: 'grow' },
           group && h('span', { class: 'badge' }, group),
           ' ',
-          kinds.map((k) => ICON[k] ?? '❔').join(' '),
+          h('span', { class: 'kinds', title: kinds.map((k) => t(`ch_${k}`)).join(', '), 'aria-label': kinds.map((k) => t(`ch_${k}`)).join(', ') }, kinds.map((k) => icon(ICON[k] ?? 'question'))),
           ' ',
           h('span', { class: 'small muted' }, w.calledAt ? t('m_called_at', { time: fmtTime(w.calledAt) }) : t('m_since', { time: fmtTime(w.subs[0].at) })),
         ),
@@ -179,11 +179,11 @@ async function waitingItems(lot, access, onCall, onlyGroup = '') {
 }
 
 function statsRow(queue) {
-  const rate = queue.avgMs ? t('m_rate_value', { min: Math.max(1, Math.round(queue.avgMs / 60000)) }) : '—';
+  const rate = queue.avgMs ? t('m_rate_value', { min: Math.max(1, Math.round(queue.avgMs / 60000)) }) : '-';
   return h(
     'div',
     { class: 'stats card' },
-    h('div', {}, h('strong', {}, queue.last ?? '—'), h('span', { class: 'small muted' }, t('m_stats_last'))),
+    h('div', {}, h('strong', {}, queue.last ?? '-'), h('span', { class: 'small muted' }, t('m_stats_last'))),
     h('div', {}, h('strong', {}, rate), h('span', { class: 'small muted' }, t('m_stats_rate'))),
     h('div', {}, h('strong', {}, queue.waiting ?? 0), h('span', { class: 'small muted' }, t('m_stats_waiting'))),
   );
@@ -256,7 +256,7 @@ async function callTab(panel, { lot, access, reload }) {
     const select = h('select', { class: 'select', id: 'grp' }, lot.groups.map((g, i) => h('option', { value: i }, `${g.name} · ${g.numbers}`)));
     const go = h('button', { type: 'button', class: 'btn btn-block' });
     const label = () => {
-      go.textContent = `📣 ${t('g_call', { count: parseNumbers(lot.groups[select.value].numbers)?.length ?? 0 })}`;
+      go.replaceChildren(icon('megaphone'), t('g_call', { count: parseNumbers(lot.groups[select.value].numbers)?.length ?? 0 }));
     };
     select.addEventListener('change', label);
     go.addEventListener('click', async () => {
@@ -348,15 +348,15 @@ function statCards(s) {
   const subs = CHANNELS.reduce((sum, c) => sum + (s[`sub_${c}`] ?? 0), 0);
   const calls = s.call ?? 0;
   const pushes = (s.push_ok ?? 0) + (s.push_fail ?? 0) + (s.push_gone ?? 0);
-  const percent = (a, b) => (b ? `${Math.round((a / b) * 100)} %` : '—');
-  const wait = s.waits ? `${Math.max(1, Math.round(s.wait_ms / s.waits / 60000))} min` : '—';
+  const percent = (a, b) => (b ? `${Math.round((a / b) * 100)} %` : '-');
+  const wait = s.waits ? `${Math.max(1, Math.round(s.wait_ms / s.waits / 60000))} min` : '-';
   const card = (value, label) => h('div', {}, h('strong', {}, value), h('span', { class: 'small muted' }, label));
   return h(
     'div',
     { class: 'stack' },
     h('div', { class: 'stats' }, card(s.scan ?? 0, t('st_scans')), card(subs, t('st_subs')), card(calls, t('st_calls'))),
     h('div', { class: 'stats' }, card(percent(s.push_ok ?? 0, pushes), t('st_delivery')), card(percent(s.seen ?? 0, calls), t('st_seen')), card(wait, t('st_wait'))),
-    h('p', { class: 'small muted center' }, CHANNELS.map((c) => `${ICON[c]} ${s[`sub_${c}`] ?? 0}`).join('   ')),
+    h('p', { class: 'pills' }, CHANNELS.map((c) => h('span', { class: 'badge', title: t(`ch_${c}`) }, icon(ICON[c]), String(s[`sub_${c}`] ?? 0)))),
   );
 }
 
@@ -401,7 +401,7 @@ async function statsTab(panel, { lot, access }) {
     h(
       'section',
       { class: 'card' },
-      h('table', { class: 'cost-table' }, h('tr', {}, h('th', {}, t('st_day')), h('th', {}, '📱'), h('th', {}, '✍️'), h('th', {}, '📣')), rows),
+      h('table', { class: 'cost-table' }, h('tr', {}, h('th', {}, t('st_day')), h('th', {}, t('st_scans')), h('th', {}, t('st_subs')), h('th', {}, t('st_calls'))), rows),
     ),
   );
 }
@@ -417,6 +417,7 @@ async function printTab(panel, { lot, access }) {
   const to = h('input', { id: 'pt', type: 'number', min: 1, max: 999999, value: lot.to ?? 120 });
   const plan = h('div');
   const preview = livePreview();
+  preview.fab.classList.add('near');
   const secret = textToSecret(saved.key);
   const keyCtx = { lang: LANG, domain: info.domain, brand: info.brand, lot: lot.lot, name: lot.name, secret, from: lot.from, to: lot.to, monthlyCost, password: saved.password, pro: lot.pro };
 
@@ -543,7 +544,7 @@ function settingsTab(panel, { lot, access, reload }) {
   const proSection = h(
     'section',
     { class: 'card stack' },
-    h('h2', {}, `⭐ ${t('s_pro_options')}`),
+    h('h2', { class: 'row' }, icon('star'), t('s_pro_options')),
     h('label', { class: 'check', for: 'swl' }, whiteLabel, ' ', t('s_whitelabel')),
     h('h3', {}, t('s_theme')),
     h('p', { class: 'small muted' }, t('s_theme_hint')),
@@ -552,7 +553,7 @@ function settingsTab(panel, { lot, access, reload }) {
     resetTheme,
     !lot.pro && h('p', { class: 'small' }, h('a', { href: '/pro' }, t('pro_link'))),
   );
-  const checks = CHANNELS.map((c) => h('label', { class: 'check' }, h('input', { type: 'checkbox', value: c, checked: lot.channels.includes(c) }), ` ${ICON[c]} `, t(`ch_${c}`)));
+  const checks = CHANNELS.map((c) => h('label', { class: 'check' }, h('input', { type: 'checkbox', value: c, checked: lot.channels.includes(c) }), icon(ICON[c]), t(`ch_${c}`)));
   const template = h('input', { id: 'stp', type: 'text', maxlength: 280, value: lot.template, placeholder: t('s_template_ph') });
   const lists = h('textarea', { id: 'sli', class: 'textarea', rows: 3, placeholder: t('s_lists_ph') });
   const groups = h('textarea', { id: 'sgr', class: 'textarea', rows: 3, placeholder: t('s_groups_ph') });

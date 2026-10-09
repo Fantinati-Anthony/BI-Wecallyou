@@ -129,7 +129,7 @@ function kitStep(ident, recovery) {
     h(
       'section',
       { class: 'card stack' },
-      h('h1', {}, `🛟 ${t('kit_title')}`),
+      h('h1', {}, t('kit_title')),
       h('p', {}, t('kit_text')),
       h('p', {}, `${t('acc_ident')} : `, h('strong', {}, ident)),
       h('div', { class: 'kit-key' }, secretToText(recovery, true)),

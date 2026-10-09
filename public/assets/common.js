@@ -1,5 +1,8 @@
 // Outils partagés par toutes les pages : langue, textes, éléments HTML, appels à l'API, stockage local.
 import { TEXTS } from './i18n.js';
+import { icon } from './icons.js';
+
+export { icon };
 
 export const LANG = (navigator.language || 'en').toLowerCase().startsWith('fr') ? 'fr' : 'en';
 document.documentElement.lang = LANG;
@@ -40,11 +43,12 @@ export function render(container, ...children) {
   container.replaceChildren(...children.flat(Infinity).filter(Boolean));
 }
 
-/** Applique les traductions aux éléments marqués data-i18n dans les pages HTML. */
+/** Applique les traductions aux éléments marqués data-i18n, et pose les icônes data-icon, dans les pages HTML. */
 export function translatePage(vars = {}) {
   for (const el of document.querySelectorAll('[data-i18n]')) el.textContent = t(el.dataset.i18n, vars);
   for (const el of document.querySelectorAll('[data-i18n-placeholder]')) el.placeholder = t(el.dataset.i18nPlaceholder, vars);
   for (const el of document.querySelectorAll('[data-lang]')) el.hidden = el.dataset.lang !== LANG;
+  for (const el of document.querySelectorAll('[data-icon]')) el.replaceChildren(icon(el.dataset.icon));
 }
 
 export async function api(path, { body, auth } = {}) {

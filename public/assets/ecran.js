@@ -1,6 +1,6 @@
 // Écran public (tablette, TV) : les numéros appelés en grand, en direct, annoncés par un carillon
 // et une voix. Aucune donnée de client : seulement des numéros et les repères choisis à l'appel.
-import { h, t, LANG, api, render, translatePage, local, setColors } from './common.js';
+import { h, t, LANG, api, render, translatePage, local, setColors, icon } from './common.js';
 
 translatePage();
 
@@ -17,15 +17,15 @@ let delay = 2000;
 const name = h('div', { class: 's-name' });
 const clock = h('div', { class: 's-clock' });
 const label = h('div', { class: 's-label' }, t('e_now'));
-const number = h('div', { class: 's-number' }, '—');
+const number = h('div', { class: 's-number' });
 const tagLine = h('div', { class: 's-tag' });
 const previous = h('div', { class: 's-prev' });
 const pace = h('div');
 const promo = h('div', { class: 's-promo' });
 const live = h('div', { class: 's-live' }, t('e_live'));
 
-const toggle = (key, icon, text) => {
-  const btn = h('button', { type: 'button', 'aria-pressed': String(prefs[key]) }, `${icon} ${text}`);
+const toggle = (key, glyph, text) => {
+  const btn = h('button', { type: 'button', 'aria-pressed': String(prefs[key]) }, icon(glyph), text);
   btn.addEventListener('click', () => {
     prefs[key] = !prefs[key];
     local.set(`wcy:screen:${key}`, prefs[key]);
@@ -37,7 +37,7 @@ const start = h('button', { type: 'button', class: 's-start' }, h('strong', {}, 
 
 render(
   root,
-  h('header', { class: 's-head' }, name, h('div', { class: 's-toggles' }, toggle('sound', '🔔', t('e_sound')), toggle('voice', '🗣', t('e_voice'))), clock),
+  h('header', { class: 's-head' }, name, h('div', { class: 's-toggles' }, toggle('sound', 'speaker-high', t('e_sound')), toggle('voice', 'user-sound', t('e_voice'))), clock),
   h('section', { class: 's-main' }, label, number, tagLine, previous),
   h('footer', { class: 's-foot' }, pace, promo, live),
   start,
@@ -131,7 +131,7 @@ function show(data) {
   const list = announcements(data.recent);
   const current = list[0];
   if (!current) {
-    number.textContent = '—';
+    number.textContent = '';
     tagLine.textContent = t('e_first');
     return;
   }

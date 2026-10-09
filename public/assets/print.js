@@ -1,6 +1,6 @@
 // Impression d'un lot, cahier par cahier, pour qu'un lot de plusieurs milliers de tickets
 // s'imprime sans faire tomber le navigateur. Tout papier : A4, rouleau, étiquettes…
-import { h, t, api, local } from './common.js';
+import { h, t, api, local, icon } from './common.js';
 import { keySheet, ticketSheets, fillPrintRoot, layoutFor, keyShares, keyPage, setPrintPage } from './sheets.js';
 import { normalizeDesign, PAPERS } from './layout.js';
 
@@ -57,7 +57,7 @@ export function printPlan({ lot, auth, from, to, options, domain, lang, key = nu
 
   // Page clé sur un autre papier (rouleau, étiquettes…) : on l'imprime d'abord, en A4.
   if (key && !withKey) {
-    const keyFirst = h('button', { type: 'button', class: 'btn btn-block btn-big' }, t('plan_key_a4'));
+    const keyFirst = h('button', { type: 'button', class: 'btn btn-block btn-big' }, icon('key'), t('plan_key_a4'));
     keyFirst.addEventListener('click', () => {
       keyOnly();
       keyFirst.classList.add('done');
@@ -74,14 +74,14 @@ export function printPlan({ lot, auth, from, to, options, domain, lang, key = nu
     const p2 = p1 + pagesFor(n2 - n1 + 1, perPage) - 1;
     const first = withKey && i === 0;
     const label = t(batches === 1 ? 'print_btn' : 'plan_batch', { i: i + 1, p1, p2, n1, n2 });
-    const button = h('button', { type: 'button', class: `btn btn-block ${i === 0 && !(key && !withKey) ? 'btn-big' : 'btn-soft'}` }, label, first && ` ${t('plan_with_key')}`);
+    const button = h('button', { type: 'button', class: `btn btn-block ${i === 0 && !(key && !withKey) ? 'btn-big' : 'btn-soft'}` }, icon('printer'), label, first && ` ${t('plan_with_key')}`);
     button.addEventListener('click', async () => {
       button.disabled = true;
-      const original = button.textContent;
-      button.textContent = t('plan_preparing');
+      const original = [...button.childNodes];
+      button.replaceChildren(t('plan_preparing'));
       const res = await api('/lot/tickets', { body: { from: n1, to: n2 }, auth });
       button.disabled = false;
-      button.textContent = original;
+      button.replaceChildren(...original);
       if (!res.ok) return;
       const pages = ticketSheets(res.tickets, ctx);
       printPages(first ? [keySheet({ ...key, design }), ...pages] : pages, page);

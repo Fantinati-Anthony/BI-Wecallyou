@@ -71,6 +71,8 @@ public/            pages statiques servies par Apache (ou par Node en local)
   t.html           page d’un ticket (client ou souche) : /<code de 26 caractères>
   m.html           espace commerçant
   assets/          JS en modules ES, sans dépendance (sauf qrcode.js, MIT, hébergé ici)
+  assets/fonts/    Bricolage Grotesque et Geist (OFL), hébergées ici : aucune requête vers un tiers
+  assets/img/      vraies captures du service pour l’accueil (régénérées par e2e/shots.mjs)
   etat/            fichiers « prêt », secours du temps réel
   soutien.json     dons : liens Stripe, objectif, frais (à éditer à la main)
   papiers.json     catalogue des papiers compatibles et leurs liens d’achat (à éditer à la main)
@@ -164,6 +166,7 @@ node setup.js --local --domain=localhost:3000   # crée config.json (serveStatic
 node start.js                                    # http://localhost:3000
 npm test                                         # tests serveur, cryptographie, mise en page
 cd ../e2e && npm install && node run.mjs         # parcours complet dans Chromium
+node shots.mjs                                   # captures de l’accueil (public/assets/img)
 ```
 
 La cryptographie du navigateur (`public/assets/crypto.js`) est testée dans Node contre une implémentation indépendante (déchiffrement RFC 8291 et vérification VAPID avec `node:crypto`). Le test de bout en bout relit les QR imprimés avec un décodeur indépendant et mesure, dans le navigateur, que rien ne déborde de sa case sur des centaines de mises en page.
@@ -175,7 +178,7 @@ La cryptographie du navigateur (`public/assets/crypto.js`) est testée dans Node
 
 ## Licence
 
-[AGPL-3.0-or-later](LICENSE). Vous pouvez utiliser, modifier et héberger WeCallYou ; si vous le proposez comme service en ligne, publiez vos modifications. Le générateur de QR codes (`public/assets/qrcode.js`, Kazuhiko Arase) est sous licence MIT.
+[AGPL-3.0-or-later](LICENSE). Vous pouvez utiliser, modifier et héberger WeCallYou ; si vous le proposez comme service en ligne, publiez vos modifications. Le générateur de QR codes (`public/assets/qrcode.js`, Kazuhiko Arase) et les icônes Phosphor (`public/assets/icons.js`) sont sous licence MIT ; les polices Bricolage Grotesque et Geist (`public/assets/fonts/`) sous licence SIL OFL 1.1.
 
 ---
 

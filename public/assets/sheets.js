@@ -190,7 +190,7 @@ export function keySheet({ lang, domain, brand, lot, name, secret, from, to, mon
       h(
         'div',
         {},
-        h('h2', {}, '🔑 ', tl(lang, 'k_title')),
+        h('h2', {}, tl(lang, 'k_title')),
         h('p', {}, h('b', {}, tl(lang, 'k_keep'))),
         h('p', {}, tl(lang, 'k_scan')),
         h('p', {}, tl(lang, 'k_code')),
