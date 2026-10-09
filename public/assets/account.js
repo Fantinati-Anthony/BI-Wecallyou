@@ -220,7 +220,7 @@ export function downloadKit({ lang, domain, brand, ident, recovery }) {
     tl(lang, 'kit_sheet_warn'),
     '',
   ].join('\n');
-  const link = h('a', { href: URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' })), download: `${brand.toLowerCase()}-secours-${ident}.txt` });
+  const link = h('a', { href: URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' })), download: `${brand.toLowerCase().replace(/[^a-z0-9]+/g, '')}-secours-${ident}.txt` });
   document.body.append(link);
   link.click();
   link.remove();

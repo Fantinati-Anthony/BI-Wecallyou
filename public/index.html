@@ -7,7 +7,7 @@
   <meta name="description" content="Des tickets papier qui préviennent vos clients quand c'est leur tour. Gratuit, sans compte, sans pub, open source, et les coordonnées sont illisibles pour le serveur.">
   <meta name="theme-color" content="#f2f3f5" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#0e1013" media="(prefers-color-scheme: dark)">
-  <title>WeCallYou · le ticket qui prévient</title>
+  <title>WeCall.You · le ticket qui prévient</title>
   <link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
   <link rel="preload" href="/assets/fonts/bricolage-grotesque.woff2" as="font" type="font/woff2" crossorigin>
@@ -18,11 +18,12 @@
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="/"><img src="/assets/icon.svg" alt="" width="30" height="30">WeCallYou</a>
+    <a class="brand" href="/"><img src="/assets/icon.svg" alt="" width="30" height="30"><span>WeCall<span class="brand-dot">.</span>You</span></a>
     <nav class="topnav">
       <a class="btn btn-ghost" href="/pro"><span data-icon="star"></span><span class="label" data-i18n="nav_pro">Offre Pro</span></a>
       <a class="btn btn-ghost" href="/compte"><span data-icon="user-circle"></span><span class="label" data-i18n="acc_link">Mon compte</span></a>
       <a class="btn btn-ghost" href="/m"><span data-icon="storefront"></span><span class="label" data-i18n="to_dashboard">Espace commerçant</span></a>
+      <a class="btn nav-cta" href="/creer"><span data-icon="plus"></span><span class="label" data-i18n="create_title">Créer mes tickets</span></a>
     </nav>
   </header>
 
@@ -77,7 +78,7 @@
       </ol>
     </section>
 
-    <section class="bento" aria-label="WeCallYou">
+    <section class="bento" aria-label="WeCall.You">
       <article class="bento-cell b-privacy">
         <h3 data-i18n="f_private_t">Illisible, même pour nous</h3>
         <p data-i18n="f_private"></p>
@@ -101,7 +102,7 @@
           <h3 data-i18n="f_queue_t">File d’attente en direct</h3>
           <p data-i18n="f_queue"></p>
         </div>
-        <figure><img src="/assets/img/ecran.webp" alt="" width="1280" height="720" loading="lazy"></figure>
+        <figure class="lq" id="live-queue" aria-hidden="true"></figure>
       </article>
     </section>
 

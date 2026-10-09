@@ -1,5 +1,5 @@
 // Captures d'écran réelles de l'accueil (public/assets/img/*.webp), prises sur le vrai service :
-// un lot, des inscriptions, des appels, puis la page du client, l'espace commerçant, l'écran public
+// un lot, des inscriptions, des appels, puis la page du client, l'espace commerçant
 // et une planche imprimée. À relancer quand l'interface change :
 //   cd e2e && node shots.mjs
 import { chromium } from 'playwright';
@@ -18,7 +18,7 @@ const PORT = 3996;
 const BASE = `http://localhost:${PORT}`;
 const { server } = await createServer({
   domain: `localhost:${PORT}`,
-  brand: 'WeCallYou',
+  brand: 'WeCall.You',
   contact: 'mailto:contact@wecall.you',
   dataDir: path.join(mkdtempSync(path.join(tmpdir(), 'wcy-shots-')), 'data'),
   publicDir: path.resolve(here, '../public'),
@@ -54,7 +54,6 @@ for (const n of [36, 37, 38, 39, 40, 41]) {
   await api('POST', '/call', { t: ticket(n).s }, lot.authToken);
   await new Promise((resolve) => setTimeout(resolve, 40)); // appels dans l'ordre sur l'écran public
 }
-const { screen } = await api('GET', '/lot', undefined, lot.authToken);
 
 /* ------------------------------------------------------------ captures */
 const browser = await chromium.launch();
@@ -120,24 +119,12 @@ try {
     await ctx.close();
   }
 
-  // L'écran public, sur une télévision.
-  {
-    const ctx = await browser.newContext({ locale: 'fr-FR', viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1, bypassCSP: true, reducedMotion: 'reduce' });
-    const p = await ctx.newPage();
-    await p.goto(`${BASE}/ecran/${screen}`);
-    await p.waitForSelector('.s-number:not(:empty)');
-    await p.addStyleTag({ content: '.s-start { display: none !important; }' });
-    await p.waitForTimeout(400);
-    await save('ecran', await p.screenshot(), 0.82);
-    await ctx.close();
-  }
-
   // Une planche imprimée (A4, 12 tickets), cadrée sur le coin haut gauche.
   {
     const ctx = await browser.newContext({ locale: 'fr-FR', viewport: { width: 900, height: 1200 }, deviceScaleFactor: 2, bypassCSP: true });
     const p = await ctx.newPage();
     await p.goto(`${BASE}/creer`);
-    await p.waitForSelector('#name');
+    await p.waitForSelector('#name', { state: 'attached' }); // dans un volet replié : il suffit que la page soit prête
     await p.evaluate(async () => {
       const { ticketSheets } = await import('/assets/sheets.js');
       const sample = Array.from({ length: 12 }, (_, i) => ({ label: String(30 + i).padStart(3, '0'), c: 'A'.repeat(26), s: 'B'.repeat(26) }));

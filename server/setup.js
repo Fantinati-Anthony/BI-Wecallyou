@@ -9,7 +9,7 @@ import { SERVER_DIR } from './lib/config.js';
 const { values } = parseArgs({
   options: {
     domain: { type: 'string', default: 'wecall.you' },
-    brand: { type: 'string', default: 'WeCallYou' },
+    brand: { type: 'string', default: 'WeCall.You' },
     contact: { type: 'string' },
     local: { type: 'boolean', default: false },
     config: { type: 'string', default: path.join(SERVER_DIR, 'config.json') },

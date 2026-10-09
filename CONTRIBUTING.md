@@ -1,4 +1,4 @@
-# Contribuer à WeCallYou
+# Contribuer à WeCall.You
 
 Merci ! Le projet est communautaire : idées, corrections, traductions et tests sur le terrain sont tous bienvenus.
 

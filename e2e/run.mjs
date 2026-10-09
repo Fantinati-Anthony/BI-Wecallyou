@@ -21,7 +21,7 @@ const BASE = `http://localhost:${PORT}`;
 
 const { server } = await createServer({
   domain: `localhost:${PORT}`,
-  brand: 'WeCallYou',
+  brand: 'WeCall.You',
   contact: 'mailto:contact@wecall.you',
   dataDir: path.join(tmp, 'data'),
   publicDir: path.resolve(here, '../public'),
@@ -65,6 +65,18 @@ try {
   assert.ok((await m.locator('.how-step p').first().textContent()).length > 20); // l'accueil est bien traduit
   assert.equal(await m.locator('.hero-cta svg').count(), 1); // et ses icônes posées
   assert.doesNotMatch(await m.locator('.compare').textContent(), /cmp_|plan_/); // aucune clé de traduction oubliée
+  // « Créer mes tickets » aussi dans le menu, et rien ne déborde sur un téléphone.
+  assert.equal(await m.locator('.topnav .nav-cta[href="/creer"] svg').count(), 1);
+  assert.equal(await m.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+  // L'écran public de démonstration s'anime : les appels avancent, le téléphone du client suit sa place.
+  await m.locator('#live-queue').scrollIntoViewIfNeeded();
+  assert.equal(await m.locator('#live-queue .lq-number').textContent(), '043');
+  assert.match(await m.locator('#live-queue .lq-place').textContent(), /3e/);
+  await m.locator('#live-queue .lq-number').filter({ hasText: '044' }).waitFor({ timeout: 6000 });
+  assert.match(await m.locator('#live-queue .lq-place').textContent(), /2e/);
+  await m.waitForSelector('#live-queue .lq-phone.is-ready', { timeout: 9000 });
+  assert.equal(await m.locator('#live-queue .lq-place').textContent(), 'C’est à vous !');
+  await shot(m, '01b-ecran-anime');
   // La création de lot a sa propre page, atteinte par l'appel à l'action de l'accueil.
   await m.locator('.hero-cta a[href="/creer"]').click();
   await m.waitForSelector('#create-form .activity');

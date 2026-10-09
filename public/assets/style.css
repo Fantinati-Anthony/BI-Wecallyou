@@ -1,9 +1,9 @@
-/* WeCallYou : feuille de style unique (écran + impression).
+/* WeCall.You : feuille de style unique (écran + impression).
  *
  * Système visuel
  * - Polices : Bricolage Grotesque (titres, numéros) et Geist (texte, interface), hébergées ici.
  *   Les tickets imprimés gardent Arial : leur mise en page est calculée sur ses largeurs.
- * - Couleurs : gris froids + un seul accent, l'orange WeCallYou. Clair ou sombre selon le téléphone.
+ * - Couleurs : gris froids + un seul accent, l'orange WeCall.You. Clair ou sombre selon le téléphone.
  * - Arrondis : 10 px pour les commandes (boutons, champs, puces), 18 px pour les conteneurs
  *   (cartes, panneaux, boîtes de dialogue), pastille complète pour les badges. Rien d'autre.
  * - Icônes : Phosphor (assets/icons.js), jamais d'emoji dans l'interface.
@@ -123,11 +123,18 @@ img, svg { display: block; max-width: 100%; }
 }
 .brand { display: inline-flex; align-items: center; gap: 10px; font: 700 1.2rem/1 var(--font-display); letter-spacing: -0.02em; color: var(--text); text-decoration: none; }
 .brand img { width: 30px; height: 30px; border-radius: 8px; }
+.brand-dot { color: var(--brand); }
 .topnav { display: flex; align-items: center; gap: 6px; }
 .topnav .btn { min-height: 42px; padding: 8px 14px; }
+.topnav .nav-cta { margin-left: 6px; }
+/* Écran étroit : les liens passent en icônes ; « Créer mes tickets » garde son texte le plus longtemps. */
+@media (max-width: 860px) {
+  .topnav .btn:not(.nav-cta) .label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .topnav .btn:not(.nav-cta) { padding: 8px 11px; }
+}
 @media (max-width: 520px) {
-  .topnav .label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-  .topnav .btn { padding: 8px 11px; }
+  .topnav .nav-cta .label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .topnav .nav-cta { padding: 8px 11px; margin-left: 2px; }
 }
 
 .footer {
@@ -330,7 +337,51 @@ details[open] > summary { margin-bottom: 14px; }
 .b-paper { grid-column: span 2; }
 .b-paper .big { font: 800 4.4rem/0.9 var(--font-display); letter-spacing: -0.05em; font-variant-numeric: tabular-nums; margin-top: auto; padding-top: 18px; }
 .b-queue { grid-column: span 6; display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 32px; align-items: center; }
-.b-queue figure { margin: 0; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); }
+
+/* Écran public animé (accueil) : une télévision 16/9 et, devant, le téléphone d'un client. Tailles en cqw : tout suit la largeur. */
+.lq { position: relative; margin: 0; padding-bottom: 48px; container-type: inline-size; }
+.lq-tv {
+  aspect-ratio: 16 / 9; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; padding: 3.4cqw 4.2cqw;
+  border-radius: 14px; background: #0e1013; color: #f4f5f7; border: 1px solid rgb(255 255 255 / 0.08); box-shadow: var(--shadow-2); overflow: hidden;
+}
+.lq-head { display: flex; justify-content: space-between; align-items: center; font-size: 2.6cqw; }
+.lq-name { font: 700 1em/1.1 var(--font-display); letter-spacing: -0.02em; }
+.lq-clock { opacity: 0.7; font-variant-numeric: tabular-nums; }
+.lq-main { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.lq-label { font-size: 2.3cqw; opacity: 0.7; }
+.lq-number { font: 800 17cqw/0.95 var(--font-display); letter-spacing: -0.05em; color: #ff8a5c; font-variant-numeric: tabular-nums; }
+.lq-prev { display: flex; gap: 3.4cqw; margin-top: 2.2cqw; font: 700 3.8cqw/1 var(--font-display); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; opacity: 0.7; }
+.lq-foot { font-size: 2cqw; opacity: 0.75; }
+.lq-phone {
+  position: absolute; right: 5%; bottom: 0; width: min(46%, 260px); display: grid; gap: 4px; padding: 14px 16px 16px;
+  border-radius: 20px; background: var(--surface); color: var(--text); border: 1px solid var(--line); box-shadow: var(--shadow-2);
+  transition: background-color 0.4s, color 0.4s, border-color 0.4s;
+}
+.lq-ticket { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--muted); white-space: nowrap; }
+.lq-ticket b { color: var(--text); font-variant-numeric: tabular-nums; }
+.lq-ticket span { overflow: hidden; text-overflow: ellipsis; }
+.lq-place { font: 650 1.12rem/1.15 var(--font-display); letter-spacing: -0.02em; }
+.lq-wait { font-size: 0.85rem; color: var(--muted); min-height: 1.3em; }
+.lq-phone.is-ready { background: #17734a; color: #f6fbf8; border-color: transparent; }
+.lq-phone.is-ready :is(.lq-ticket, .lq-ticket b, .lq-wait) { color: #f6fbf8; }
+.lq .lq-tv, .lq .lq-phone { transition: opacity 0.35s; }
+.lq.fade .lq-tv, .lq.fade .lq-phone { opacity: 0; }
+@container (max-width: 460px) {
+  .lq-tv { margin-bottom: 30px; } /* le téléphone ne cache que le bas de l'écran, jamais les numéros */
+  .lq-phone { right: 3%; width: 64%; padding: 12px 14px 14px; }
+  .lq-place { font-size: 1rem; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .lq-tv.in { animation: sflash 0.9s ease-out; }
+  .lq-number.in { animation: lq-in 0.7s var(--ease); }
+  .lq-prev.in b:first-child { animation: lq-slide 0.7s var(--ease); }
+  .lq-phone.in { animation: lq-pop 0.5s var(--ease); }
+  .lq-phone.is-ready { animation: lq-buzz 0.5s ease-in-out 2; }
+  @keyframes lq-in { from { opacity: 0; transform: translateY(16%) scale(0.92); } }
+  @keyframes lq-slide { from { opacity: 0; transform: translateX(-70%); } }
+  @keyframes lq-pop { 40% { transform: scale(1.04); } }
+  @keyframes lq-buzz { 20% { transform: rotate(-2deg); } 40% { transform: rotate(2deg); } 60% { transform: rotate(-1.5deg); } 80% { transform: rotate(1.5deg); } }
+}
 .cipher { margin-top: auto; display: grid; gap: 14px; padding-top: 24px; }
 .cipher div { display: grid; gap: 6px; }
 .cipher span { font-size: 0.82rem; color: color-mix(in srgb, var(--ink-cell-text) 60%, transparent); }

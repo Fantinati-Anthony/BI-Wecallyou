@@ -112,7 +112,7 @@ function mailButton({ lot, access, message, brand }, mails) {
   if (!mails.length) return null;
   const labels = [...new Set(mails.map((m) => m.call.label))];
   const lang = mails[0].lang;
-  // Option Pro « marque masquée » : pas de mention de WeCallYou dans l'e-mail.
+  // Option Pro « marque masquée » : pas de mention de WeCall.You dans l'e-mail.
   const foot = lot.whiteLabel ? tl(lang, 'msg_mail_foot_plain') : tl(lang, 'msg_mail_foot', { brand });
   const body = `${textFor(lot, labels.join(', '), lang, message)}\n\n${foot}`;
   const subject = tl(lang, 'msg_subject', { m: lot.name, n: labels.join(', ') });

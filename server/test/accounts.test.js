@@ -20,7 +20,7 @@ before(async () => {
   tmp = mkdtempSync(path.join(tmpdir(), 'wecallyou-acc-'));
   ({ server, accounts } = await createServer({
     domain: 'wecall.you',
-    brand: 'WeCallYou',
+    brand: 'WeCall.You',
     contact: 'mailto:contact@wecall.you',
     dataDir: path.join(tmp, 'data'),
     publicDir: path.join(tmp, 'public'),

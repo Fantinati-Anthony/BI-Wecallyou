@@ -9,7 +9,7 @@ translatePage();
 
 const app = document.getElementById('app');
 const info = await api('/info');
-const kitContext = (ident, recovery) => ({ lang: LANG, domain: info.domain ?? location.host, brand: info.brand ?? 'WeCallYou', ident, recovery });
+const kitContext = (ident, recovery) => ({ lang: LANG, domain: info.domain ?? location.host, brand: info.brand ?? 'WeCall.You', ident, recovery });
 
 /* -------------------------------------------------------------- formulaires */
 

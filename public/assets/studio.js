@@ -323,7 +323,7 @@ const svg = (tag, attrs) => {
   for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
   return el;
 };
-const sampleContent = (design) => contentOf(design, { lang: LANG, domain: location.host, name: 'WeCallYou', last: 999 });
+const sampleContent = (design) => contentOf(design, { lang: LANG, domain: location.host, name: 'WeCall.You', last: 999 });
 
 /** Vignette d'un papier : la page et ses cases, souches comprises (dessinée, aucune image externe). */
 export function paperThumb(design) {
@@ -525,7 +525,7 @@ export function livePreview() {
       const count = Math.min(layout.perPage, Math.max(1, ctx.count || layout.perPage));
       const tickets = sampleCodes(count).map((codes, i) => ({ ...codes, label: labelOf(from + i) }));
       const sheet = tab === 'poster' && ctx.poster
-        ? posterSheet({ lang: ctx.lang, domain: ctx.domain, brand: ctx.key?.brand ?? 'WeCallYou', name: ctx.name || '…', token: ctx.poster.token, logo: design.logo, whiteLabel: ctx.whiteLabel, design })
+        ? posterSheet({ lang: ctx.lang, domain: ctx.domain, brand: ctx.key?.brand ?? 'WeCall.You', name: ctx.name || '…', token: ctx.poster.token, logo: design.logo, whiteLabel: ctx.whiteLabel, design })
         : tab === 'key' && ctx.key ? keySheet({ ...ctx.key, design }) : ticketSheets(tickets, { ...design, lang: ctx.lang, domain: ctx.domain, name: ctx.name, whiteLabel: ctx.whiteLabel, last: lastNumber })[0];
       render(frame, sheet);
       requestAnimationFrame(fit);

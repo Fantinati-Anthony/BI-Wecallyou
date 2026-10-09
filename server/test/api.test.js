@@ -19,7 +19,7 @@ before(async () => {
   tmp = mkdtempSync(path.join(tmpdir(), 'wecallyou-'));
   const config = {
     domain: 'wecall.you',
-    brand: 'WeCallYou',
+    brand: 'WeCall.You',
     contact: 'mailto:contact@wecall.you',
     dataDir: path.join(tmp, 'data'),
     publicDir: path.join(tmp, 'public'),
@@ -329,7 +329,7 @@ test('statistiques anonymes du mois', async () => {
   const info = await call('GET', '/info');
   assert.ok(info.stats.lots >= 1);
   assert.ok(info.stats.tickets >= 20);
-  assert.equal(info.brand, 'WeCallYou');
+  assert.equal(info.brand, 'WeCall.You');
 });
 
 test('affiche : un numéro par scan dans l’ordre d’arrivée, jamais imprimable, lien révocable', async () => {

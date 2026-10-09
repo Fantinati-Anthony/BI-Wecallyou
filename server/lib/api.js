@@ -244,7 +244,7 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
       channels: lot.channels,
       pubEcdh: lot.pubEcdh,
       pubVapid: lot.pubVapid,
-      // Options Pro : sans mention de WeCallYou (le lien Confidentialité reste, il est obligatoire)
+      // Options Pro : sans mention de WeCall.You (le lien Confidentialité reste, il est obligatoire)
       // et couleurs personnalisées. Hors Pro, elles restent enregistrées mais ne s'appliquent plus.
       whiteLabel: Boolean(lot.whiteLabel) && pro,
       theme: pro ? cleanTheme(lot.theme) : null,

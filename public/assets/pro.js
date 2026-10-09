@@ -1,4 +1,4 @@
-// Page « WeCallYou Pro » : l'offre (distincte du don), l'usage du compte, le prix conseillé et les liens
+// Page « WeCall.You Pro » : l'offre (distincte du don), l'usage du compte, le prix conseillé et les liens
 // de paiement. Les liens Pro portent l'identifiant du compte : Stripe le renvoie au serveur, qui
 // active le Pro pour une durée proportionnelle au montant payé.
 import { h, t, LANG, render, translatePage } from './common.js';

@@ -1,4 +1,4 @@
-# WeCallYou : pages publiques servies par Apache (o2switch).
+# WeCall.You : pages publiques servies par Apache (o2switch).
 # L'API (/api/...) est l'application Node.js déclarée dans cPanel > Setup Node.js App,
 # qui ajoute ses propres règles dans api/.htaccess : rien à faire ici pour elle.
 

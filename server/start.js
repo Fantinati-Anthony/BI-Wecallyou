@@ -3,4 +3,4 @@ import { createServer } from './lib/server.js';
 
 const config = loadConfig();
 const { server } = await createServer(config);
-server.listen(config.port, () => console.log(`WeCallYou prêt sur le port ${config.port}`));
+server.listen(config.port, () => console.log(`WeCall.You prêt sur le port ${config.port}`));

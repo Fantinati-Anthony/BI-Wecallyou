@@ -24,7 +24,7 @@ const isDonor = () => local.get('wcy:donor', false) || (session.get()?.premiumUn
  * context : 'create' (après la création des tickets), 'dashboard' (une ligne dépliable),
  * 'dashboard-open' (la même, dépliée), 'support' (page dédiée).
  */
-export async function supportCard({ context, count = 0, brand = 'WeCallYou' }) {
+export async function supportCard({ context, count = 0, brand = 'WeCall.You' }) {
   const [cfg, info] = await Promise.all([loadSupport(), api('/info')]);
   if (!cfg) return h('div');
   const stats = info.ok ? info.stats : null;

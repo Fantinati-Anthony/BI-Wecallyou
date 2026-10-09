@@ -1,4 +1,4 @@
-# WeCallYou
+# WeCall.You
 
 **Le ticket papier qui prévient vos clients.** Gratuit, sans compte, sans pub, open source, et le serveur ne peut pas lire les coordonnées de vos clients.
 
@@ -28,7 +28,7 @@ Snacks, food trucks, boulangeries, buvettes, tournois sportifs, vestiaires, cord
 - **Français et anglais**, selon la langue du téléphone ; chaque client reçoit son message dans sa langue.
 - **Dons** ponctuels ou mensuels via Stripe, présentés au moment de la création des tickets, sans jamais bloquer.
 - **Compte facultatif, chiffré** : un identifiant et un mot de passe (pas d’e-mail) pour retrouver tous ses lots sur n’importe quel téléphone. Mot de passe oublié → **fiche de secours** imprimable et téléchargeable (identifiant + clé de secours + QR).
-- **Deux offres bien séparées** : le **don**, sans aucune contrepartie, et **WeCallYou Pro**, un petit abonnement avec options qui sollicitent le serveur : marque masquée, couleurs du commerce sur l’écran public et la page du client, plusieurs lots réunis (« Mes lots », un compte), tickets actifs jusqu’à 30 jours (pressing, SAV, réparations), statistiques sur un an et export CSV, priorité en cas d’affluence. Ce qui se calcule dans le navigateur (mise en page et couleurs des tickets imprimés) reste gratuit. Prix conseillé selon l’usage (tickets actifs sur 30 jours) ; payer moins raccourcit le Pro en proportion, personne n’est bloqué. Tout le reste reste gratuit, et tout le code reste libre (`"allPro": true` dans `config.json` débloque tout sur une installation indépendante).
+- **Deux offres bien séparées** : le **don**, sans aucune contrepartie, et **WeCall.You Pro**, un petit abonnement avec options qui sollicitent le serveur : marque masquée, couleurs du commerce sur l’écran public et la page du client, plusieurs lots réunis (« Mes lots », un compte), tickets actifs jusqu’à 30 jours (pressing, SAV, réparations), statistiques sur un an et export CSV, priorité en cas d’affluence. Ce qui se calcule dans le navigateur (mise en page et couleurs des tickets imprimés) reste gratuit. Prix conseillé selon l’usage (tickets actifs sur 30 jours) ; payer moins raccourcit le Pro en proportion, personne n’est bloqué. Tout le reste reste gratuit, et tout le code reste libre (`"allPro": true` dans `config.json` débloque tout sur une installation indépendante).
 
 ## Sécurité et vie privée
 
@@ -182,10 +182,10 @@ La cryptographie du navigateur (`public/assets/crypto.js`) est testée dans Node
 
 ## Licence
 
-[AGPL-3.0-or-later](LICENSE). Vous pouvez utiliser, modifier et héberger WeCallYou ; si vous le proposez comme service en ligne, publiez vos modifications. Le générateur de QR codes (`public/assets/qrcode.js`, Kazuhiko Arase) et les icônes Phosphor (`public/assets/icons.js`) sont sous licence MIT ; les polices Bricolage Grotesque et Geist (`public/assets/fonts/`) sous licence SIL OFL 1.1.
+[AGPL-3.0-or-later](LICENSE). Vous pouvez utiliser, modifier et héberger WeCall.You ; si vous le proposez comme service en ligne, publiez vos modifications. Le générateur de QR codes (`public/assets/qrcode.js`, Kazuhiko Arase) et les icônes Phosphor (`public/assets/icons.js`) sont sous licence MIT ; les polices Bricolage Grotesque et Geist (`public/assets/fonts/`) sous licence SIL OFL 1.1.
 
 ---
 
 ### In English
 
-WeCallYou turns numbered paper tickets into notifying tickets: customers scan, choose how to be told (push, SMS, WhatsApp, email), and get alerted when it’s their turn, with a live queue position. Free, account-free, ad-free, open source (AGPL-3.0), and **zero-knowledge**: contact details are encrypted on the customer’s phone for the batch’s public key, so the server only stores unreadable blobs. Node.js 24 with no dependencies, file storage, deployable on any cPanel host. See the sections above for the security model and setup.
+WeCall.You turns numbered paper tickets into notifying tickets: customers scan, choose how to be told (push, SMS, WhatsApp, email), and get alerted when it’s their turn, with a live queue position. Free, account-free, ad-free, open source (AGPL-3.0), and **zero-knowledge**: contact details are encrypted on the customer’s phone for the batch’s public key, so the server only stores unreadable blobs. Node.js 24 with no dependencies, file storage, deployable on any cPanel host. See the sections above for the security model and setup.

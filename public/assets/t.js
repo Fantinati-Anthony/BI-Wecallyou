@@ -298,7 +298,7 @@ if (!data.ok) {
   errorView(data.error === 'network' ? 'network' : 'invalid');
 } else {
   document.title = `${data.label} · ${data.name}`;
-  // Option Pro : la couleur du commerçant remplace l'orange de WeCallYou (boutons, accents).
+  // Option Pro : la couleur du commerçant remplace l'orange de WeCall.You (boutons, accents).
   if (data.theme?.accent) {
     const accent = data.theme.accent;
     setColors({ '--brand': accent, '--brand-hover': accent, '--brand-ink': inkOn(accent), '--brand-text': `color-mix(in srgb, ${accent} 70%, var(--text))`, '--brand-soft': `color-mix(in srgb, ${accent} 16%, var(--surface))` });

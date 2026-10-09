@@ -12,7 +12,7 @@ self.addEventListener('push', (event) => {
     data = { body: event.data?.text() ?? '' };
   }
   event.waitUntil(
-    self.registration.showNotification(data.title || 'WeCallYou', {
+    self.registration.showNotification(data.title || 'WeCall.You', {
       body: data.body || '',
       tag: data.tag || 'ticket',
       renotify: true,

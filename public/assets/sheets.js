@@ -173,7 +173,7 @@ export function keyShares(design) {
 
 /* ----------------------------------------------- documents : page clé, fiche de secours */
 
-// Logo WeCallYou dessiné dans la page (et non chargé comme image) : il s'imprime à coup sûr.
+// Logo WeCall.You dessiné dans la page (et non chargé comme image) : il s'imprime à coup sûr.
 const LOGO = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#e8572a"/><path d="M12 19H52V28A4 4 0 0 0 52 36V45H12V36A4 4 0 0 0 12 28Z" fill="#fff"/><path d="M41 21V43" stroke="#e8572a" stroke-width="1.6" stroke-dasharray="2.4 2.4"/><circle cx="22" cy="32" r="3.6" fill="#e8572a"/><path d="M26.9 27.1A7 7 0 0 1 26.9 36.9M29.8 24.2A11 11 0 0 1 29.8 39.8" fill="none" stroke="#e8572a" stroke-width="2.6" stroke-linecap="round"/></svg>';
 
 export function brandMark(cls = 'doc-logo') {

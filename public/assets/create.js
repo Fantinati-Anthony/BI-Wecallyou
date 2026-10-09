@@ -34,7 +34,7 @@ ttlSelect.append(...proLifetimes);
 
 const [info, support] = await Promise.all([api('/info'), loadSupport()]);
 const domain = info.domain ?? location.host;
-const brand = info.brand ?? 'WeCallYou';
+const brand = info.brand ?? 'WeCall.You';
 const monthlyCost = support ? support.costs.reduce((sum, c) => sum + c.month, 0) : 20;
 
 /* ------------------------------------------------------------ options Pro */

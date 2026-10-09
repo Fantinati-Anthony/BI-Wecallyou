@@ -38,9 +38,9 @@ if (cfg) {
   );
   document.getElementById('updated').textContent = LANG === 'fr' ? `Chiffres mis à jour : ${cfg.updated}.` : `Figures updated: ${cfg.updated}.`;
   document.getElementById('tax-fr').textContent = cfg.tax_deductible
-    ? 'Oui : WeCallYou est porté par une association, un reçu fiscal vous est envoyé.'
+    ? 'Oui : WeCall.You est porté par une association, un reçu fiscal vous est envoyé.'
     : 'Non, pas pour l’instant : c’est une contribution volontaire, sans reçu fiscal. Si une association reprend le projet, cela changera.';
   document.getElementById('tax-en').textContent = cfg.tax_deductible
-    ? 'Yes: WeCallYou is run by a non-profit, you receive a tax receipt.'
+    ? 'Yes: WeCall.You is run by a non-profit, you receive a tax receipt.'
     : 'Not for now: it is a voluntary contribution, without a tax receipt. This will change if a non-profit takes over the project.';
 }
