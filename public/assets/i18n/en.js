@@ -103,7 +103,7 @@ export default {
   create_promo_ph: 'E.g. Follow us on Instagram @tonysnacks · Thanks to our partner Martin’s Bakery',
   create_link: 'Your link (optional)',
   create_link_ph: 'https://instagram.com/…',
-  promo_hint: 'Shown on the ticket page and added to the messages sent to your customers. The only “ad” allowed here: yours, if you want one.',
+  promo_hint: 'An optional line and link of your own: today’s offer, social media, menu… They show on each customer’s ticket page and are added to the messages you send. It’s the only “ad” possible here: yours, if you want one.',
   create_options: 'Options',
   create_btn: 'Create my tickets',
   creating: 'Creating security keys…',
@@ -242,7 +242,7 @@ export default {
   msg_vars: 'Tap a variable to insert it:',
   studio_activity: 'Your activity',
   act_sent: 'Message your customers receive:',
-  act_later: 'Editable anytime in Settings, Message and variables.',
+  act_later: 'Your activity suggests a message and lists suited to your trade. Everything stays editable, here and later in your merchant space (Settings, Message and variables).',
   act_group_example: 'Red team',
   act_replace_confirm: 'Replace your message and lists with this template?',
   act_dialog_title: 'Choose your activity',
@@ -263,10 +263,10 @@ export default {
   acc_activity_hint: 'It sets up the message and variables of your next batches. Kept encrypted in your account, unreadable to us.',
   acc_activity_saved: 'Activity saved.',
   s_template_ph: '{name}: ticket #{number}, it’s ready! {Where}',
-  s_template_hint: 'Variables: {name}, {number}, {group} and your lists (e.g. {Where}). Empty = default message, translated for each customer.',
-  s_lists_hint: 'One list per line: “Name: option, option”. Sub-list: “Where: Counter > Window 1, Counter > Window 2”. 5 lists, 50 options max.',
+  s_template_hint: 'The text sent to the customer when you call them. Words in braces are filled in for each ticket: {name} with your business name, {number} with the ticket number, {group} with its group. Your lists go in the same way, for example {Where}. Left empty: a standard message, in each customer’s language.',
+  s_lists_hint: 'Choices you make when calling, for example where to collect the order. Write one list per line: its name, a colon, then the choices separated by commas, e.g. “Where: at the counter, at window 2”. Add {Where} to the message: when calling, you pick from a menu. A two-step menu: “Where: Counter > Window 1, Counter > Window 2”. Up to 5 lists of 50 choices.',
   s_lists_ph: 'Where: at the counter, at window 1, at window 2',
-  s_groups_hint: 'One group per line: “Name: numbers”, e.g. “Red team: 12-18, 25”. 200 tickets max per group.',
+  s_groups_hint: 'To call several tickets at once: a team, a table, a group order. Write one group per line: its name, a colon, then the numbers, e.g. “Red team: 12-18, 25” (tickets 12 to 18, and 25). In the message, {group} shows the group’s name. Up to 200 tickets per group.',
   s_groups_ph: 'Red team: 12-18, 25',
   how_1: 'Pick your activity and your paper, then print: A4 sheets, labels or a receipt printer.',
   lots_pro_lock: 'Switching between batches in one tap and grouping several batches on one account: Pro plan only. Without Pro, open another batch with its key page.',
@@ -660,7 +660,7 @@ export default {
   acc_lang: 'Language of the app and tickets',
   acc_lang_hint: 'Your tickets print in this language. Change it anytime with the flag at the top of the page.',
   d_verso: 'Double-sided: instructions on the back of the tickets',
-  d_verso_hint: 'Every other page is the back. Print “double-sided, long edge”. The key page prints separately.',
+  d_verso_hint: 'Each page of tickets is followed by its back, with the instructions on the back of each ticket. In the print dialog, choose “Two-sided” and “Long edge”. The key page prints separately so the backs stay aligned.',
   pv_back: 'Back',
   plan_tip_verso: 'Double-sided: in the print dialog, choose “Two-sided” and “Long edge”. Try one page first.',
   pt_title: 'Poster and back-side texts',
@@ -703,4 +703,15 @@ export default {
 
   // Notification : abonnement disparu (page du client)
   push_gone: 'This phone is no longer subscribed to this ticket’s notifications.',
+
+  // Aperçu : écran public, téléphone du client, tout
+  pv_screen: 'Screen',
+  pv_client: 'Customer',
+  pv_all: 'All',
+  pv_client_choose: 'After scanning',
+  pv_client_ready: 'When called',
+
+  // Téléphoner au client depuis la liste des tickets en cours
+  m_tel: 'Phone {to}',
+  c_tel: 'phone call',
 };

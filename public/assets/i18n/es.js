@@ -103,7 +103,7 @@ export default {
   create_promo_ph: 'Ej.: Síganos en Instagram @bartoni · Gracias a nuestro patrocinador Panadería Martín',
   create_link: 'Su enlace (opcional)',
   create_link_ph: 'https://instagram.com/…',
-  promo_hint: 'Se muestran en la página del ticket y se añaden a los mensajes enviados a sus clientes. Es la única «publicidad» posible aquí: la suya, si lo desea.',
+  promo_hint: 'Una frase y un enlace suyos, opcionales: oferta del día, redes sociales, carta… Aparecen en la página del ticket de cada cliente y se añaden a los mensajes que envía. Es la única «publicidad» posible aquí: la suya, si lo desea.',
   create_options: 'Opciones',
   create_btn: 'Crear mis tickets',
   creating: 'Creando las claves de seguridad…',
@@ -242,7 +242,7 @@ export default {
   msg_vars: 'Toque una variable para insertarla:',
   studio_activity: 'Su actividad',
   act_sent: 'Mensaje que reciben sus clientes:',
-  act_later: 'Se puede cambiar en cualquier momento en Ajustes, apartado Mensaje y variables.',
+  act_later: 'Su actividad propone un mensaje y listas adaptados a su oficio. Todo sigue siendo editable, aquí y más tarde en su panel del comercio (Ajustes, Mensaje y variables).',
   act_group_example: 'Equipo rojo',
   act_replace_confirm: '¿Sustituir su mensaje y sus listas por esta plantilla?',
   act_dialog_title: 'Elija su actividad',
@@ -263,10 +263,10 @@ export default {
   acc_activity_hint: 'Prepara el mensaje y las variables de sus próximos lotes. Se guarda cifrada en su cuenta, ilegible para nosotros.',
   acc_activity_saved: 'Actividad guardada.',
   s_template_ph: '{name}: ticket n.º {number}, ¡está listo! {Lugar}',
-  s_template_hint: 'Variables: {name}, {number}, {group} y sus listas (p. ej., {Lugar}). Vacío = mensaje predeterminado, traducido para cada cliente.',
-  s_lists_hint: 'Una lista por línea: «Nombre: opción, opción». Sublista: «Lugar: Mostrador > Ventanilla 1, Mostrador > Ventanilla 2». 5 listas, 50 opciones como máximo.',
+  s_template_hint: 'El texto que recibe el cliente cuando usted lo avisa. Las palabras entre llaves se sustituyen en cada ticket: {name} por el nombre de su comercio, {number} por el número del ticket, {group} por su grupo. Sus listas se insertan igual, por ejemplo {Lugar}. Si lo deja vacío: un mensaje estándar, en el idioma de cada cliente.',
+  s_lists_hint: 'Opciones que elige al avisar, por ejemplo dónde recoger el pedido. Escriba una lista por línea: su nombre, dos puntos y las opciones separadas por comas, por ejemplo «Lugar: en el mostrador, en la ventanilla 2». Añada {Lugar} al mensaje: al avisar, elegirá en un menú. Un menú en dos pasos: «Lugar: Mostrador > Ventanilla 1, Mostrador > Ventanilla 2». Hasta 5 listas de 50 opciones.',
   s_lists_ph: 'Lugar: en el mostrador, en la ventanilla 1, en la ventanilla 2',
-  s_groups_hint: 'Un grupo por línea: «Nombre: números», p. ej., «Equipo rojo: 12-18, 25». 200 tickets como máximo por grupo.',
+  s_groups_hint: 'Para avisar varios tickets a la vez: un equipo, una mesa, un pedido conjunto. Escriba un grupo por línea: su nombre, dos puntos y los números, por ejemplo «Equipo rojo: 12-18, 25» (los tickets del 12 al 18 y el 25). En el mensaje, {group} muestra el nombre del grupo. Hasta 200 tickets por grupo.',
   s_groups_ph: 'Equipo rojo: 12-18, 25',
   how_1: 'Elija su actividad y su papel, y luego imprima: hoja A4, etiquetas o impresora de tickets.',
   lots_pro_lock: 'Pasar de un lote a otro con un toque y reunir varios lotes en una cuenta: exclusivo del plan Pro. Sin Pro, abra otro lote con su página de clave.',
@@ -660,7 +660,7 @@ export default {
   acc_lang: 'Idioma de la aplicación y de los tickets',
   acc_lang_hint: 'Sus tickets se imprimen en este idioma. Puede cambiarlo en cualquier momento con la bandera, arriba de la página.',
   d_verso: 'A doble cara: instrucciones en el reverso de los tickets',
-  d_verso_hint: 'Una de cada dos páginas es el reverso. Imprima «a doble cara, borde largo». La página de clave se imprime aparte.',
+  d_verso_hint: 'Cada página de tickets va seguida de su reverso, con las instrucciones en el dorso de cada ticket. En la ventana de impresión, elija «Doble cara» y «Borde largo». La página de clave se imprime aparte para que los reversos no se desplacen.',
   pv_back: 'Reverso',
   plan_tip_verso: 'A doble cara: en la ventana de impresión, elija «Doble cara» y «Borde largo». Pruebe primero con una página.',
   pt_title: 'Textos del cartel y del reverso',
@@ -703,4 +703,15 @@ export default {
 
   // Notification : abonnement disparu (page du client)
   push_gone: 'Este teléfono ya no está suscrito a las notificaciones de este ticket.',
+
+  // Aperçu : écran public, téléphone du client, tout
+  pv_screen: 'Pantalla',
+  pv_client: 'Cliente',
+  pv_all: 'Todo',
+  pv_client_choose: 'Tras escanear',
+  pv_client_ready: 'Al avisar',
+
+  // Téléphoner au client depuis la liste des tickets en cours
+  m_tel: 'Llamar al {to}',
+  c_tel: 'Teléfono',
 };

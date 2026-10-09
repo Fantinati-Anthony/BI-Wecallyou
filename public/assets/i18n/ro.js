@@ -103,7 +103,7 @@ export default {
   create_promo_ph: 'Ex.: Urmăriți-ne pe Instagram @bistrotony · Mulțumim partenerului nostru, Brutăria Spicul',
   create_link: 'Linkul dumneavoastră (opțional)',
   create_link_ph: 'https://instagram.com/…',
-  promo_hint: 'Afișate pe pagina tichetului și adăugate la mesajele trimise clienților. Este singura „reclamă” posibilă aici: a dumneavoastră, dacă doriți.',
+  promo_hint: 'O frază și un link ale dumneavoastră, opționale: oferta zilei, rețele sociale, meniu… Apar pe pagina tichetului fiecărui client și se adaugă la mesajele pe care le trimiteți. Este singura „reclamă” posibilă aici: a dumneavoastră, dacă doriți.',
   create_options: 'Opțiuni',
   create_btn: 'Creați tichetele',
   creating: 'Se creează cheile de securitate…',
@@ -242,7 +242,7 @@ export default {
   msg_vars: 'Atingeți o variabilă pentru a o insera:',
   studio_activity: 'Activitatea dumneavoastră',
   act_sent: 'Mesajul primit de clienți:',
-  act_later: 'Se poate modifica oricând din Setări, secțiunea Mesaj și variabile.',
+  act_later: 'Activitatea dumneavoastră propune un mesaj și liste potrivite meseriei. Totul rămâne modificabil, aici și mai târziu în spațiul de comerciant (Setări, Mesaj și variabile).',
   act_group_example: 'Echipa roșie',
   act_replace_confirm: 'Înlocuiți mesajul și listele cu acest model?',
   act_dialog_title: 'Alegeți activitatea',
@@ -263,10 +263,10 @@ export default {
   acc_activity_hint: 'Pregătește mesajul și variabilele pentru următoarele loturi. Este păstrată criptată în contul dumneavoastră și nu o putem citi.',
   acc_activity_saved: 'Activitate salvată.',
   s_template_ph: '{name}: tichetul nr. {number}, este gata! {Loc}',
-  s_template_hint: 'Variabile: {name}, {number}, {group} și listele dumneavoastră (ex.: {Loc}). Gol = mesaj implicit, tradus pentru fiecare client.',
-  s_lists_hint: 'O listă pe linie: „Nume: opțiune, opțiune”. Sublistă: „Loc: Tejghea > Ghișeul 1, Tejghea > Ghișeul 2”. Maximum 5 liste și 50 de opțiuni.',
+  s_template_hint: 'Textul pe care clientul îl primește când îl chemați. Cuvintele dintre acolade sunt înlocuite pentru fiecare tichet: {name} cu numele afacerii dumneavoastră, {number} cu numărul tichetului, {group} cu grupul său. Listele dumneavoastră se inserează la fel, de exemplu {Loc}. Lăsat gol: un mesaj standard, în limba fiecărui client.',
+  s_lists_hint: 'Alegeri pe care le faceți când chemați, de exemplu de unde se ridică comanda. Scrieți câte o listă pe rând: numele ei, două puncte, apoi variantele despărțite prin virgulă, de exemplu „Loc: la tejghea, la ghișeul 2”. Adăugați {Loc} în mesaj: la chemare alegeți dintr-un meniu. Un meniu în doi pași: „Loc: Tejghea > Ghișeul 1, Tejghea > Ghișeul 2”. Până la 5 liste de câte 50 de variante.',
   s_lists_ph: 'Loc: la tejghea, la ghișeul 1, la ghișeul 2',
-  s_groups_hint: 'Un grup pe linie: „Nume: numere”, ex.: „Echipa roșie: 12-18, 25”. Maximum 200 de tichete pe grup.',
+  s_groups_hint: 'Pentru a chema mai multe tichete deodată: o echipă, o masă, o comandă comună. Scrieți câte un grup pe rând: numele lui, două puncte, apoi numerele, de exemplu „Echipa roșie: 12-18, 25” (tichetele de la 12 la 18 și 25). În mesaj, {group} afișează numele grupului. Cel mult 200 de tichete pe grup.',
   s_groups_ph: 'Echipa roșie: 12-18, 25',
   how_1: 'Alegeți activitatea și hârtia, apoi imprimați: foaie A4, etichete sau imprimantă de bonuri.',
   lots_pro_lock: 'Trecerea de la un lot la altul cu o singură atingere și gruparea mai multor loturi într-un cont: doar în planul Pro. Fără Pro, deschideți alt lot cu pagina-cheie a acestuia.',
@@ -660,7 +660,7 @@ export default {
   acc_lang: 'Limba aplicației și a tichetelor',
   acc_lang_hint: 'Tichetele dumneavoastră se imprimă în această limbă. O puteți schimba oricând cu steagul din partea de sus a paginii.',
   d_verso: 'Față-verso: instrucțiunile pe spatele tichetelor',
-  d_verso_hint: 'O pagină din două este spatele. Imprimați „față-verso, pe marginea lungă”. Pagina-cheie se imprimă separat.',
+  d_verso_hint: 'Fiecare pagină de tichete este urmată de spatele ei, cu instrucțiunile pe spatele fiecărui tichet. În fereastra de imprimare alegeți „Față-verso” și „Margine lungă”. Pagina-cheie se imprimă separat, ca spatele paginilor să nu se decaleze.',
   pv_back: 'Verso',
   plan_tip_verso: 'Față-verso: în fereastra de imprimare alegeți „Față-verso” și „Margine lungă”. Încercați mai întâi cu o pagină.',
   pt_title: 'Textele afișului și ale versoului',
@@ -703,4 +703,15 @@ export default {
 
   // Notification : abonnement disparu (page du client)
   push_gone: 'Acest telefon nu mai este abonat la notificările acestui tichet.',
+
+  // Aperçu : écran public, téléphone du client, tout
+  pv_screen: 'Ecran',
+  pv_client: 'Client',
+  pv_all: 'Tot',
+  pv_client_choose: 'După scanare',
+  pv_client_ready: 'La chemare',
+
+  // Téléphoner au client depuis la liste des tickets en cours
+  m_tel: 'Sunați la {to}',
+  c_tel: 'Telefon',
 };

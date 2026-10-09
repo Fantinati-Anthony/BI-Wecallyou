@@ -522,7 +522,7 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
       const lot = await lotOf(req);
       const body = await readJson(req);
       const n = number(body.n);
-      if (body.type !== 'send' || !['sms', 'wa', 'mail'].includes(body.detail)) fail(400, 'event');
+      if (body.type !== 'send' || !['sms', 'wa', 'mail', 'tel'].includes(body.detail)) fail(400, 'event'); // tel : le commerçant a téléphoné au client
       if (!(await store.isActive(lot.id, n))) fail(404, 'invalid');
       await store.event(lot.id, n, 'send', body.detail);
       return { ok: true };

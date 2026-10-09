@@ -103,7 +103,7 @@ export default {
   create_promo_ph: 'Es. Seguiteci su Instagram @paninotecatony · Grazie al nostro partner Panificio Bianchi',
   create_link: 'Il suo link (facoltativo)',
   create_link_ph: 'https://instagram.com/…',
-  promo_hint: 'Mostrati sulla pagina del biglietto e aggiunti ai messaggi inviati ai suoi clienti. È l’unica «pubblicità» possibile qui: la sua, se lo desidera.',
+  promo_hint: 'Una frase e un link suoi, facoltativi: offerta del giorno, social, menu… Compaiono sulla pagina del biglietto di ogni cliente e si aggiungono ai messaggi che invia. È l’unica «pubblicità» possibile qui: la sua, se lo desidera.',
   create_options: 'Opzioni',
   create_btn: 'Crea i miei biglietti',
   creating: 'Creazione delle chiavi di sicurezza…',
@@ -242,7 +242,7 @@ export default {
   msg_vars: 'Tocchi una variabile per inserirla:',
   studio_activity: 'La sua attività',
   act_sent: 'Messaggio ricevuto dai suoi clienti:',
-  act_later: 'Modificabile in qualsiasi momento in Impostazioni, sezione Messaggio e variabili.',
+  act_later: 'La sua attività propone un messaggio e liste adatti al suo mestiere. Tutto resta modificabile, qui e più tardi nella sua area esercente (Impostazioni, Messaggio e variabili).',
   act_group_example: 'Squadra rossa',
   act_replace_confirm: 'Sostituire il suo messaggio e le sue liste con questo modello?',
   act_dialog_title: 'Scelga la sua attività',
@@ -263,10 +263,10 @@ export default {
   acc_activity_hint: 'Prepara il messaggio e le variabili dei suoi prossimi lotti. Conservata cifrata nel suo account, illeggibile per noi.',
   acc_activity_saved: 'Attività salvata.',
   s_template_ph: '{name}: biglietto n. {number}, è pronto! {Luogo}',
-  s_template_hint: 'Variabili: {name}, {number}, {group} e le sue liste (es. {Luogo}). Vuoto = messaggio predefinito, tradotto per ogni cliente.',
-  s_lists_hint: 'Una lista per riga: «Nome: opzione, opzione». Sottolista: «Luogo: Banco > Sportello 1, Banco > Sportello 2». 5 liste, max 50 opzioni.',
+  s_template_hint: 'Il testo che il cliente riceve quando lo chiama. Le parole tra parentesi graffe vengono sostituite per ogni biglietto: {name} con il nome della sua attività, {number} con il numero del biglietto, {group} con il suo gruppo. Le sue liste si inseriscono allo stesso modo, ad esempio {Luogo}. Se lo lascia vuoto: un messaggio standard, nella lingua di ogni cliente.',
+  s_lists_hint: 'Scelte da fare al momento della chiamata, ad esempio dove ritirare l’ordine. Scriva una lista per riga: il suo nome, due punti, poi le scelte separate da virgole, ad esempio «Luogo: al banco, allo sportello 2». Aggiunga {Luogo} al messaggio: alla chiamata sceglierà da un menu. Un menu in due passaggi: «Luogo: Banco > Sportello 1, Banco > Sportello 2». Fino a 5 liste da 50 scelte.',
   s_lists_ph: 'Luogo: al banco, allo sportello 1, allo sportello 2',
-  s_groups_hint: 'Un gruppo per riga: «Nome: numeri», es. «Squadra rossa: 12-18, 25». Max 200 biglietti per gruppo.',
+  s_groups_hint: 'Per chiamare più biglietti insieme: una squadra, un tavolo, un ordine di gruppo. Scriva un gruppo per riga: il suo nome, due punti, poi i numeri, ad esempio «Squadra rossa: 12-18, 25» (i biglietti dal 12 al 18 e il 25). Nel messaggio, {group} mostra il nome del gruppo. Al massimo 200 biglietti per gruppo.',
   s_groups_ph: 'Squadra rossa: 12-18, 25',
   how_1: 'Scelga la sua attività e la carta, poi stampi: foglio A4, etichette o stampante per scontrini.',
   lots_pro_lock: 'Passare da un lotto all’altro con un tocco e riunire più lotti in un account: riservato al piano Pro. Senza Pro, apra un altro lotto con la sua pagina chiave.',
@@ -660,7 +660,7 @@ export default {
   acc_lang: 'Lingua dell’app e dei biglietti',
   acc_lang_hint: 'I suoi biglietti vengono stampati in questa lingua. Può cambiarla in qualsiasi momento con la bandiera in alto nella pagina.',
   d_verso: 'Fronte-retro: istruzioni sul retro dei biglietti',
-  d_verso_hint: 'Una pagina su due è il retro. Stampi «fronte-retro, lato lungo». La pagina chiave si stampa a parte.',
+  d_verso_hint: 'Ogni pagina di biglietti è seguita dal suo retro, con le istruzioni sul retro di ogni biglietto. Nella finestra di stampa scelga «Fronte-retro» e «Lato lungo». La pagina chiave si stampa a parte, così i retri restano allineati.',
   pv_back: 'Retro',
   plan_tip_verso: 'Fronte-retro: nella finestra di stampa scelga «Fronte-retro» e «Lato lungo». Provi prima con una pagina.',
   pt_title: 'Testi della locandina e del retro',
@@ -703,4 +703,15 @@ export default {
 
   // Notification : abonnement disparu (page du client)
   push_gone: 'Questo telefono non è più iscritto alle notifiche di questo biglietto.',
+
+  // Aperçu : écran public, téléphone du client, tout
+  pv_screen: 'Schermo',
+  pv_client: 'Cliente',
+  pv_all: 'Tutto',
+  pv_client_choose: 'Dopo la scansione',
+  pv_client_ready: 'Alla chiamata',
+
+  // Téléphoner au client depuis la liste des tickets en cours
+  m_tel: 'Telefona al {to}',
+  c_tel: 'Telefono',
 };

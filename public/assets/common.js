@@ -159,21 +159,55 @@ function langMenu() {
 }
 
 /**
- * Bulle d'aide « ? » : l'explication s'affiche au survol, au clavier, ou d'un appui sur téléphone
- * (un second appui, Échap ou un appui ailleurs la referme). À placer dans un .label-row.
+ * Bulle d'aide « ? » : l'explication s'affiche au survol, au clavier, ou d'un appui (téléphone : un second
+ * appui, Échap ou un appui ailleurs la referme). Placée près de son bouton et toujours dans l'écran
+ * (position fixe : rien ne la coupe). content : texte, ou éléments (plusieurs paragraphes).
+ * Dans un bouton de choix, un appui sur « ? » ne coche rien.
  */
 let tips = 0;
-export function helpTip(text) {
+export function helpTip(content) {
   const id = `tip-${++tips}`;
   const button = h('button', { type: 'button', class: 'tip-btn', 'aria-label': t('help'), 'aria-describedby': id, 'aria-expanded': 'false' }, '?');
-  const tip = h('span', { class: 'tip' }, button, h('span', { class: 'tip-pop', role: 'tooltip', id }, text));
-  const toggle = (open) => {
+  const pop = h('span', { class: 'tip-pop', role: 'tooltip', id }, content);
+  const tip = h('span', { class: 'tip' }, button, pop);
+  let pinned = false;
+  const place = () => {
+    const box = button.getBoundingClientRect();
+    const width = Math.min(340, innerWidth - 24);
+    pop.style.width = `${width}px`;
+    pop.style.left = `${Math.min(Math.max(12, box.left + box.width / 2 - width / 2), innerWidth - width - 12)}px`;
+    const height = pop.offsetHeight;
+    pop.style.top = `${box.top - height - 8 >= 8 ? box.top - height - 8 : box.bottom + 8}px`; // au-dessus, sinon en dessous
+  };
+  const show = (open) => {
     tip.classList.toggle('open', open);
     button.setAttribute('aria-expanded', String(open));
+    if (open) place();
   };
-  button.addEventListener('click', () => toggle(!tip.classList.contains('open')));
-  button.addEventListener('keydown', (event) => event.key === 'Escape' && toggle(false));
-  document.addEventListener('click', (event) => !tip.contains(event.target) && toggle(false));
+  button.addEventListener('mouseenter', () => show(true));
+  button.addEventListener('mouseleave', () => !pinned && show(false));
+  button.addEventListener('focus', () => show(true));
+  button.addEventListener('blur', () => {
+    pinned = false;
+    show(false);
+  });
+  button.addEventListener('click', (event) => {
+    event.preventDefault(); // dans un bouton de choix : n'active pas le choix
+    event.stopPropagation();
+    pinned = !pinned;
+    show(pinned);
+  });
+  button.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    pinned = false;
+    show(false);
+  });
+  document.addEventListener('click', (event) => {
+    if (tip.contains(event.target)) return;
+    pinned = false;
+    show(false);
+  });
+  for (const type of ['scroll', 'resize']) addEventListener(type, () => tip.classList.contains('open') && place(), { passive: true, capture: true });
   return tip;
 }
 

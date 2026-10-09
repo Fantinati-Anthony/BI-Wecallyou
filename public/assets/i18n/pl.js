@@ -103,7 +103,7 @@ export default {
   create_promo_ph: 'Np. Obserwuj nas na Instagramie @bistroutomka · Dziękujemy naszemu partnerowi, Piekarni Pod Lipą',
   create_link: 'Twój link (opcjonalnie)',
   create_link_ph: 'https://instagram.com/…',
-  promo_hint: 'Wyświetlane na stronie biletu i dodawane do wiadomości wysyłanych do klientów. To jedyna „reklama”, jaka może się tu pojawić: Twoja, jeśli chcesz.',
+  promo_hint: 'Twoje własne zdanie i link, opcjonalnie: promocja dnia, media społecznościowe, menu… Pojawiają się na stronie biletu każdego klienta i są dodawane do wysyłanych wiadomości. To jedyna możliwa tu „reklama”: Twoja, jeśli chcesz.',
   create_options: 'Opcje',
   create_btn: 'Utwórz bilety',
   creating: 'Tworzenie kluczy bezpieczeństwa…',
@@ -242,7 +242,7 @@ export default {
   msg_vars: 'Dotknij zmiennej, aby ją wstawić:',
   studio_activity: 'Twoja działalność',
   act_sent: 'Wiadomość, którą dostaną klienci:',
-  act_later: 'Możesz ją zmienić w każdej chwili w Ustawieniach, w sekcji Wiadomość i zmienne.',
+  act_later: 'Twoja działalność podpowiada wiadomość i listy dopasowane do Twojej branży. Wszystko możesz zmienić, tutaj i później w panelu sprzedawcy (Ustawienia, Wiadomość i zmienne).',
   act_group_example: 'Drużyna czerwona',
   act_replace_confirm: 'Zastąpić Twoją wiadomość i listy tym szablonem?',
   act_dialog_title: 'Wybierz rodzaj działalności',
@@ -263,10 +263,10 @@ export default {
   acc_activity_hint: 'Na jej podstawie powstają wiadomość i zmienne Twoich kolejnych serii. Jest przechowywana w Twoim koncie w formie zaszyfrowanej, nieczytelnej dla nas.',
   acc_activity_saved: 'Zapisano działalność.',
   s_template_ph: '{name}: bilet nr {number}, gotowe! {Miejsce}',
-  s_template_hint: 'Zmienne: {name}, {number}, {group} i Twoje listy (np. {Miejsce}). Puste = domyślna wiadomość, tłumaczona dla każdego klienta.',
-  s_lists_hint: 'Jedna lista w wierszu: „Nazwa: opcja, opcja”. Podlista: „Miejsce: Lada > Okienko 1, Lada > Okienko 2”. Maks. 5 list i 50 opcji.',
+  s_template_hint: 'Tekst, który klient dostaje, gdy go wywołujesz. Słowa w nawiasach klamrowych są zastępowane dla każdego biletu: {name} nazwą Twojej firmy, {number} numerem biletu, {group} jego grupą. Twoje listy wstawiasz tak samo, na przykład {Miejsce}. Puste pole: standardowa wiadomość w języku każdego klienta.',
+  s_lists_hint: 'Wybory, których dokonujesz przy wywołaniu, na przykład gdzie odebrać zamówienie. Wpisz jedną listę w wierszu: jej nazwę, dwukropek, a potem opcje oddzielone przecinkami, np. „Miejsce: przy ladzie, przy okienku 2”. Dodaj {Miejsce} do wiadomości: przy wywołaniu wybierzesz z menu. Menu dwustopniowe: „Miejsce: Lada > Okienko 1, Lada > Okienko 2”. Do 5 list po 50 opcji.',
   s_lists_ph: 'Miejsce: przy ladzie, przy okienku 1, przy okienku 2',
-  s_groups_hint: 'Jedna grupa w wierszu: „Nazwa: numery”, np. „Drużyna czerwona: 12-18, 25”. Maks. 200 biletów w grupie.',
+  s_groups_hint: 'Aby wywołać kilka biletów naraz: drużynę, stolik, wspólne zamówienie. Wpisz jedną grupę w wierszu: jej nazwę, dwukropek, a potem numery, np. „Drużyna czerwona: 12-18, 25” (bilety od 12 do 18 oraz 25). W wiadomości {group} pokazuje nazwę grupy. Maksymalnie 200 biletów w grupie.',
   s_groups_ph: 'Drużyna czerwona: 12-18, 25',
   how_1: 'Wybierz rodzaj działalności i papier, a potem drukuj: arkusz A4, etykiety lub drukarka termiczna.',
   lots_pro_lock: 'Przełączanie się między seriami jednym dotknięciem i łączenie kilku serii na jednym koncie: tylko w planie Pro. Bez Pro otwórz inną serię za pomocą jej strony z kluczem.',
@@ -660,7 +660,7 @@ export default {
   acc_lang: 'Język aplikacji i biletów',
   acc_lang_hint: 'Twoje bilety drukują się w tym języku. Możesz go zmienić w każdej chwili flagą u góry strony.',
   d_verso: 'Dwustronnie: instrukcja na odwrocie biletów',
-  d_verso_hint: 'Co druga strona to odwrocie. Drukuj „dwustronnie, długa krawędź”. Strona z kluczem drukuje się osobno.',
+  d_verso_hint: 'Po każdej stronie biletów następuje jej odwrocie, z instrukcją na odwrocie każdego biletu. W oknie drukowania wybierz „Dwustronnie” i „Długa krawędź”. Strona z kluczem drukuje się osobno, żeby odwrocia się nie przesunęły.',
   pv_back: 'Odwrocie',
   plan_tip_verso: 'Dwustronnie: w oknie drukowania wybierz „Dwustronnie” i „Długa krawędź”. Najpierw wydrukuj próbnie jedną stronę.',
   pt_title: 'Teksty plakatu i odwrocia',
@@ -703,4 +703,15 @@ export default {
 
   // Notification : abonnement disparu (page du client)
   push_gone: 'Ten telefon nie jest już zapisany na powiadomienia tego biletu.',
+
+  // Aperçu : écran public, téléphone du client, tout
+  pv_screen: 'Ekran',
+  pv_client: 'Klient',
+  pv_all: 'Wszystko',
+  pv_client_choose: 'Po zeskanowaniu',
+  pv_client_ready: 'Przy wywołaniu',
+
+  // Téléphoner au client depuis la liste des tickets en cours
+  m_tel: 'Zadzwoń: {to}',
+  c_tel: 'Telefon',
 };

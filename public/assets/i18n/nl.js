@@ -103,7 +103,7 @@ export default {
   create_promo_ph: 'Bijv. Volg ons op Instagram @snackbartony · Met dank aan onze partner Bakkerij Jansen',
   create_link: 'Uw link (optioneel)',
   create_link_ph: 'https://instagram.com/…',
-  promo_hint: 'Getoond op de ticketpagina en toegevoegd aan de berichten aan uw klanten. Dit is de enige “reclame” die hier mogelijk is: die van u, als u dat wilt.',
+  promo_hint: 'Een eigen zin en link, optioneel: aanbieding van de dag, sociale media, menukaart… Ze verschijnen op de ticketpagina van elke klant en worden toegevoegd aan de berichten die u verstuurt. Dit is de enige mogelijke “reclame” hier: die van uzelf, als u wilt.',
   create_options: 'Opties',
   create_btn: 'Mijn tickets maken',
   creating: 'Beveiligingssleutels aanmaken…',
@@ -242,7 +242,7 @@ export default {
   msg_vars: 'Tik op een variabele om die in te voegen:',
   studio_activity: 'Uw activiteit',
   act_sent: 'Bericht dat uw klanten ontvangen:',
-  act_later: 'Altijd te wijzigen via Instellingen, onderdeel Bericht en variabelen.',
+  act_later: 'Uw activiteit stelt een bericht en lijsten voor die bij uw vak passen. Alles blijft aanpasbaar, hier en later in uw beheeromgeving (Instellingen, Bericht en variabelen).',
   act_group_example: 'Team rood',
   act_replace_confirm: 'Uw bericht en lijsten vervangen door dit sjabloon?',
   act_dialog_title: 'Kies uw activiteit',
@@ -263,10 +263,10 @@ export default {
   acc_activity_hint: 'Hiermee worden het bericht en de variabelen van uw volgende reeksen voorbereid. Versleuteld bewaard in uw account, onleesbaar voor ons.',
   acc_activity_saved: 'Activiteit opgeslagen.',
   s_template_ph: '{name}: ticket nr. {number}, het is klaar! {Plaats}',
-  s_template_hint: 'Variabelen: {name}, {number}, {group} en uw lijsten (bijv. {Plaats}). Leeg = standaardbericht, vertaald voor elke klant.',
-  s_lists_hint: 'Eén lijst per regel: “Naam: optie, optie”. Sublijst: “Plaats: Balie > Loket 1, Balie > Loket 2”. Max. 5 lijsten en 50 opties.',
+  s_template_hint: 'De tekst die de klant krijgt wanneer u hem oproept. Woorden tussen accolades worden per ticket ingevuld: {name} met de naam van uw zaak, {number} met het ticketnummer, {group} met zijn groep. Uw lijsten voegt u op dezelfde manier in, bijvoorbeeld {Plaats}. Leeg gelaten: een standaardbericht, in de taal van elke klant.',
+  s_lists_hint: 'Keuzes die u maakt bij het oproepen, bijvoorbeeld waar de bestelling af te halen is. Schrijf één lijst per regel: de naam, een dubbele punt en dan de keuzes gescheiden door komma’s, bijvoorbeeld “Plaats: aan de balie, bij loket 2”. Zet {Plaats} in het bericht: bij het oproepen kiest u uit een menu. Een menu in twee stappen: “Plaats: Balie > Loket 1, Balie > Loket 2”. Tot 5 lijsten van 50 keuzes.',
   s_lists_ph: 'Plaats: aan de balie, bij loket 1, bij loket 2',
-  s_groups_hint: 'Eén groep per regel: “Naam: nummers”, bijv. “Team rood: 12-18, 25”. Max. 200 tickets per groep.',
+  s_groups_hint: 'Om meerdere tickets tegelijk op te roepen: een team, een tafel, een groepsbestelling. Schrijf één groep per regel: de naam, een dubbele punt en dan de nummers, bijvoorbeeld “Team rood: 12-18, 25” (de tickets 12 tot en met 18, en 25). In het bericht toont {group} de naam van de groep. Maximaal 200 tickets per groep.',
   s_groups_ph: 'Team rood: 12-18, 25',
   how_1: 'Kies uw activiteit en uw papier en print: A4-vel, etiketten of bonprinter.',
   lots_pro_lock: 'Met één tik wisselen tussen reeksen en meerdere reeksen in één account bundelen: alleen met Pro. Zonder Pro opent u een andere reeks met de bijbehorende sleutelpagina.',
@@ -660,7 +660,7 @@ export default {
   acc_lang: 'Taal van de app en de tickets',
   acc_lang_hint: 'Uw tickets worden in deze taal geprint. U kunt dit altijd wijzigen met de vlag bovenaan de pagina.',
   d_verso: 'Dubbelzijdig: uitleg op de achterkant van de tickets',
-  d_verso_hint: 'Om de andere pagina is de achterkant. Print “dubbelzijdig, lange zijde”. De sleutelpagina wordt apart geprint.',
+  d_verso_hint: 'Elke pagina met tickets wordt gevolgd door de achterkant, met de uitleg op de achterkant van elk ticket. Kies in het printvenster “Dubbelzijdig” en “Lange zijde”. De sleutelpagina wordt apart geprint, zodat de achterkanten niet verschuiven.',
   pv_back: 'Achterkant',
   plan_tip_verso: 'Dubbelzijdig: kies in het printvenster “Dubbelzijdig” en “Lange zijde”. Probeer eerst één pagina.',
   pt_title: 'Teksten van de poster en de achterkant',
@@ -703,4 +703,15 @@ export default {
 
   // Notification : abonnement disparu (page du client)
   push_gone: 'Deze telefoon is niet meer aangemeld voor de meldingen van dit ticket.',
+
+  // Aperçu : écran public, téléphone du client, tout
+  pv_screen: 'Scherm',
+  pv_client: 'Klant',
+  pv_all: 'Alles',
+  pv_client_choose: 'Na het scannen',
+  pv_client_ready: 'Bij oproep',
+
+  // Téléphoner au client depuis la liste des tickets en cours
+  m_tel: 'Bellen: {to}',
+  c_tel: 'Telefoon',
 };

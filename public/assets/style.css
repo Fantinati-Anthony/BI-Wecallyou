@@ -292,6 +292,9 @@ details[open] > summary { margin-bottom: 14px; }
 .notice { background: var(--surface-2); border-radius: var(--r-ctl); padding: 12px 14px; }
 .banner-warn.stack { flex-direction: column; align-items: stretch; } /* texte puis bouton, l'un sous l'autre */
 .banner-warn.stack > p { margin: 0; }
+/* Téléphoner au client depuis la liste des tickets en cours */
+.tel-btn { display: inline-flex; align-items: center; gap: 4px; min-height: 40px; padding: 6px 10px; font-variant-numeric: tabular-nums; }
+.tel-btn .i { color: var(--ok); }
 .row-center { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 20px; }
 /* Ordinateur ou téléphone : ce qui part d'où (SMS : téléphone seulement) */
 .device-note { display: flex; gap: 10px; align-items: flex-start; }
@@ -642,11 +645,17 @@ dialog.act-dialog::backdrop { background: rgb(14 16 19 / 0.55); }
 }
 .tip-btn:hover, .tip-btn:focus-visible, .tip.open .tip-btn { border-color: var(--brand); color: var(--brand-text); }
 .tip-pop {
-  position: absolute; left: 0; right: 0; bottom: calc(100% + 8px); z-index: 30; padding: 10px 12px; border-radius: var(--r-ctl);
-  background: var(--text); color: var(--surface); font-size: 0.86rem; font-weight: 500; line-height: 1.45; box-shadow: var(--shadow-2);
-  opacity: 0; visibility: hidden; transform: translateY(4px); transition: opacity 0.15s, transform 0.15s, visibility 0.15s; pointer-events: none;
+  position: fixed; z-index: 60; display: none; padding: 10px 12px; border-radius: var(--r-ctl);
+  background: var(--text); color: var(--surface); font-size: 0.86rem; font-weight: 500; line-height: 1.45; text-align: left; white-space: normal; box-shadow: var(--shadow-2);
+  pointer-events: none;
 }
-.tip:hover .tip-pop, .tip:focus-within .tip-pop, .tip.open .tip-pop { opacity: 1; visibility: visible; transform: none; }
+.tip.open .tip-pop { display: block; }
+.tip-pop p { margin: 0; }
+.tip-pop p + p { margin-top: 6px; }
+.tip-pop .tip-where { font-weight: 700; }
+/* « ? » dans un bouton de choix (comment les clients ont leur numéro, moyens proposés) : en coin, au-dessus du choix */
+.choice > [data-tip], .choice > .tip-slot { position: absolute; top: 4px; left: 5px; z-index: 2; line-height: 0; }
+.choice .tip-btn { width: 19px; height: 19px; font-size: 0.72rem; }
 
 /* Nombre de souches, avec la remarque « sans souche » à côté */
 .stub-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
@@ -747,6 +756,45 @@ dialog.act-dialog::backdrop { background: rgb(14 16 19 / 0.55); }
 /* Aperçu : onglets et découpes centrés au-dessus de la page */
 .pv-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; }
 .pv-frame { position: relative; overflow: hidden; background: var(--surface-2); border-radius: 12px; }
+/* Onglets de l'aperçu : même style que ceux des réglages, défilants s'ils sont nombreux */
+.pv-bar .pv-tabs { flex: 1 1 auto; min-width: 0; display: flex; gap: 4px; padding: 4px; overflow-x: auto; scrollbar-width: none; border: 0; border-radius: var(--r-ctl); }
+.pv-tabs [role=tab] { flex: none; min-height: 40px; padding: 6px 10px; font-size: 0.88rem; }
+.pv-tabs [role=tab][hidden] { display: none; }
+/* Écran public en aperçu (mêmes éléments que la démonstration de l'accueil) */
+.pv-screen { margin: 14px; padding-bottom: 0; }
+.pv-tv-foot { display: flex; justify-content: space-between; gap: 2cqw; }
+.pv-tv-promo { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Téléphone du client : la page du ticket après son scan, puis « C'est à vous ! » */
+.pv-phones { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 14px; }
+.pv-phones figure { display: grid; gap: 8px; justify-items: center; margin: 0; }
+.pv-phones figcaption { color: var(--muted); font-size: 0.82rem; font-weight: 600; text-align: center; }
+.pv-phone { width: 100%; max-width: 260px; aspect-ratio: 9 / 18.5; container-type: inline-size; overflow: hidden; border: 7px solid #15181d; border-radius: 30px; background: var(--bg); box-shadow: var(--shadow-2); }
+.pvp-screen { display: flex; flex-direction: column; gap: 3.2cqw; height: 100%; padding: 7cqw 6cqw; overflow: hidden; color: var(--text); font-size: 4.6cqw; line-height: 1.3; }
+.pvp-ticket { padding: 4cqw; border: 1px solid var(--line); border-radius: 5cqw; background: var(--surface); text-align: center; }
+.pvp-merchant { color: var(--muted); font-size: 4.4cqw; font-weight: 700; }
+.pvp-number { font: 800 17cqw/1 var(--font-display); letter-spacing: -0.05em; }
+.pvp-lead { margin: 1cqw 0; font-weight: 600; text-align: center; }
+.pvp-choice { display: flex; align-items: center; gap: 3cqw; padding: 3.4cqw 4cqw; border-radius: 3.4cqw; background: var(--pvp-accent, var(--brand)); color: var(--pvp-accent-ink, var(--brand-ink)); font-size: 4.3cqw; font-weight: 700; }
+.pvp-icon { display: inline-flex; }
+.pvp-choice .i { width: 5cqw; height: 5cqw; }
+.pvp-link { color: var(--muted); font-size: 4cqw; text-align: center; text-decoration: underline; }
+.pvp-promo { display: flex; gap: 2cqw; align-items: flex-start; margin-top: auto; padding: 3cqw; border-radius: 3cqw; background: var(--surface-2); font-size: 3.8cqw; }
+.pvp-promo .i { flex: none; width: 4.4cqw; height: 4.4cqw; }
+.pvp-ready { justify-content: center; align-items: center; background: #17734a; color: #f6fbf8; text-align: center; }
+.pvp-title { font: 750 9cqw/1.05 var(--font-display); }
+.pvp-big { font: 800 24cqw/1 var(--font-display); letter-spacing: -0.05em; }
+.pvp-message { margin: 0; padding: 3.4cqw; border-radius: 3.4cqw; background: rgb(255 255 255 / 0.16); font-size: 4.3cqw; line-height: 1.35; }
+.pvp-ready .pvp-promo { margin-top: 0; background: rgb(255 255 255 / 0.16); color: inherit; text-align: left; }
+/* « Tout » : chaque vue en vignette, un appui l'ouvre */
+.pv-all { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; margin: 14px; }
+.pv-tile { display: grid; gap: 8px; align-content: start; padding: 10px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+.pv-tile:hover, .pv-tile:focus-visible { border-color: var(--brand); }
+.pv-tile-label { display: flex; align-items: center; gap: 6px; font-size: 0.88rem; font-weight: 650; }
+.pv-tile-label .i { width: 16px; height: 16px; color: var(--brand-text); }
+.pv-tile-view { position: relative; overflow: hidden; pointer-events: none; }
+.pv-tile-view > .sheet { transform-origin: top left; box-shadow: var(--shadow-1); }
+.pv-tile-view .pv-screen, .pv-tile-view .pv-phones { margin: 0; }
+@media (min-width: 560px) { .pv-tile-client { grid-column: span 2; } }
 .pv-frame > .sheet { transform-origin: top left; box-shadow: var(--shadow-2); flex: none; }
 .pv-info { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 12px 0 6px; padding: 0; list-style: none; }
 .pv-info li { padding: 3px 10px; border-radius: var(--r-pill); background: var(--surface-2); font-size: 0.82rem; color: var(--muted); font-variant-numeric: tabular-nums; }

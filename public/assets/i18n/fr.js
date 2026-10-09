@@ -103,7 +103,7 @@ export default {
   create_promo_ph: 'Ex. Suivez-nous sur Instagram @snacktony · Merci à notre partenaire Boulangerie Martin',
   create_link: 'Votre lien (facultatif)',
   create_link_ph: 'https://instagram.com/…',
-  promo_hint: 'Affichés sur la page du ticket et ajoutés aux messages envoyés à vos clients. C’est la seule « pub » possible ici : la vôtre, si vous le voulez.',
+  promo_hint: 'Une phrase et un lien à vous, facultatifs : promo du jour, réseaux sociaux, menu… Ils s’affichent sur la page du ticket de chaque client et s’ajoutent aux messages que vous envoyez. C’est la seule « pub » possible ici : la vôtre, si vous le voulez.',
   create_options: 'Options',
   create_btn: 'Créer mes tickets',
   creating: 'Création des clés de sécurité…',
@@ -242,7 +242,7 @@ export default {
   msg_vars: 'Touchez une variable pour l’insérer :',
   studio_activity: 'Votre activité',
   act_sent: 'Message reçu par vos clients :',
-  act_later: 'Modifiable à tout moment dans Réglages, rubrique Message et variables.',
+  act_later: 'Votre activité propose un message et des listes adaptés à votre métier. Tout reste modifiable, ici comme plus tard dans votre espace commerçant (Réglages, rubrique Message et variables).',
   act_group_example: 'Équipe rouge',
   act_replace_confirm: 'Remplacer votre message et vos listes par ce modèle ?',
   act_dialog_title: 'Choisissez votre activité',
@@ -263,10 +263,10 @@ export default {
   acc_activity_hint: 'Elle prépare le message et les variables de vos prochains lots. Gardée chiffrée dans votre compte, illisible pour nous.',
   acc_activity_saved: 'Activité enregistrée.',
   s_template_ph: '{nom} : ticket n°{numero}, c’est prêt ! {Lieu}',
-  s_template_hint: 'Variables : {nom}, {numero}, {groupe} et vos listes (ex. {Lieu}). Vide = message par défaut, traduit pour chaque client.',
-  s_lists_hint: 'Une liste par ligne : « Nom : option, option ». Sous-liste : « Lieu : Comptoir > Guichet 1, Comptoir > Guichet 2 ». 5 listes, 50 options max.',
+  s_template_hint: 'Le texte envoyé au client quand vous l’appelez. Les mots entre accolades sont remplacés pour chaque ticket : {nom} par le nom de votre commerce, {numero} par le numéro du ticket, {groupe} par son groupe. Vos listes s’insèrent de la même façon, par exemple {Lieu}. Laissé vide : un message standard, dans la langue de chaque client.',
+  s_lists_hint: 'Des choix à faire au moment d’appeler, par exemple où venir chercher la commande. Écrivez une liste par ligne : son nom, deux-points, puis les choix séparés par des virgules, par exemple « Lieu : au comptoir, au guichet 2 ». Ajoutez {Lieu} dans le message : à l’appel, vous choisissez dans un menu. Un menu en deux temps : « Lieu : Comptoir > Guichet 1, Comptoir > Guichet 2 ». Jusqu’à 5 listes de 50 choix.',
   s_lists_ph: 'Lieu : au comptoir, au guichet 1, au guichet 2',
-  s_groups_hint: 'Un groupe par ligne : « Nom : numéros », ex. « Équipe rouge : 12-18, 25 ». 200 tickets max par groupe.',
+  s_groups_hint: 'Pour appeler plusieurs tickets d’un coup : une équipe, une table, une commande à plusieurs. Écrivez un groupe par ligne : son nom, deux-points, puis les numéros, par exemple « Équipe rouge : 12-18, 25 » (les tickets 12 à 18, et le 25). Dans le message, {groupe} affiche le nom du groupe. 200 tickets au plus par groupe.',
   s_groups_ph: 'Équipe rouge : 12-18, 25',
   how_1: 'Choisissez votre activité et votre papier, puis imprimez : feuille A4, étiquettes ou imprimante à tickets.',
   lots_pro_lock: 'Passer d’un lot à l’autre en un appui et réunir plusieurs lots sur un compte : réservé à l’offre Pro. Sans Pro, ouvrez un autre lot avec sa page clé.',
@@ -660,7 +660,7 @@ export default {
   acc_lang: 'Langue de l’appli et des tickets',
   acc_lang_hint: 'Vos tickets s’impriment dans cette langue. Vous pouvez en changer à tout moment avec le drapeau, en haut de la page.',
   d_verso: 'Recto-verso : le mode d’emploi au dos des tickets',
-  d_verso_hint: 'Une page sur deux est le dos. Imprimez en « recto verso, bord long ». La page clé s’imprime à part.',
+  d_verso_hint: 'Chaque page de tickets est suivie de son dos, avec le mode d’emploi au dos de chaque ticket. Dans la fenêtre d’impression, choisissez « Recto verso » et « Bord long ». La page clé s’imprime à part, pour ne pas décaler les dos.',
   pv_back: 'Verso',
   plan_tip_verso: 'Recto-verso : dans la fenêtre d’impression, choisissez « Recto verso » et « Bord long ». Faites d’abord l’essai d’une page.',
   pt_title: 'Textes de l’affiche et du verso',
@@ -703,4 +703,15 @@ export default {
 
   // Notification : abonnement disparu (page du client)
   push_gone: 'Ce téléphone n’est plus abonné aux notifications de ce ticket.',
+
+  // Aperçu : écran public, téléphone du client, tout
+  pv_screen: 'Écran',
+  pv_client: 'Client',
+  pv_all: 'Tout',
+  pv_client_choose: 'Après le scan',
+  pv_client_ready: 'À l’appel',
+
+  // Téléphoner au client depuis la liste des tickets en cours
+  m_tel: 'Téléphoner au {to}',
+  c_tel: 'téléphone',
 };

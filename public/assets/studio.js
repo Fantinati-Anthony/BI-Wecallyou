@@ -2,12 +2,12 @@
 // logo et aperçu en direct. Utilisé à la création d'un lot et dans l'espace commerçant (onglet
 // Imprimer). Tout se passe dans le navigateur. La mise en page est gratuite pour tous ; le logo
 // et les couleurs sont réservés à l'offre Pro (grisés sinon, et jamais imprimés sans Pro).
-import { h, t, LANG, render, icon } from './common.js';
+import { h, t, LANG, render, icon, helpTip, fmtTime, inkOn } from './common.js';
 import { PAPERS, LIMITS, QR_WARN_MM, MAX_STUBS, POSTER_TEXT, normalizeDesign, withoutPro, fitDesign, fitGrid, gridLimits, pageOf, gridOf, contentKey } from './layout.js';
 import { contentOf, ticketSheets, keySheet, labelOf, posterSheet, posterTexts } from './sheets.js';
 import { readLogo, pagesFor } from './print.js';
 import { base32, randomBytes } from './crypto.js';
-import { proLock } from './protools.js';
+import { proLock, THEME_DEFAULTS } from './protools.js';
 
 const SWATCHES = ['#ffffff', '#fff6e5', '#fde9e1', '#e6f0ff', '#e3f4ea', '#f3e8ff', '#1d1b18', '#c8461c'];
 const PAPER_ORDER = ['a4', 'letter', 'a5', 'a6', 'a3', 'roll80', 'roll58', 'custom'];
@@ -183,7 +183,7 @@ export function designControls(initial, onChange, contentFor, { pro = false } = 
   // Recto-verso : le mode d'emploi au dos de chaque ticket (une page sur deux) ; pas sur un rouleau.
   const verso = h('input', { type: 'checkbox', id: 'd-verso' });
   verso.addEventListener('change', () => set({ verso: verso.checked }));
-  const versoBox = h('div', {}, h('label', { class: 'check', for: 'd-verso' }, verso, ' ', t('d_verso')), h('p', { class: 'small muted' }, t('d_verso_hint')));
+  const versoBox = h('div', {}, h('label', { class: 'check', for: 'd-verso' }, verso, ' ', h('span', { class: 'grow' }, t('d_verso')), helpTip(t('d_verso_hint'))));
 
   /* réglages fins */
   const margins = ['top', 'right', 'bottom', 'left'].map((side, i) =>
@@ -368,7 +368,6 @@ export function posterTextFields({ initial = {}, lang = LANG, onChange }) {
     element: h(
       'div',
       { class: 'stack' },
-      h('p', { class: 'small muted' }, t('pt_hint')),
       field('title', t('pt_f_title')),
       field('sub', t('pt_f_sub')),
       field('cta', t('pt_f_cta')),
@@ -496,9 +495,68 @@ const sampleCodes = (n) => {
   return codes.slice(0, n);
 };
 
+/* ------------------------------------------------- aperçus : écran public, téléphone du client */
+
+/** Écran public (tablette, TV) tel qu'il s'affichera : nom, numéro appelé, derniers appels, aux couleurs du lot. */
+function screenView({ name, from, promo, theme }) {
+  const colors = { ...THEME_DEFAULTS, ...(theme ?? {}) };
+  const now = from + 3; // quelques appels déjà passés
+  const tv = h(
+    'div',
+    { class: 'lq-tv pv-tv' },
+    h('div', { class: 'lq-head' }, h('span', { class: 'lq-name' }, name || '…'), h('span', { class: 'lq-clock' }, fmtTime(Date.now()))),
+    h('div', { class: 'lq-main' }, h('span', { class: 'lq-label' }, t('e_now')), h('div', { class: 'lq-number' }, labelOf(now)), h('div', { class: 'lq-prev' }, [1, 2, 3].map((k) => h('b', {}, labelOf(now - k))))),
+    h('div', { class: 'lq-foot pv-tv-foot' }, h('span', { class: 's-live' }, t('e_live')), promo && h('span', { class: 'pv-tv-promo' }, promo)),
+  );
+  tv.style.background = colors.screenBg;
+  tv.style.color = colors.screenText;
+  tv.querySelector('.lq-number').style.color = colors.screenNumber;
+  return h('figure', { class: 'lq pv-screen' }, tv);
+}
+
 /**
- * Aperçu réduit d'une page, mis à jour en direct, avec onglets « Tickets » et « Page clé ».
- * Sur petit écran, il s'ouvre en plein écran par un bouton flottant.
+ * La page du ticket sur le téléphone du client, après son scan : le choix du moyen d'être prévenu,
+ * puis « C'est à vous ! » avec le message de l'appel. Aux couleurs du lot (Pro).
+ */
+function clientView({ name, label, channels, promo, link, message, theme }) {
+  const accent = theme?.accent ?? null;
+  const promoCard = (promo || link) && h('div', { class: 'pvp-promo' }, icon('megaphone'), h('span', {}, promo, promo && link && ' ', link && h('u', {}, link.replace(/^https:\/\//, ''))));
+  const head = h('div', { class: 'pvp-ticket' }, h('div', { class: 'pvp-merchant' }, name || '…'), h('div', { class: 'pvp-number' }, label));
+  const choose = h(
+    'div',
+    { class: 'pv-phone' },
+    h(
+      'div',
+      { class: 'pvp-screen' },
+      head,
+      h('p', { class: 'pvp-lead' }, t(channels.length ? 'how' : 'no_channels')),
+      channels.map((c) => h('div', { class: 'pvp-choice' }, h('span', { class: 'pvp-icon' }, icon({ push: 'bell-ringing', sms: 'chat-circle-text', wa: 'whatsapp-logo', mail: 'envelope-simple' }[c])), t(`ch_${c}`))),
+      h('div', { class: 'pvp-link' }, t('wait_only')),
+      promoCard,
+    ),
+  );
+  const ready = h(
+    'div',
+    { class: 'pv-phone' },
+    h('div', { class: 'pvp-screen pvp-ready' }, h('div', { class: 'pvp-title' }, t('ready_title')), h('div', { class: 'pvp-big' }, label), h('p', { class: 'pvp-message' }, message), promoCard?.cloneNode(true)),
+  );
+  if (accent) {
+    choose.style.setProperty('--pvp-accent', accent);
+    choose.style.setProperty('--pvp-accent-ink', inkOn(accent));
+  }
+  return h(
+    'div',
+    { class: 'pv-phones' },
+    h('figure', {}, choose, h('figcaption', {}, t('pv_client_choose'))),
+    h('figure', {}, ready, h('figcaption', {}, t('pv_client_ready'))),
+  );
+}
+
+const PV_ICONS = { tickets: 'ticket', back: 'arrows-clockwise', key: 'key', poster: 'qr-code', screen: 'monitor-play', client: 'device-mobile', all: 'squares-four' };
+
+/**
+ * Aperçu en direct, en onglets : tickets, verso, page clé, affiche, écran public, téléphone du client,
+ * et « Tout », côte à côte. Sur petit écran, il s'ouvre en plein écran par un bouton flottant.
  */
 export function livePreview() {
   const frame = h('div', { class: 'pv-frame' });
@@ -509,16 +567,21 @@ export function livePreview() {
   let timer = 0;
   const tabs = h(
     'div',
-    { class: 'segmented', role: 'group' },
-    ['tickets', 'back', 'key', 'poster'].map((name) => {
-      const button = h('button', { type: 'button', 'data-tab': name, 'aria-pressed': String(name === tab) }, t(`pv_${name}`));
+    { class: 'tabbar pv-tabs', role: 'tablist', 'aria-label': t('pv_title') },
+    Object.entries(PV_ICONS).map(([name, glyph]) => {
+      const button = h('button', { type: 'button', role: 'tab', 'data-tab': name, 'aria-selected': String(name === tab) }, icon(glyph), h('span', {}, t(`pv_${name}`)));
       button.addEventListener('click', () => setTab(name));
       return button;
     }),
   );
-  function setTab(name) {
+  // Onglet choisi (sans redessiner) ; setTab redessine.
+  function mark(name) {
     tab = name;
-    for (const b of tabs.children) b.setAttribute('aria-pressed', String(b.dataset.tab === name));
+    for (const b of tabs.children) b.setAttribute('aria-selected', String(b.dataset.tab === name));
+    cuts.hidden = !['tickets', 'back'].includes(name);
+  }
+  function setTab(name) {
+    mark(name);
     if (last) update(last);
   }
   const close = h('button', { type: 'button', class: 'btn btn-ghost pv-close' }, icon('x'), t('pv_close'));
@@ -529,38 +592,42 @@ export function livePreview() {
     frame.classList.toggle('show-cuts', on);
     cuts.setAttribute('aria-pressed', String(on));
   });
-  // Onglets et découpes centrés au-dessus de la page ; les repères (tickets par page, QR…) en dessous.
+  // Onglets et découpes au-dessus de la page ; les repères (tickets par page, QR…) en dessous.
   const panel = h('aside', { class: 'studio-preview card', 'aria-label': t('pv_title') }, h('div', { class: 'pv-bar' }, tabs, cuts, close), alert, frame, info, h('p', { class: 'small muted' }, t('pv_sample')));
   const fab = h('button', { type: 'button', class: 'btn pv-fab' }, icon('eye'), t('pv_open'));
   fab.addEventListener('click', () => panel.classList.add('open'));
   close.addEventListener('click', () => panel.classList.remove('open'));
 
-  // La page est réduite (ou agrandie, pour un petit ticket) pour tenir dans la place disponible.
+  // Une page imprimée est réduite (ou agrandie) pour tenir dans sa place ; écran et téléphones suivent la largeur.
+  const scaleInto = (box, page, maxH = Infinity) => {
+    const scale = Math.min(box.clientWidth / page.offsetWidth, maxH / page.offsetHeight, 2.5);
+    page.style.transform = `scale(${scale})`;
+    page.style.marginLeft = `${Math.max(0, (box.clientWidth - page.offsetWidth * scale) / 2)}px`;
+    box.style.height = `${page.offsetHeight * scale}px`;
+  };
   const fit = () => {
     const page = frame.firstElementChild;
-    if (!page) {
-      frame.style.height = '0';
-      return;
+    frame.style.height = '';
+    if (!page) frame.style.height = '0';
+    else if (page.classList.contains('sheet')) scaleInto(frame, page, Math.max(260, window.innerHeight * 0.72));
+    for (const view of frame.querySelectorAll('.pv-tile-view')) {
+      const sheet = view.firstElementChild;
+      if (sheet?.classList.contains('sheet')) scaleInto(view, sheet, 320);
     }
-    const maxH = Math.max(260, window.innerHeight * 0.72);
-    const scale = Math.min(frame.clientWidth / page.offsetWidth, maxH / page.offsetHeight, 2.5);
-    page.style.transform = `scale(${scale})`;
-    page.style.marginLeft = `${Math.max(0, (frame.clientWidth - page.offsetWidth * scale) / 2)}px`;
-    frame.style.height = `${page.offsetHeight * scale}px`;
   };
   new ResizeObserver(fit).observe(frame);
 
   /**
-   * ctx : { design, name, domain, lang, from, count, whiteLabel, key } (key = réglages de la page clé).
+   * ctx : { design, name, domain, lang, from, count, whiteLabel, key, poster, client } (key : page clé ;
+   * client : { channels, promo, link, message, theme } pour l'écran public et le téléphone du client).
    * Renvoie false si les tickets ne tiennent pas sur ce papier.
    */
   function update(ctx) {
     last = ctx;
-    // Onglet « Affiche » seulement quand le lot en utilise une ; l'onglet « Tickets » disparaît pour un lot « affiche seule ».
     const design = normalizeDesign(ctx.design);
-    tabs.querySelector('[data-tab="poster"]').hidden = !ctx.poster;
-    tabs.querySelector('[data-tab="back"]').hidden = !design.verso;
-    if ((tab === 'poster' && !ctx.poster) || (tab === 'back' && !design.verso)) setTab('tickets');
+    const shown = { tickets: true, back: design.verso, key: Boolean(ctx.key), poster: Boolean(ctx.poster), screen: Boolean(ctx.client), client: Boolean(ctx.client), all: true };
+    for (const b of tabs.children) b.hidden = !shown[b.dataset.tab];
+    if (!shown[tab]) mark('tickets');
     const from = ctx.from || 1;
     const lastNumber = from + Math.max(1, ctx.count || 1) - 1;
     const layout = fitDesign(design, contentOf(design, { ...ctx, last: lastNumber }));
@@ -587,12 +654,41 @@ export function livePreview() {
     // Les QR codes de toute une page prennent un instant : on attend la fin de la saisie.
     clearTimeout(timer);
     timer = setTimeout(() => {
-      const count = Math.min(layout.perPage, Math.max(1, ctx.count || layout.perPage));
-      const tickets = sampleCodes(count).map((codes, i) => ({ ...codes, label: labelOf(from + i) }));
-      const sheet = tab === 'poster' && ctx.poster
-        ? posterSheet({ lang: ctx.lang, domain: ctx.domain, brand: ctx.key?.brand ?? 'WeCall.You', name: ctx.name || '…', token: ctx.poster.token, logo: design.logo, whiteLabel: ctx.whiteLabel, design })
-        : tab === 'key' && ctx.key ? keySheet({ ...ctx.key, design }) : ticketSheets(tickets, { ...design, lang: ctx.lang, domain: ctx.domain, name: ctx.name, whiteLabel: ctx.whiteLabel, last: lastNumber })[tab === 'back' ? 1 : 0];
-      render(frame, sheet);
+      let sheets = null;
+      const ticketPages = () => {
+        const count = Math.min(layout.perPage, Math.max(1, ctx.count || layout.perPage));
+        const tickets = sampleCodes(count).map((codes, i) => ({ ...codes, label: labelOf(from + i) }));
+        sheets ??= ticketSheets(tickets, { ...design, lang: ctx.lang, domain: ctx.domain, name: ctx.name, whiteLabel: ctx.whiteLabel, last: lastNumber });
+        return sheets;
+      };
+      const client = ctx.client && { name: ctx.name, from, label: labelOf(from), ...ctx.client };
+      const build = (name) => {
+        switch (name) {
+          case 'back':
+            return ticketPages()[1];
+          case 'key':
+            return keySheet({ ...ctx.key, design });
+          case 'poster':
+            return posterSheet({ lang: ctx.lang, domain: ctx.domain, brand: ctx.key?.brand ?? 'WeCall.You', name: ctx.name || '…', token: ctx.poster.token, logo: design.logo, whiteLabel: ctx.whiteLabel, design });
+          case 'screen':
+            return screenView(client);
+          case 'client':
+            return clientView(client);
+          default:
+            return ticketPages()[0];
+        }
+      };
+      if (tab === 'all') {
+        const tiles = Object.keys(PV_ICONS).filter((name) => name !== 'all' && shown[name]);
+        render(
+          frame,
+          h(
+            'div',
+            { class: 'pv-all' },
+            tiles.map((name) => h('button', { type: 'button', class: `pv-tile pv-tile-${name}`, onclick: () => setTab(name) }, h('span', { class: 'pv-tile-label' }, icon(PV_ICONS[name]), t(`pv_${name}`)), h('div', { class: 'pv-tile-view' }, build(name)))),
+          ),
+        );
+      } else render(frame, build(tab));
       requestAnimationFrame(fit);
     }, 60);
     return true;

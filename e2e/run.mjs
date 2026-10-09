@@ -94,10 +94,9 @@ try {
   await m.locator('.hero-cta a[href="/creer"]').click();
   await m.waitForSelector('#c-act', { state: 'attached' });
   // « Message et variables » : l'activité touchée sur l'accueil est proposée, et se change dans une fenêtre.
-  assert.match(await m.locator('#panel-message .act-current').textContent(), /Pressing/);
+  assert.match(await m.locator('#activity-slot .act-current').textContent(), /Pressing/);
   assert.match(await m.locator('#ctp').inputValue(), /votre dépôt n°\{numero\}/);
-  await m.click('#tab-message');
-  await m.click('#c-act');
+  await m.click('#c-act'); // l'activité est dans le premier onglet, juste après le nom
   await m.waitForSelector('dialog.act-dialog[open]');
   assert.equal(await m.locator('.act-block').count(), 10);
   await m.hover('.act-block[data-id="club"]'); // au survol, le message type de l'activité
@@ -189,6 +188,10 @@ try {
   await m.waitForSelector('.waiting-list li .num');
   assert.equal(await m.locator('.waiting-list li .num').first().textContent(), '005');
   assert.match(await m.locator('.waiting-list li .kinds').first().getAttribute('aria-label'), /SMS/);
+  // Le client a laissé son numéro : un appui pour le joindre de vive voix (tel:), le numéro restant masqué à l'écran.
+  const tel = m.locator('.waiting-list li:has(.kinds)').first().locator('a.tel-btn');
+  assert.match(await tel.getAttribute('href'), /^tel:\+?\d{8,15}$/);
+  assert.match(await tel.textContent(), /^••\d{2}$/);
   await shot(m, '07-espace-commercant');
   assert.equal(await m.locator('#pc-note').count(), 0); // sur téléphone : rien à signaler
   step('le commerçant voit le 005 inscrit par SMS, sans numéro affiché');
@@ -391,8 +394,8 @@ try {
   await p3.waitForSelector('h1:has-text("Snack Tony")');
   // L'activité choisie à l'inscription suit le compte : proposée par défaut à la création des tickets.
   await p3.goto(`${BASE}/creer`);
-  await p3.waitForSelector('#panel-message .act-current b', { state: 'attached' });
-  assert.match(await p3.locator('#panel-message .act-current').textContent(), /Buvette/);
+  await p3.waitForSelector('#activity-slot .act-current b', { state: 'attached' });
+  assert.match(await p3.locator('#activity-slot .act-current').textContent(), /Buvette/);
   step('autre téléphone : connexion par identifiant, le lot et l’activité du compte sont retrouvés');
 
   // Mot de passe oublié : la fiche de secours (son QR) permet d'en choisir un nouveau.
@@ -470,7 +473,6 @@ try {
   // Compte Pro : les options Pro du générateur s'ouvrent et s'appliquent au nouveau lot.
   await p4.goto(`${BASE}/creer`);
   await p4.waitForSelector('#c-wl:not([disabled])', { state: 'attached' });
-  await p4.click('#tab-message');
   await p4.click('#c-act');
   await p4.click('.act-block[data-id="pressing"]');
   await p4.click('.act-use');

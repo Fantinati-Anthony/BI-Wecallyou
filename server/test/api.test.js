@@ -198,11 +198,13 @@ test('cycle de vie : rien avant le scan, journal pendant, tout s’efface à la 
   await call('POST', '/seen', { t: ticket.c });
   await call('POST', '/seen', { t: ticket.c });
   await call('POST', '/lot/event', { n: 10, type: 'send', detail: 'wa' }, lot.authToken);
+  await call('POST', '/lot/event', { n: 10, type: 'send', detail: 'tel' }, lot.authToken); // le commerçant a téléphoné
+  assert.equal((await call('POST', '/lot/event', { n: 10, type: 'send', detail: 'fax' }, lot.authToken)).status, 400);
   assert.equal((await call('POST', '/lot/event', { n: 11, type: 'send', detail: 'wa' }, lot.authToken)).status, 404);
 
   const history = await call('GET', '/lot/history', undefined, lot.authToken);
   const entry = history.tickets.find((t) => t.n === 10);
-  assert.deepEqual(entry.events.map(([, type, detail]) => (detail ? `${type}:${detail}` : type)), ['scan', 'sub:wa', 'call', 'seen', 'send:wa']);
+  assert.deepEqual(entry.events.map(([, type, detail]) => (detail ? `${type}:${detail}` : type)), ['scan', 'sub:wa', 'call', 'seen', 'send:wa', 'send:tel']);
   assert.ok(!JSON.stringify(history).includes('611111111'));
 
   // 30 min après l'appel : la coordonnée chiffrée disparaît, le journal (anonyme) reste.

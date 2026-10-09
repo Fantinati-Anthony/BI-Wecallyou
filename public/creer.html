@@ -40,19 +40,19 @@
               <button type="button" role="tab" id="tab-look" aria-controls="panel-look" aria-selected="false" tabindex="-1"><span data-icon="palette"></span><span data-i18n="tab_look">Apparence</span></button>
             </div>
             <section class="tab-panel" role="tabpanel" id="panel-info" aria-labelledby="tab-info">
-              <fieldset class="field" id="mode-field">
-                <legend><label data-i18n="mode_title">Comment vos clients obtiennent-ils leur numéro ?</label></legend>
-                <div class="choice-row">
-                  <label class="choice"><input type="radio" name="mode" value="tickets" checked><span data-icon="ticket"></span><span data-i18n="mode_tickets">Tickets imprimés</span></label>
-                  <label class="choice"><input type="radio" name="mode" value="poster"><span data-icon="qr-code"></span><span data-i18n="mode_poster">Affiche à scanner</span></label>
-                  <label class="choice"><input type="radio" name="mode" value="both"><span data-icon="squares-four"></span><span data-i18n="mode_both">Les deux</span></label>
-                </div>
-                <p class="small muted" id="mode-hint"></p>
-              </fieldset>
               <div class="field">
                 <label for="name" data-i18n="create_name">Nom affiché aux clients</label>
                 <input id="name" name="name" type="text" maxlength="60" required autocomplete="organization" data-i18n-placeholder="create_name_ph">
               </div>
+              <div class="field" id="activity-slot"></div>
+              <fieldset class="field" id="mode-field">
+                <legend><label data-i18n="mode_title">Comment vos clients obtiennent-ils leur numéro ?</label></legend>
+                <div class="choice-row">
+                  <label class="choice"><input type="radio" name="mode" value="tickets" checked><span data-tip="mode_hint_tickets"></span><span data-icon="ticket"></span><span data-i18n="mode_tickets">Tickets imprimés</span></label>
+                  <label class="choice"><input type="radio" name="mode" value="poster"><span data-tip="mode_hint_poster"></span><span data-icon="qr-code"></span><span data-i18n="mode_poster">Affiche à scanner</span></label>
+                  <label class="choice"><input type="radio" name="mode" value="both"><span data-tip="mode_hint_both"></span><span data-icon="squares-four"></span><span data-i18n="mode_both">Les deux</span></label>
+                </div>
+              </fieldset>
               <div class="inline-fields field">
                 <div id="count-field">
                   <label for="count" data-i18n="create_count">Nombre de tickets</label>
@@ -64,14 +64,13 @@
                 </div>
               </div>
               <fieldset class="field">
-                <legend><label data-i18n="create_channels">Moyens proposés à vos clients</label></legend>
+                <legend class="label-row"><label data-i18n="create_channels">Moyens proposés à vos clients</label><span id="channels-tip"></span></legend>
                 <div class="choice-row cols-4">
                   <label class="choice"><input type="checkbox" name="channels" value="push" checked><span data-icon="bell-ringing"></span><span data-i18n="ch_push"></span></label>
                   <label class="choice"><input type="checkbox" name="channels" value="sms" checked><span data-icon="chat-circle-text"></span><span data-i18n="ch_sms"></span></label>
                   <label class="choice"><input type="checkbox" name="channels" value="wa" checked><span data-icon="whatsapp-logo"></span><span data-i18n="ch_wa"></span></label>
                   <label class="choice"><input type="checkbox" name="channels" value="mail" checked><span data-icon="envelope-simple"></span><span data-i18n="ch_mail"></span></label>
                 </div>
-                <p class="small muted" id="channels-hint"></p>
               </fieldset>
               <div class="field">
                 <div class="label-row"><label for="ttl" data-i18n="create_ttl">Durée de vie d’un ticket après son premier scan</label><span data-tip="ttl_hint"></span></div>
@@ -88,16 +87,14 @@
             </section>
             <section class="tab-panel" role="tabpanel" id="panel-message" aria-labelledby="tab-message" hidden>
               <div id="message-slot"></div>
-              <p class="small muted" data-i18n="act_later"></p>
               <div class="field">
-                <label for="promo" data-i18n="create_promo">Votre message (facultatif)</label>
+                <div class="label-row"><label for="promo" data-i18n="create_promo">Votre message (facultatif)</label><span data-tip="promo_hint"></span></div>
                 <input id="promo" name="promo" type="text" maxlength="140" data-i18n-placeholder="create_promo_ph">
               </div>
               <div class="field">
                 <label for="link" data-i18n="create_link">Votre lien (facultatif)</label>
                 <input id="link" name="link" type="url" maxlength="200" inputmode="url" data-i18n-placeholder="create_link_ph">
               </div>
-              <p class="small muted" data-i18n="promo_hint"></p>
             </section>
             <section class="tab-panel" role="tabpanel" id="panel-look" aria-labelledby="tab-look" hidden>
               <section class="panel-sec" id="layout-section">

@@ -2,7 +2,7 @@
 // chaque métier (un snack ne parle pas de terrain de foot), et un nom de commerce d'exemple pour les
 // démonstrations. Choisis dans une fenêtre (création d'un lot, réglages, compte) et montrés sur
 // l'accueil. Tout reste modifiable ensuite.
-import { h, t, LANG, icon, render } from './common.js';
+import { h, t, LANG, icon, render, helpTip } from './common.js';
 import { fill, builtins, variableChips, builtinNames } from './message.js';
 
 /** Activité choisie par défaut sur ce téléphone (et dans le coffre chiffré du compte). */
@@ -144,7 +144,7 @@ export function chooseActivity({ activities, selected = null, name = '' }) {
  * Activité (avec le bouton pour la choisir), message d'appel avec ses variables, listes et groupes :
  * à la création d'un lot comme dans ses réglages. Choisir une activité remplit le message et les listes
  * (après confirmation s'ils ont été modifiés). ids : identifiants des champs. Renvoie
- * { element, value(), activity(), refresh() }.
+ * { activityElement (l'activité et son bouton), element (message, listes, groupes), value(), activity(), refresh() }.
  */
 export function messageEditor({ activities, selected = null, initial = null, name = () => '', ids, onActivity = () => {} }) {
   let current = selected ? activityOf(activities, selected) : null;
@@ -192,25 +192,25 @@ export function messageEditor({ activities, selected = null, initial = null, nam
   drawLabel();
   refresh();
 
+  // Libellé et sa bulle d'explication « ? » : le formulaire reste compact.
+  const labelled = (id, key, hint) => h('div', { class: 'label-row' }, h('label', { for: id }, t(key)), helpTip(t(hint)));
   return {
+    activityElement: h('div', {}, labelled(ids.choose, 'studio_activity', 'act_later'), h('div', { class: 'act-line' }, label, choose)),
     element: h(
       'div',
       { class: 'stack' },
-      h('label', { for: ids.choose }, t('studio_activity')),
-      h('div', { class: 'act-line' }, label, choose),
-      h('label', { for: ids.template }, t('s_template')),
+      labelled(ids.template, 's_template', 's_template_hint'),
       template,
       vars.element,
       example,
-      h('p', { class: 'small muted' }, t('s_template_hint')),
-      h('label', { for: ids.lists }, t('s_lists')),
+      labelled(ids.lists, 's_lists', 's_lists_hint'),
       lists,
-      h('p', { class: 'small muted' }, t('s_lists_hint')),
-      h('label', { for: ids.groups }, t('s_groups')),
+      labelled(ids.groups, 's_groups', 's_groups_hint'),
       groups,
-      h('p', { class: 'small muted' }, t('s_groups_hint')),
     ),
     value: () => ({ template: template.value, lists: textToLists(lists.value), groups: textToGroups(groups.value) }),
+    /** Le message tel qu'un client le recevrait pour ce numéro (aperçu du téléphone). */
+    example: (label = '042') => messageExample({ template: template.value, lists: textToLists(lists.value) }, name() || demoOf(current), label),
     activity: () => current,
     refresh,
   };

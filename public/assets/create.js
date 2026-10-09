@@ -1,10 +1,10 @@
 // Page d'accueil : création d'un lot de tickets, entièrement dans le navigateur.
 // À gauche les réglages, à droite l'aperçu A4 en direct (studio d'impression).
 // Les options Pro sont visibles par tous, grisées tant que le compte connecté n'est pas Pro.
-import { h, t, LANG, api, render, translatePage, errorText, lots, local, icon, isPhone } from './common.js';
+import { h, t, LANG, api, render, translatePage, errorText, lots, local, icon, isPhone, helpTip } from './common.js';
 import { createLot, secretToText, b64u, randomBytes } from './crypto.js';
 import { printPlan, printOptions } from './print.js';
-import { contentOf, keySheet, posterSheet, fillPrintRoot, keyPage, setPrintPage } from './sheets.js';
+import { contentOf, keySheet, posterSheet, fillPrintRoot, keyPage, setPrintPage, labelOf } from './sheets.js';
 import { designControls, livePreview, posterTextFields } from './studio.js';
 import { supportCard, nudgeAfterPrint, loadSupport } from './donate.js';
 import { session, sync } from './account.js';
@@ -23,7 +23,13 @@ const SAMPLE_SCREEN = 'B'.repeat(23); // aperçu de la page clé : le vrai écra
 translatePage();
 
 // Moyens proposés : gratuits ; SMS et WhatsApp partent du téléphone du commerçant (précisé sur ordinateur).
-document.getElementById('channels-hint').textContent = isPhone() ? t('channels_hint') : `${t('channels_hint')} ${t('channels_hint_pc')}`;
+document.getElementById('channels-tip').append(helpTip([h('p', {}, t('channels_hint')), !isPhone() && h('p', {}, t('channels_hint_pc'))]));
+// Chaque moyen a sa bulle : ce qu'il coûte (rien) et depuis quel appareil il part.
+const WHERE = { push: 'any', mail: 'any', sms: 'phone', wa: 'wa' };
+for (const input of document.querySelectorAll('#create-form input[name=channels]')) {
+  const c = input.value;
+  input.closest('.choice').append(h('span', { class: 'tip-slot' }, helpTip([h('p', {}, h('b', {}, t('chs_free')), ' · ', t(`chs_${c}`)), h('p', { class: 'tip-where' }, t(`chs_where_${WHERE[c]}`))])));
+}
 
 /* Réglages en trois onglets : Informations, Message, Apparence (clavier : flèches, Début, Fin). */
 const tabs = [...document.querySelectorAll('#create-form [role=tab]')];
@@ -108,6 +114,7 @@ const message = messageEditor({
   },
 });
 document.getElementById('message-slot').append(message.element);
+document.getElementById('activity-slot').append(message.activityElement); // l'activité, juste après le nom
 if (message.activity()) suggestLifetime(message.activity());
 form.elements.name.addEventListener('input', message.refresh);
 
@@ -134,6 +141,14 @@ const refresh = () => {
     whiteLabel: pro && whiteLabel.checked,
     poster: modeOf() === 'tickets' ? null : { token: SAMPLE_POSTER },
     key: { lang: LANG, domain, brand, lot: '…', name: name || '…', secret: sampleSecret, from, to, monthlyCost, password: Boolean(password.value), pro, screen: SAMPLE_SCREEN },
+    // Écran public et téléphone du client (après son scan), avec ce qui est réglé ici.
+    client: {
+      channels: [...form.querySelectorAll('input[name=channels]:checked')].map((c) => c.value),
+      promo: form.elements.promo.value.trim(),
+      link: form.elements.link.value.trim(),
+      message: message.example(labelOf(from)),
+      theme: pro ? (theme.value() ?? null) : null,
+    },
   });
 };
 // Ce qui tient sur le papier dépend du nom et du plus grand numéro du lot.
@@ -161,6 +176,9 @@ for (const el of [form.elements.name, count, first, whiteLabel]) {
   });
 }
 password.addEventListener('input', refresh);
+// Tout réglage (moyens, message, couleurs…) se voit aussitôt dans l'aperçu (le dessin attend la fin de la saisie).
+form.addEventListener('input', refresh);
+form.addEventListener('change', refresh);
 
 /* ---------------------------------------- comment les clients ont leur numéro */
 
@@ -174,7 +192,6 @@ if (savedMode) for (const input of modeInputs) input.checked = input.value === s
 function applyMode() {
   const mode = modeOf();
   local.set(MODE, mode);
-  document.getElementById('mode-hint').textContent = t(`mode_hint_${mode}`);
   document.getElementById('count-field').hidden = mode === 'poster';
   document.getElementById('layout-section').hidden = mode === 'poster';
   refresh();
@@ -186,7 +203,7 @@ for (const input of modeInputs) input.addEventListener('change', applyMode);
 posterTextsBox = h(
   'section',
   { class: 'panel-sec', id: 'poster-texts' },
-  h('h3', {}, t('pt_title')),
+  h('h3', {}, t('pt_title'), helpTip(t('pt_hint'))),
   posterTextFields({ initial: design.get().posterText, onChange: (posterText) => design.patch({ posterText }) }).element,
 );
 document.getElementById('panel-message').append(posterTextsBox);

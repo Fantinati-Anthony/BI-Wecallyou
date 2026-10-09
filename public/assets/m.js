@@ -208,13 +208,20 @@ async function waitingItems(lot, access, onCall, onlyGroup = '') {
     const group = groupOf(lot, w.n);
     if (onlyGroup && group !== onlyGroup) continue;
     const kinds = [];
+    const phones = new Set(); // numéros donnés (SMS, WhatsApp), déchiffrés sur ce téléphone seulement
     for (const sub of w.subs) {
       try {
-        kinds.push((await openFromClient(access.keys.ecdh, sub.blob)).c);
+        const data = await openFromClient(access.keys.ecdh, sub.blob);
+        kinds.push(data.c);
+        if ((data.c === 'sms' || data.c === 'wa') && /^\+?[0-9]{8,15}$/.test(String(data.v))) phones.add(String(data.v));
       } catch {
         kinds.push('?');
       }
     }
+    // Le joindre de vive voix (pas de retour, notification non reçue…) : un appui ouvre l'appel, noté dans son suivi.
+    const tel = [...phones].map((number) =>
+      h('a', { class: 'btn btn-ghost tel-btn', href: `tel:${number}`, title: t('m_tel', { to: `••${number.slice(-2)}` }), 'aria-label': t('m_tel', { to: `••${number.slice(-2)}` }), onclick: () => api('/lot/event', { body: { n: w.n, type: 'send', detail: 'tel' }, auth: access.auth }) }, icon('phone'), h('span', {}, `••${number.slice(-2)}`)),
+    );
     items.push(
       h(
         'li',
@@ -229,6 +236,7 @@ async function waitingItems(lot, access, onCall, onlyGroup = '') {
           ' ',
           h('span', { class: 'small muted' }, w.calledAt ? t('m_called_at', { time: fmtTime(w.calledAt) }) : t('m_since', { time: fmtTime(w.subs[0].at) })),
         ),
+        tel,
         h('button', { type: 'button', class: 'btn btn-soft', onclick: () => onCall(w.n) }, t('m_call_btn')),
       ),
     );
@@ -596,7 +604,7 @@ function posterCard(lot, access, controls = null) {
     initial: printOptions.get(lot.lot).posterText,
     onChange: (posterText) => (controls ? controls.patch({ posterText }) : printOptions.set(lot.lot, { posterText })),
   });
-  const editTexts = h('details', { class: 'advanced' }, h('summary', {}, t('pt_title')), texts.element);
+  const editTexts = h('details', { class: 'advanced' }, h('summary', {}, t('pt_title'), ' ', helpTip(t('pt_hint'))), texts.element);
   const qr = h('div', { class: 'poster-mini' }, qrSvg(posterUrl(info.domain, lot.poster)));
   const print = h('button', { type: 'button', class: 'btn btn-block', id: 'print-poster' }, icon('printer'), t('poster_print'));
   print.addEventListener('click', () => {
@@ -687,7 +695,7 @@ async function settingsTab(panel, { lot, access, reload }) {
       h('p', { class: 'small muted' }, t('promo_hint')),
     ),
     proSection,
-    h('section', { class: 'card stack' }, h('h2', {}, t('s_message')), message.element),
+    h('section', { class: 'card stack' }, h('h2', {}, t('s_message')), message.activityElement, message.element),
     status,
     h('button', { class: 'btn btn-big btn-block', type: 'submit' }, t('m_save')),
   );

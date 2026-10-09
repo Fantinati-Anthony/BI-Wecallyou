@@ -103,7 +103,7 @@ export default {
   create_promo_ph: 'z. B. Folgen Sie uns auf Instagram @tonysimbiss · Danke an unseren Partner Bäckerei Schmidt',
   create_link: 'Ihr Link (optional)',
   create_link_ph: 'https://instagram.com/…',
-  promo_hint: 'Wird auf der Ticketseite angezeigt und den Nachrichten an Ihre Kunden hinzugefügt. Die einzige „Werbung“, die es hier gibt: Ihre eigene, wenn Sie möchten.',
+  promo_hint: 'Ein eigener Satz und Link, freiwillig: Angebot des Tages, soziale Netzwerke, Speisekarte… Sie erscheinen auf der Ticketseite jedes Kunden und werden an Ihre Nachrichten angehängt. Die einzige „Werbung“ hier: Ihre eigene, wenn Sie möchten.',
   create_options: 'Optionen',
   create_btn: 'Tickets erstellen',
   creating: 'Sicherheitsschlüssel werden erstellt…',
@@ -242,7 +242,7 @@ export default {
   msg_vars: 'Tippen Sie auf eine Variable, um sie einzufügen:',
   studio_activity: 'Ihre Branche',
   act_sent: 'Nachricht, die Ihre Kunden erhalten:',
-  act_later: 'Jederzeit änderbar unter Einstellungen, Bereich Nachricht und Variablen.',
+  act_later: 'Ihre Branche schlägt eine Nachricht und Listen vor, die zu Ihrem Geschäft passen. Alles bleibt änderbar, hier und später in Ihrem Händlerbereich (Einstellungen, Nachricht und Variablen).',
   act_group_example: 'Team Rot',
   act_replace_confirm: 'Ihre Nachricht und Ihre Listen durch diese Vorlage ersetzen?',
   act_dialog_title: 'Wählen Sie Ihre Branche',
@@ -263,10 +263,10 @@ export default {
   acc_activity_hint: 'Sie bestimmt die Nachricht und die Variablen Ihrer nächsten Serien. Verschlüsselt in Ihrem Konto gespeichert, für uns unlesbar.',
   acc_activity_saved: 'Branche gespeichert.',
   s_template_ph: '{name}: Ticket Nr. {number} ist fertig! {Ort}',
-  s_template_hint: 'Variablen: {name}, {number}, {group} und Ihre Listen (z. B. {Ort}). Leer = Standardnachricht, für jeden Kunden übersetzt.',
-  s_lists_hint: 'Eine Liste pro Zeile: „Name: Option, Option“. Unterliste: „Ort: Theke > Schalter 1, Theke > Schalter 2“. 5 Listen, max. 50 Optionen.',
+  s_template_hint: 'Der Text, den der Kunde beim Aufruf erhält. Wörter in geschweiften Klammern werden für jedes Ticket ersetzt: {name} durch den Namen Ihres Geschäfts, {number} durch die Ticketnummer, {group} durch seine Gruppe. Ihre Listen fügen Sie genauso ein, zum Beispiel {Ort}. Leer gelassen: eine Standardnachricht in der Sprache jedes Kunden.',
+  s_lists_hint: 'Auswahlen, die Sie beim Aufruf treffen, zum Beispiel wo die Bestellung abgeholt wird. Schreiben Sie eine Liste pro Zeile: ihren Namen, einen Doppelpunkt, dann die Auswahlen durch Kommas getrennt, z. B. „Ort: an der Theke, an Schalter 2“. Fügen Sie {Ort} in die Nachricht ein: Beim Aufruf wählen Sie aus einem Menü. Ein Menü in zwei Stufen: „Ort: Theke > Schalter 1, Theke > Schalter 2“. Bis zu 5 Listen mit je 50 Auswahlen.',
   s_lists_ph: 'Ort: an der Theke, an Schalter 1, an Schalter 2',
-  s_groups_hint: 'Eine Gruppe pro Zeile: „Name: Nummern“, z. B. „Team Rot: 12-18, 25“. Max. 200 Tickets pro Gruppe.',
+  s_groups_hint: 'Um mehrere Tickets auf einmal aufzurufen: ein Team, ein Tisch, eine Sammelbestellung. Schreiben Sie eine Gruppe pro Zeile: ihren Namen, einen Doppelpunkt, dann die Nummern, z. B. „Team Rot: 12-18, 25“ (die Tickets 12 bis 18 und die 25). In der Nachricht zeigt {group} den Namen der Gruppe. Höchstens 200 Tickets pro Gruppe.',
   s_groups_ph: 'Team Rot: 12-18, 25',
   how_1: 'Wählen Sie Ihre Branche und Ihr Papier, dann drucken Sie: A4-Bogen, Etiketten oder Bondrucker.',
   lots_pro_lock: 'Mit einem Tippen zwischen Serien wechseln und mehrere Serien in einem Konto bündeln: nur im Pro-Tarif. Ohne Pro öffnen Sie eine andere Serie mit ihrer Schlüsselseite.',
@@ -660,7 +660,7 @@ export default {
   acc_lang: 'Sprache der App und der Tickets',
   acc_lang_hint: 'Ihre Tickets werden in dieser Sprache gedruckt. Sie können sie jederzeit über die Flagge oben auf der Seite ändern.',
   d_verso: 'Beidseitig: Anleitung auf der Rückseite der Tickets',
-  d_verso_hint: 'Jede zweite Seite ist die Rückseite. Drucken Sie „beidseitig, lange Kante“. Die Schlüsselseite wird separat gedruckt.',
+  d_verso_hint: 'Auf jede Ticketseite folgt ihre Rückseite, mit der Anleitung auf der Rückseite jedes Tickets. Wählen Sie im Druckdialog „Beidseitig“ und „Lange Kante“. Die Schlüsselseite wird separat gedruckt, damit die Rückseiten nicht verrutschen.',
   pv_back: 'Rückseite',
   plan_tip_verso: 'Beidseitig: Wählen Sie im Druckdialog „Beidseitig“ und „Lange Kante“. Probieren Sie es zuerst mit einer Seite.',
   pt_title: 'Texte für Aushang und Rückseite',
@@ -703,4 +703,15 @@ export default {
 
   // Notification : abonnement disparu (page du client)
   push_gone: 'Dieses Telefon ist nicht mehr für die Benachrichtigungen dieses Tickets angemeldet.',
+
+  // Aperçu : écran public, téléphone du client, tout
+  pv_screen: 'Anzeige',
+  pv_client: 'Kunde',
+  pv_all: 'Alles',
+  pv_client_choose: 'Nach dem Scan',
+  pv_client_ready: 'Beim Aufruf',
+
+  // Téléphoner au client depuis la liste des tickets en cours
+  m_tel: 'Anrufen: {to}',
+  c_tel: 'Telefon',
 };
