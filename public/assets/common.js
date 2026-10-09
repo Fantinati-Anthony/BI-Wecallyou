@@ -1,25 +1,63 @@
 // Outils partagés par toutes les pages : langue, textes, éléments HTML, appels à l'API, stockage local.
-import { TEXTS } from './i18n.js';
 import { icon } from './icons.js';
 
 export { icon };
 
-export const LANG = (navigator.language || 'en').toLowerCase().startsWith('fr') ? 'fr' : 'en';
+/** Langues proposées, avec leur nom dans la langue elle-même. */
+export const LANGS = { fr: 'Français', en: 'English', de: 'Deutsch', es: 'Español', it: 'Italiano', pl: 'Polski', ro: 'Română', nl: 'Nederlands' };
+/** Langue choisie sur ce téléphone (menu de l'en-tête, ou compte) ; sinon celle du téléphone, sinon l'anglais. */
+export const LANG_KEY = 'wcy:lang';
+const chosen = (() => {
+  try {
+    return JSON.parse(localStorage.getItem(LANG_KEY));
+  } catch {
+    return null;
+  }
+})();
+const fromPhone = (navigator.languages?.length ? navigator.languages : [navigator.language ?? 'en']).map((l) => String(l).slice(0, 2).toLowerCase()).find((l) => Object.hasOwn(LANGS, l));
+export const LANG = Object.hasOwn(LANGS, chosen ?? '') ? chosen : (fromPhone ?? 'en');
 document.documentElement.lang = LANG;
+
+// Textes : un fichier par langue (public/assets/i18n/), chargé à la demande ; l'anglais sert de secours.
+const TEXTS = {};
+export async function loadLang(lang) {
+  if (!Object.hasOwn(LANGS, lang) || TEXTS[lang]) return;
+  try {
+    TEXTS[lang] = (await import(`./i18n/${lang}.js`)).default;
+  } catch {
+    TEXTS[lang] = {}; // fichier absent ou illisible : l'anglais prend le relais
+  }
+}
+await Promise.all([loadLang('en'), loadLang(LANG)]);
 
 /** Texte traduit, avec remplacement des {variables}. */
 export function tl(lang, key, vars = {}) {
-  let s = TEXTS[lang]?.[key] ?? TEXTS.en[key] ?? key;
+  let s = TEXTS[lang]?.[key] ?? TEXTS.en?.[key] ?? key;
   for (const [k, v] of Object.entries(vars)) s = s.replaceAll(`{${k}}`, String(v));
   return s;
 }
 export const t = (key, vars) => tl(LANG, key, vars);
 
-/** Rang en toutes lettres : 1er / 2e … ou 1st / 2nd / 3rd … */
+/** Rang : 1er, 2e (fr) ; 1st, 2nd (en) ; 3. (de, pl) ; 3.º (es) ; 3º (it) ; 3e (nl) ; 3 (ro, la phrase porte le reste). */
 export function ordinal(n, lang = LANG) {
-  if (lang === 'fr') return n === 1 ? '1er' : `${n}e`;
-  const s = n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] ?? 'th';
-  return `${n}${s}`;
+  switch (lang) {
+    case 'fr':
+      return n === 1 ? '1er' : `${n}e`;
+    case 'en': {
+      const s = n % 100 >= 11 && n % 100 <= 13 ? 'th' : (['th', 'st', 'nd', 'rd'][n % 10] ?? 'th');
+      return `${n}${s}`;
+    }
+    case 'es':
+      return `${n}.º`;
+    case 'it':
+      return `${n}º`;
+    case 'nl':
+      return `${n}e`;
+    case 'ro':
+      return String(n);
+    default:
+      return `${n}.`;
+  }
 }
 
 /** Fabrique un élément sans jamais interpréter de HTML (les noms affichés viennent des utilisateurs). */
@@ -60,9 +98,64 @@ export function render(container, ...children) {
 export function translatePage(vars = {}) {
   for (const el of document.querySelectorAll('[data-i18n]')) el.textContent = t(el.dataset.i18n, vars);
   for (const el of document.querySelectorAll('[data-i18n-placeholder]')) el.placeholder = t(el.dataset.i18nPlaceholder, vars);
-  for (const el of document.querySelectorAll('[data-lang]')) el.hidden = el.dataset.lang !== LANG;
+  // Textes longs écrits en français et en anglais (mentions légales…) : l'anglais pour les autres langues.
+  const written = new Set([...document.querySelectorAll('[data-lang]')].map((el) => el.dataset.lang));
+  const shown = written.has(LANG) ? LANG : 'en';
+  for (const el of document.querySelectorAll('[data-lang]')) el.hidden = el.dataset.lang !== shown;
   for (const el of document.querySelectorAll('[data-icon]')) el.replaceChildren(icon(el.dataset.icon));
   for (const el of document.querySelectorAll('[data-tip]')) el.replaceChildren(helpTip(t(el.dataset.tip, vars)));
+  const nav = document.querySelector('.topnav');
+  if (nav && !nav.querySelector('.lang-pick')) nav.prepend(langMenu());
+}
+
+/* ------------------------------------------------------------------ langues */
+
+// Drapeaux simplifiés (3 × 2), dessinés ici : rien à charger.
+const STRIPES = (dir, colors) =>
+  colors.map((c, i) => (dir === 'v' ? `<rect x="${(i * 30) / colors.length}" width="${30 / colors.length}" height="20" fill="${c}"/>` : `<rect y="${(i * 20) / colors.length}" width="30" height="${20 / colors.length}" fill="${c}"/>`)).join('');
+const FLAGS = {
+  fr: STRIPES('v', ['#002654', '#ffffff', '#ce1126']),
+  en: '<rect width="30" height="20" fill="#012169"/><path d="M0 0L30 20M30 0L0 20" stroke="#fff" stroke-width="4"/><path d="M0 0L30 20M30 0L0 20" stroke="#c8102e" stroke-width="1.5"/><path d="M15 0V20M0 10H30" stroke="#fff" stroke-width="6"/><path d="M15 0V20M0 10H30" stroke="#c8102e" stroke-width="3.6"/>',
+  de: STRIPES('h', ['#000000', '#dd0000', '#ffce00']),
+  es: '<rect width="30" height="20" fill="#aa151b"/><rect y="5" width="30" height="10" fill="#f1bf00"/>',
+  it: STRIPES('v', ['#009246', '#ffffff', '#ce2b37']),
+  pl: STRIPES('h', ['#ffffff', '#dc143c']),
+  ro: STRIPES('v', ['#002b7f', '#fcd116', '#ce1126']),
+  nl: STRIPES('h', ['#ae1c28', '#ffffff', '#21468b']),
+};
+export function flag(lang) {
+  const box = h('span', { class: 'flag', 'aria-hidden': 'true' });
+  box.innerHTML = `<svg viewBox="0 0 30 20" preserveAspectRatio="none">${FLAGS[lang] ?? ''}</svg>`;
+  return box;
+}
+
+/** Bouton drapeau de l'en-tête : la liste des langues ; le choix est gardé sur ce téléphone (et dans le compte). */
+function langMenu() {
+  const button = h('button', { type: 'button', class: 'btn btn-ghost lang-btn', 'aria-haspopup': 'true', 'aria-expanded': 'false', title: LANGS[LANG] }, flag(LANG), h('span', { class: 'label' }, LANG.toUpperCase()));
+  const menu = h(
+    'ul',
+    { class: 'lang-menu', hidden: true },
+    Object.entries(LANGS).map(([code, name]) =>
+      h(
+        'li',
+        {},
+        h('a', { href: '#', lang: code, 'aria-current': code === LANG ? 'true' : false, onclick: (event) => {
+          event.preventDefault();
+          local.set(LANG_KEY, code);
+          location.reload();
+        } }, flag(code), name),
+      ),
+    ),
+  );
+  const box = h('div', { class: 'lang-pick' }, button, menu);
+  const toggle = (open) => {
+    menu.hidden = !open;
+    button.setAttribute('aria-expanded', String(open));
+  };
+  button.addEventListener('click', () => toggle(menu.hidden));
+  box.addEventListener('keydown', (event) => event.key === 'Escape' && (toggle(false), button.focus()));
+  document.addEventListener('click', (event) => !box.contains(event.target) && toggle(false));
+  return box;
 }
 
 /**

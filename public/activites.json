@@ -1,149 +1,1231 @@
 {
-  "_doc": "Modèles par activité, proposés à la création d'un lot et dans Réglages > Message et variables. Chaque modèle donne un nom de commerce d'exemple (« demo », pour les démonstrations), un message ({nom}, {numero}, {groupe} et ses listes), des listes déroulantes (variables choisies au moment de l'appel) et une durée de vie conseillée en heures (72 h et plus : offre Pro). Les options sont des phrases entières : le message reste correct même si rien n'est choisi.",
+  "_doc": "Modèles par activité (8 langues : fr, en, de, es, it, pl, ro, nl), proposés à la création d'un lot et dans Réglages > Message et variables. Chaque modèle donne un nom de commerce d'exemple (« demo », pour les démonstrations), un message ({nom}, {numero}, {groupe} et ses listes), des listes déroulantes (variables choisies au moment de l'appel) et une durée de vie conseillée en heures (72 h et plus : offre Pro). Les options sont des phrases entières : le message reste correct même si rien n'est choisi.",
   "activities": [
     {
       "id": "snack",
       "icon": "hamburger",
-      "name": { "fr": "Snack, food truck", "en": "Snack bar, food truck" },
-      "demo": { "fr": "Snack du Stade", "en": "Stadium Snacks" },
+      "name": {
+        "fr": "Snack, food truck",
+        "en": "Snack bar, food truck",
+        "de": "Imbiss, Foodtruck",
+        "es": "Bar, food truck",
+        "it": "Paninoteca, food truck",
+        "pl": "Bar, food truck",
+        "ro": "Snack-bar, food truck",
+        "nl": "Snackbar, foodtruck"
+      },
+      "demo": {
+        "fr": "Snack du Stade",
+        "en": "Stadium Snacks",
+        "de": "Stadion-Imbiss",
+        "es": "Bar del Estadio",
+        "it": "Chiosco dello Stadio",
+        "pl": "Bar przy Stadionie",
+        "ro": "Bistro Stadion",
+        "nl": "Snackbar Het Stadion"
+      },
       "ttl": 3,
       "fr": {
         "template": "{nom} : votre commande n°{numero} est prête ! {Retrait}",
-        "lists": [{ "name": "Retrait", "options": ["À récupérer au comptoir.", "À récupérer au guichet 1.", "À récupérer au guichet 2.", "On vous l’apporte en terrasse."] }]
+        "lists": [
+          {
+            "name": "Retrait",
+            "options": [
+              "À récupérer au comptoir.",
+              "À récupérer au guichet 1.",
+              "À récupérer au guichet 2.",
+              "On vous l’apporte en terrasse."
+            ]
+          }
+        ]
       },
       "en": {
         "template": "{name}: your order #{number} is ready! {Pickup}",
-        "lists": [{ "name": "Pickup", "options": ["Please collect it at the counter.", "Please collect it at window 1.", "Please collect it at window 2.", "We’ll bring it to your table outside."] }]
+        "lists": [
+          {
+            "name": "Pickup",
+            "options": [
+              "Please collect it at the counter.",
+              "Please collect it at window 1.",
+              "Please collect it at window 2.",
+              "We’ll bring it to your table outside."
+            ]
+          }
+        ]
+      },
+      "de": {
+        "template": "{name}: Ihre Bestellung Nr. {number} ist fertig! {Abholung}",
+        "lists": [
+          {
+            "name": "Abholung",
+            "options": [
+              "Bitte an der Theke abholen.",
+              "Bitte an Schalter 1 abholen.",
+              "Bitte an Schalter 2 abholen.",
+              "Wir bringen sie Ihnen auf die Terrasse."
+            ]
+          }
+        ]
+      },
+      "es": {
+        "template": "{name}: ¡su pedido n.º {number} está listo! {Recogida}",
+        "lists": [
+          {
+            "name": "Recogida",
+            "options": [
+              "Puede recogerlo en el mostrador.",
+              "Puede recogerlo en la ventanilla 1.",
+              "Puede recogerlo en la ventanilla 2.",
+              "Se lo llevamos a la terraza."
+            ]
+          }
+        ]
+      },
+      "it": {
+        "template": "{name}: il suo ordine n. {number} è pronto! {Ritiro}",
+        "lists": [
+          {
+            "name": "Ritiro",
+            "options": [
+              "Da ritirare al banco.",
+              "Da ritirare allo sportello 1.",
+              "Da ritirare allo sportello 2.",
+              "Glielo portiamo al tavolo all’aperto."
+            ]
+          }
+        ]
+      },
+      "pl": {
+        "template": "{name}: Twoje zamówienie nr {number} jest gotowe! {Odbiór}",
+        "lists": [
+          {
+            "name": "Odbiór",
+            "options": [
+              "Odbierz je przy ladzie.",
+              "Odbierz je przy okienku 1.",
+              "Odbierz je przy okienku 2.",
+              "Przyniesiemy je na taras."
+            ]
+          }
+        ]
+      },
+      "ro": {
+        "template": "{name}: comanda dumneavoastră nr. {number} este gata! {Ridicare}",
+        "lists": [
+          {
+            "name": "Ridicare",
+            "options": [
+              "O puteți ridica de la tejghea.",
+              "O puteți ridica de la ghișeul 1.",
+              "O puteți ridica de la ghișeul 2.",
+              "V-o aducem pe terasă."
+            ]
+          }
+        ]
+      },
+      "nl": {
+        "template": "{name}: uw bestelling nr. {number} is klaar! {Afhalen}",
+        "lists": [
+          {
+            "name": "Afhalen",
+            "options": [
+              "Af te halen aan de balie.",
+              "Af te halen bij loket 1.",
+              "Af te halen bij loket 2.",
+              "We brengen het naar u op het terras."
+            ]
+          }
+        ]
       }
     },
     {
       "id": "boulangerie",
       "icon": "bread",
-      "name": { "fr": "Boulangerie, traiteur", "en": "Bakery, caterer" },
-      "demo": { "fr": "Boulangerie du Marché", "en": "Market Bakery" },
+      "name": {
+        "fr": "Boulangerie, traiteur",
+        "en": "Bakery, caterer",
+        "de": "Bäckerei, Partyservice",
+        "es": "Panadería, catering",
+        "it": "Panetteria, gastronomia",
+        "pl": "Piekarnia, catering",
+        "ro": "Brutărie, catering",
+        "nl": "Bakkerij, traiteur"
+      },
+      "demo": {
+        "fr": "Boulangerie du Marché",
+        "en": "Market Bakery",
+        "de": "Marktbäckerei",
+        "es": "Panadería del Mercado",
+        "it": "Panetteria del Mercato",
+        "pl": "Piekarnia przy Rynku",
+        "ro": "Brutăria din Piață",
+        "nl": "Bakkerij aan de Markt"
+      },
       "ttl": 24,
       "fr": {
         "template": "{nom} : votre commande n°{numero} vous attend en boutique. {Info}",
-        "lists": [{ "name": "Info", "options": ["Merci de votre confiance !", "Pensez à votre bon de commande.", "Paiement sur place."] }]
+        "lists": [
+          {
+            "name": "Info",
+            "options": [
+              "Merci de votre confiance !",
+              "Pensez à votre bon de commande.",
+              "Paiement sur place."
+            ]
+          }
+        ]
       },
       "en": {
         "template": "{name}: your order #{number} is waiting for you in store. {Info}",
-        "lists": [{ "name": "Info", "options": ["Thank you!", "Please bring your order slip.", "Payment on collection."] }]
+        "lists": [
+          {
+            "name": "Info",
+            "options": [
+              "Thank you!",
+              "Please bring your order slip.",
+              "Payment on collection."
+            ]
+          }
+        ]
+      },
+      "de": {
+        "template": "{name}: Ihre Bestellung Nr. {number} liegt im Laden für Sie bereit. {Info}",
+        "lists": [
+          {
+            "name": "Info",
+            "options": [
+              "Vielen Dank für Ihr Vertrauen!",
+              "Bitte denken Sie an Ihren Bestellschein.",
+              "Bezahlung vor Ort."
+            ]
+          }
+        ]
+      },
+      "es": {
+        "template": "{name}: su pedido n.º {number} le espera en la tienda. {Info}",
+        "lists": [
+          {
+            "name": "Info",
+            "options": [
+              "¡Gracias por su confianza!",
+              "Recuerde traer su resguardo del pedido.",
+              "Pago al recoger."
+            ]
+          }
+        ]
+      },
+      "it": {
+        "template": "{name}: il suo ordine n. {number} la aspetta in negozio. {Info}",
+        "lists": [
+          {
+            "name": "Info",
+            "options": [
+              "Grazie per la fiducia!",
+              "Ricordi di portare la ricevuta dell’ordine.",
+              "Pagamento sul posto."
+            ]
+          }
+        ]
+      },
+      "pl": {
+        "template": "{name}: Twoje zamówienie nr {number} czeka na Ciebie w sklepie. {Info}",
+        "lists": [
+          {
+            "name": "Info",
+            "options": [
+              "Dziękujemy za zaufanie!",
+              "Pamiętaj o potwierdzeniu zamówienia.",
+              "Płatność na miejscu."
+            ]
+          }
+        ]
+      },
+      "ro": {
+        "template": "{name}: comanda dumneavoastră nr. {number} vă așteaptă în magazin. {Info}",
+        "lists": [
+          {
+            "name": "Info",
+            "options": [
+              "Vă mulțumim pentru încredere!",
+              "Nu uitați bonul de comandă.",
+              "Plata se face pe loc."
+            ]
+          }
+        ]
+      },
+      "nl": {
+        "template": "{name}: uw bestelling nr. {number} ligt voor u klaar in de winkel. {Info}",
+        "lists": [
+          {
+            "name": "Info",
+            "options": [
+              "Bedankt voor uw vertrouwen!",
+              "Vergeet uw bestelbon niet.",
+              "Betalen bij afhalen."
+            ]
+          }
+        ]
       }
     },
     {
       "id": "pressing",
       "icon": "t-shirt",
-      "name": { "fr": "Pressing, cordonnerie, retouches", "en": "Dry cleaning, shoe repair, alterations" },
-      "demo": { "fr": "Pressing Lumière", "en": "Bright Dry Cleaning" },
+      "name": {
+        "fr": "Pressing, cordonnerie, retouches",
+        "en": "Dry cleaning, shoe repair, alterations",
+        "de": "Reinigung, Schuhreparatur, Änderungen",
+        "es": "Tintorería, zapatero, arreglos",
+        "it": "Lavanderia, calzolaio, sartoria",
+        "pl": "Pralnia, szewc, krawiec",
+        "ro": "Curățătorie, cizmărie, ajustări",
+        "nl": "Stomerij, schoenmaker, kledingreparatie"
+      },
+      "demo": {
+        "fr": "Pressing Lumière",
+        "en": "Bright Dry Cleaning",
+        "de": "Reinigung Lichtblick",
+        "es": "Tintorería Luz",
+        "it": "Lavanderia Splendore",
+        "pl": "Pralnia Blask",
+        "ro": "Curățătoria Lumina",
+        "nl": "Stomerij Helder"
+      },
       "ttl": 168,
       "fr": {
         "template": "{nom} : votre dépôt n°{numero} est prêt. {Retrait}",
-        "lists": [{ "name": "Retrait", "options": ["À récupérer aux horaires d’ouverture.", "À récupérer dès demain matin.", "Merci de passer avant samedi."] }]
+        "lists": [
+          {
+            "name": "Retrait",
+            "options": [
+              "À récupérer aux horaires d’ouverture.",
+              "À récupérer dès demain matin.",
+              "Merci de passer avant samedi."
+            ]
+          }
+        ]
       },
       "en": {
         "template": "{name}: your items #{number} are ready. {Pickup}",
-        "lists": [{ "name": "Pickup", "options": ["Collect them during opening hours.", "Ready to collect from tomorrow morning.", "Please collect them before Saturday."] }]
+        "lists": [
+          {
+            "name": "Pickup",
+            "options": [
+              "Collect them during opening hours.",
+              "Ready to collect from tomorrow morning.",
+              "Please collect them before Saturday."
+            ]
+          }
+        ]
+      },
+      "de": {
+        "template": "{name}: Ihr Auftrag Nr. {number} ist fertig. {Abholung}",
+        "lists": [
+          {
+            "name": "Abholung",
+            "options": [
+              "Abholung während der Öffnungszeiten.",
+              "Abholung ab morgen früh möglich.",
+              "Bitte vor Samstag abholen."
+            ]
+          }
+        ]
+      },
+      "es": {
+        "template": "{name}: su encargo n.º {number} está listo. {Recogida}",
+        "lists": [
+          {
+            "name": "Recogida",
+            "options": [
+              "Puede recogerlo en horario de apertura.",
+              "Podrá recogerlo desde mañana por la mañana.",
+              "Le rogamos que pase a recogerlo antes del sábado."
+            ]
+          }
+        ]
+      },
+      "it": {
+        "template": "{name}: il suo ordine n. {number} è pronto. {Ritiro}",
+        "lists": [
+          {
+            "name": "Ritiro",
+            "options": [
+              "Da ritirare negli orari di apertura.",
+              "Da ritirare a partire da domani mattina.",
+              "La preghiamo di passare prima di sabato."
+            ]
+          }
+        ]
+      },
+      "pl": {
+        "template": "{name}: Twoje zlecenie nr {number} jest gotowe. {Odbiór}",
+        "lists": [
+          {
+            "name": "Odbiór",
+            "options": [
+              "Zapraszamy po odbiór w godzinach otwarcia.",
+              "Odbiór możliwy od jutra rano.",
+              "Prosimy o odbiór przed sobotą."
+            ]
+          }
+        ]
+      },
+      "ro": {
+        "template": "{name}: comanda dumneavoastră nr. {number} este gata. {Ridicare}",
+        "lists": [
+          {
+            "name": "Ridicare",
+            "options": [
+              "O puteți ridica în timpul programului.",
+              "O puteți ridica de mâine dimineață.",
+              "Vă rugăm să treceți înainte de sâmbătă."
+            ]
+          }
+        ]
+      },
+      "nl": {
+        "template": "{name}: uw spullen (nr. {number}) liggen klaar. {Afhalen}",
+        "lists": [
+          {
+            "name": "Afhalen",
+            "options": [
+              "Af te halen tijdens de openingstijden.",
+              "Af te halen vanaf morgenochtend.",
+              "Graag ophalen vóór zaterdag."
+            ]
+          }
+        ]
       }
     },
     {
       "id": "atelier",
       "icon": "wrench",
-      "name": { "fr": "Atelier, réparation, SAV", "en": "Repair shop, after-sales" },
-      "demo": { "fr": "Atelier Vélo Express", "en": "Express Bike Repair" },
+      "name": {
+        "fr": "Atelier, réparation, SAV",
+        "en": "Repair shop, after-sales",
+        "de": "Werkstatt, Reparatur, Kundendienst",
+        "es": "Taller, reparación, servicio técnico",
+        "it": "Laboratorio, riparazioni, assistenza",
+        "pl": "Warsztat, naprawy, serwis",
+        "ro": "Atelier, reparații, service",
+        "nl": "Werkplaats, reparatie, klantenservice"
+      },
+      "demo": {
+        "fr": "Atelier Vélo Express",
+        "en": "Express Bike Repair",
+        "de": "Radwerkstatt Express",
+        "es": "Taller Bici Exprés",
+        "it": "Ciclofficina Express",
+        "pl": "Rowerowy Ekspres",
+        "ro": "Service Biciclete Expres",
+        "nl": "Fietsreparatie Express"
+      },
       "ttl": 168,
       "fr": {
         "template": "{nom} : ticket n°{numero}, {État}",
-        "lists": [{ "name": "État", "options": ["votre appareil est réparé : venez le chercher.", "votre devis est prêt : merci de nous contacter.", "il manque une pièce : nous vous tenons au courant."] }]
+        "lists": [
+          {
+            "name": "État",
+            "options": [
+              "votre appareil est réparé : venez le chercher.",
+              "votre devis est prêt : merci de nous contacter.",
+              "il manque une pièce : nous vous tenons au courant."
+            ]
+          }
+        ]
       },
       "en": {
         "template": "{name}: ticket #{number}, {Status}",
-        "lists": [{ "name": "Status", "options": ["your device is repaired and ready to collect.", "your quote is ready: please get in touch.", "we are waiting for a part and will keep you posted."] }]
+        "lists": [
+          {
+            "name": "Status",
+            "options": [
+              "your device is repaired and ready to collect.",
+              "your quote is ready: please get in touch.",
+              "we are waiting for a part and will keep you posted."
+            ]
+          }
+        ]
+      },
+      "de": {
+        "template": "{name}: Ticket Nr. {number}, {Status}",
+        "lists": [
+          {
+            "name": "Status",
+            "options": [
+              "Ihr Gerät ist repariert: Sie können es abholen.",
+              "Ihr Kostenvoranschlag liegt vor: Bitte melden Sie sich.",
+              "es fehlt ein Teil: Wir halten Sie auf dem Laufenden."
+            ]
+          }
+        ]
+      },
+      "es": {
+        "template": "{name}: ticket n.º {number}, {Estado}",
+        "lists": [
+          {
+            "name": "Estado",
+            "options": [
+              "su aparato está reparado: puede venir a recogerlo.",
+              "su presupuesto está listo: contacte con nosotros.",
+              "falta una pieza: le mantendremos informado."
+            ]
+          }
+        ]
+      },
+      "it": {
+        "template": "{name}: biglietto n. {number}, {Stato}",
+        "lists": [
+          {
+            "name": "Stato",
+            "options": [
+              "il suo apparecchio è riparato: venga a ritirarlo.",
+              "il suo preventivo è pronto: ci contatti.",
+              "manca un pezzo: le faremo sapere."
+            ]
+          }
+        ]
+      },
+      "pl": {
+        "template": "{name}: bilet nr {number}, {Status}",
+        "lists": [
+          {
+            "name": "Status",
+            "options": [
+              "Twoje urządzenie jest naprawione: zapraszamy po odbiór.",
+              "Twoja wycena jest gotowa: prosimy o kontakt.",
+              "brakuje części: będziemy Cię informować na bieżąco."
+            ]
+          }
+        ]
+      },
+      "ro": {
+        "template": "{name}: tichetul nr. {number}, {Stare}",
+        "lists": [
+          {
+            "name": "Stare",
+            "options": [
+              "aparatul este reparat: îl puteți ridica.",
+              "devizul este gata: vă rugăm să ne contactați.",
+              "lipsește o piesă: vă ținem la curent."
+            ]
+          }
+        ]
+      },
+      "nl": {
+        "template": "{name}: ticket nr. {number}, {Status}",
+        "lists": [
+          {
+            "name": "Status",
+            "options": [
+              "uw toestel is gerepareerd: u kunt het komen ophalen.",
+              "uw offerte is klaar: neem contact met ons op.",
+              "er ontbreekt een onderdeel: we houden u op de hoogte."
+            ]
+          }
+        ]
       }
     },
     {
       "id": "club",
       "icon": "soccer-ball",
-      "name": { "fr": "Club, tournoi", "en": "Club, tournament" },
-      "demo": { "fr": "Tournoi U11", "en": "U11 Tournament" },
+      "name": {
+        "fr": "Club, tournoi",
+        "en": "Club, tournament",
+        "de": "Verein, Turnier",
+        "es": "Club, torneo",
+        "it": "Club, torneo",
+        "pl": "Klub, turniej",
+        "ro": "Club, turneu",
+        "nl": "Club, toernooi"
+      },
+      "demo": {
+        "fr": "Tournoi U11",
+        "en": "U11 Tournament",
+        "de": "U11-Turnier",
+        "es": "Torneo Sub-11",
+        "it": "Torneo U11",
+        "pl": "Turniej U11",
+        "ro": "Turneu U11",
+        "nl": "O11-toernooi"
+      },
       "ttl": 12,
       "fr": {
         "template": "{groupe} : c’est à vous ! {Lieu}",
-        "lists": [{ "name": "Lieu", "options": ["Rendez-vous au terrain 1.", "Rendez-vous au terrain 2.", "Rendez-vous à la table de marque."] }]
+        "lists": [
+          {
+            "name": "Lieu",
+            "options": [
+              "Rendez-vous au terrain 1.",
+              "Rendez-vous au terrain 2.",
+              "Rendez-vous à la table de marque."
+            ]
+          }
+        ]
       },
       "en": {
         "template": "{group}: you’re up! {Where}",
-        "lists": [{ "name": "Where", "options": ["Please go to pitch 1.", "Please go to pitch 2.", "Please go to the scorers’ table."] }]
+        "lists": [
+          {
+            "name": "Where",
+            "options": [
+              "Please go to pitch 1.",
+              "Please go to pitch 2.",
+              "Please go to the scorers’ table."
+            ]
+          }
+        ]
+      },
+      "de": {
+        "template": "{group}: Sie sind dran! {Ort}",
+        "lists": [
+          {
+            "name": "Ort",
+            "options": [
+              "Treffpunkt an Platz 1.",
+              "Treffpunkt an Platz 2.",
+              "Treffpunkt am Kampfgericht."
+            ]
+          }
+        ]
+      },
+      "es": {
+        "template": "{group}: ¡es su turno! {Lugar}",
+        "lists": [
+          {
+            "name": "Lugar",
+            "options": [
+              "Diríjanse al campo 1.",
+              "Diríjanse al campo 2.",
+              "Diríjanse a la mesa de anotación."
+            ]
+          }
+        ]
+      },
+      "it": {
+        "template": "{group}: tocca a voi! {Luogo}",
+        "lists": [
+          {
+            "name": "Luogo",
+            "options": [
+              "Appuntamento al campo 1.",
+              "Appuntamento al campo 2.",
+              "Appuntamento al tavolo della giuria."
+            ]
+          }
+        ]
+      },
+      "pl": {
+        "template": "{group}: Wasza kolej! {Miejsce}",
+        "lists": [
+          {
+            "name": "Miejsce",
+            "options": [
+              "Zapraszamy na boisko 1.",
+              "Zapraszamy na boisko 2.",
+              "Zapraszamy do stolika sędziowskiego."
+            ]
+          }
+        ]
+      },
+      "ro": {
+        "template": "{group}: este rândul dumneavoastră! {Loc}",
+        "lists": [
+          {
+            "name": "Loc",
+            "options": [
+              "Prezentați-vă la terenul 1.",
+              "Prezentați-vă la terenul 2.",
+              "Prezentați-vă la masa oficialilor."
+            ]
+          }
+        ]
+      },
+      "nl": {
+        "template": "{group}: u bent aan de beurt! {Plaats}",
+        "lists": [
+          {
+            "name": "Plaats",
+            "options": [
+              "Meld u bij veld 1.",
+              "Meld u bij veld 2.",
+              "Meld u bij de jurytafel."
+            ]
+          }
+        ]
       }
     },
     {
       "id": "buvette",
       "icon": "beer-stein",
-      "name": { "fr": "Buvette, festival, kermesse", "en": "Refreshment stand, festival, fair" },
-      "demo": { "fr": "Buvette de la Fête", "en": "Fair Refreshments" },
+      "name": {
+        "fr": "Buvette, festival, kermesse",
+        "en": "Refreshment stand, festival, fair",
+        "de": "Ausschank, Festival, Vereinsfest",
+        "es": "Cantina, festival, verbena",
+        "it": "Chiosco, festival, sagra",
+        "pl": "Bufet, festiwal, festyn",
+        "ro": "Chioșc de băuturi, festival, serbare",
+        "nl": "Kantine, festival, kermis"
+      },
+      "demo": {
+        "fr": "Buvette de la Fête",
+        "en": "Fair Refreshments",
+        "de": "Festzelt-Ausschank",
+        "es": "Barra de las Fiestas",
+        "it": "Stand della Sagra",
+        "pl": "Bufet Festynowy",
+        "ro": "Chioșcul Serbării",
+        "nl": "Bar van het Dorpsfeest"
+      },
       "ttl": 6,
       "fr": {
         "template": "Ticket n°{numero} : c’est prêt ! {Stand}",
-        "lists": [{ "name": "Stand", "options": ["Au stand boissons.", "Au stand crêpes.", "Au barbecue."] }]
+        "lists": [
+          {
+            "name": "Stand",
+            "options": [
+              "Au stand boissons.",
+              "Au stand crêpes.",
+              "Au barbecue."
+            ]
+          }
+        ]
       },
       "en": {
         "template": "Ticket #{number}: it’s ready! {Stand}",
-        "lists": [{ "name": "Stand", "options": ["At the drinks stand.", "At the crêpe stand.", "At the barbecue."] }]
+        "lists": [
+          {
+            "name": "Stand",
+            "options": [
+              "At the drinks stand.",
+              "At the crêpe stand.",
+              "At the barbecue."
+            ]
+          }
+        ]
+      },
+      "de": {
+        "template": "Ticket Nr. {number}: Alles fertig! {Stand}",
+        "lists": [
+          {
+            "name": "Stand",
+            "options": [
+              "Am Getränkestand.",
+              "Am Crêpes-Stand.",
+              "Am Grill."
+            ]
+          }
+        ]
+      },
+      "es": {
+        "template": "Ticket n.º {number}: ¡está listo! {Puesto}",
+        "lists": [
+          {
+            "name": "Puesto",
+            "options": [
+              "En el puesto de bebidas.",
+              "En el puesto de crepes.",
+              "En la barbacoa."
+            ]
+          }
+        ]
+      },
+      "it": {
+        "template": "Biglietto n. {number}: è pronto! {Stand}",
+        "lists": [
+          {
+            "name": "Stand",
+            "options": [
+              "Allo stand delle bevande.",
+              "Allo stand delle crêpe.",
+              "Al barbecue."
+            ]
+          }
+        ]
+      },
+      "pl": {
+        "template": "Bilet nr {number}: zamówienie gotowe! {Stoisko}",
+        "lists": [
+          {
+            "name": "Stoisko",
+            "options": [
+              "Odbiór przy stoisku z napojami.",
+              "Odbiór przy stoisku z naleśnikami.",
+              "Odbiór przy grillu."
+            ]
+          }
+        ]
+      },
+      "ro": {
+        "template": "Tichetul nr. {number}: este gata! {Stand}",
+        "lists": [
+          {
+            "name": "Stand",
+            "options": [
+              "La standul de băuturi.",
+              "La standul de clătite.",
+              "La grătar."
+            ]
+          }
+        ]
+      },
+      "nl": {
+        "template": "Ticket nr. {number}: het is klaar! {Kraam}",
+        "lists": [
+          {
+            "name": "Kraam",
+            "options": [
+              "Bij de drankenkraam.",
+              "Bij de pannenkoekenkraam.",
+              "Bij de barbecue."
+            ]
+          }
+        ]
       }
     },
     {
       "id": "guichet",
       "icon": "bank",
-      "name": { "fr": "Accueil, mairie, guichet", "en": "Front desk, town hall, counter" },
-      "demo": { "fr": "Mairie, accueil", "en": "Town hall desk" },
+      "name": {
+        "fr": "Accueil, mairie, guichet",
+        "en": "Front desk, town hall, counter",
+        "de": "Empfang, Rathaus, Schalter",
+        "es": "Recepción, ayuntamiento, ventanilla",
+        "it": "Accoglienza, Comune, sportello",
+        "pl": "Recepcja, urząd, okienko",
+        "ro": "Recepție, primărie, ghișeu",
+        "nl": "Receptie, gemeentehuis, loket"
+      },
+      "demo": {
+        "fr": "Mairie, accueil",
+        "en": "Town hall desk",
+        "de": "Rathaus, Empfang",
+        "es": "Ayuntamiento, recepción",
+        "it": "Comune, accoglienza",
+        "pl": "Urząd Gminy, informacja",
+        "ro": "Primărie, recepție",
+        "nl": "Gemeentehuis, balie"
+      },
       "ttl": 3,
       "fr": {
         "template": "Ticket n°{numero} : c’est à vous. {Guichet}",
-        "lists": [{ "name": "Guichet", "options": ["Présentez-vous au guichet 1.", "Présentez-vous au guichet 2.", "Présentez-vous au bureau 3."] }]
+        "lists": [
+          {
+            "name": "Guichet",
+            "options": [
+              "Présentez-vous au guichet 1.",
+              "Présentez-vous au guichet 2.",
+              "Présentez-vous au bureau 3."
+            ]
+          }
+        ]
       },
       "en": {
         "template": "Ticket #{number}: it’s your turn. {Desk}",
-        "lists": [{ "name": "Desk", "options": ["Please go to desk 1.", "Please go to desk 2.", "Please go to office 3."] }]
+        "lists": [
+          {
+            "name": "Desk",
+            "options": [
+              "Please go to desk 1.",
+              "Please go to desk 2.",
+              "Please go to office 3."
+            ]
+          }
+        ]
+      },
+      "de": {
+        "template": "Ticket Nr. {number}: Sie sind an der Reihe. {Schalter}",
+        "lists": [
+          {
+            "name": "Schalter",
+            "options": [
+              "Bitte kommen Sie zu Schalter 1.",
+              "Bitte kommen Sie zu Schalter 2.",
+              "Bitte kommen Sie in Büro 3."
+            ]
+          }
+        ]
+      },
+      "es": {
+        "template": "Ticket n.º {number}: es su turno. {Ventanilla}",
+        "lists": [
+          {
+            "name": "Ventanilla",
+            "options": [
+              "Diríjase a la ventanilla 1.",
+              "Diríjase a la ventanilla 2.",
+              "Diríjase al despacho 3."
+            ]
+          }
+        ]
+      },
+      "it": {
+        "template": "Biglietto n. {number}: tocca a lei. {Sportello}",
+        "lists": [
+          {
+            "name": "Sportello",
+            "options": [
+              "Si presenti allo sportello 1.",
+              "Si presenti allo sportello 2.",
+              "Si presenti all’ufficio 3."
+            ]
+          }
+        ]
+      },
+      "pl": {
+        "template": "Bilet nr {number}: Twoja kolej. {Stanowisko}",
+        "lists": [
+          {
+            "name": "Stanowisko",
+            "options": [
+              "Zapraszamy do okienka 1.",
+              "Zapraszamy do okienka 2.",
+              "Zapraszamy do pokoju 3."
+            ]
+          }
+        ]
+      },
+      "ro": {
+        "template": "Tichetul nr. {number}: este rândul dumneavoastră. {Ghișeu}",
+        "lists": [
+          {
+            "name": "Ghișeu",
+            "options": [
+              "Prezentați-vă la ghișeul 1.",
+              "Prezentați-vă la ghișeul 2.",
+              "Prezentați-vă la biroul 3."
+            ]
+          }
+        ]
+      },
+      "nl": {
+        "template": "Ticket nr. {number}: het is uw beurt. {Loket}",
+        "lists": [
+          {
+            "name": "Loket",
+            "options": [
+              "Meld u bij loket 1.",
+              "Meld u bij loket 2.",
+              "Meld u bij kantoor 3."
+            ]
+          }
+        ]
       }
     },
     {
       "id": "cabinet",
       "icon": "stethoscope",
-      "name": { "fr": "Cabinet, salle d’attente", "en": "Practice, waiting room" },
-      "demo": { "fr": "Cabinet du Parc", "en": "Park Practice" },
+      "name": {
+        "fr": "Cabinet, salle d’attente",
+        "en": "Practice, waiting room",
+        "de": "Praxis, Wartezimmer",
+        "es": "Consulta, sala de espera",
+        "it": "Studio medico, sala d’attesa",
+        "pl": "Gabinet, poczekalnia",
+        "ro": "Cabinet, sală de așteptare",
+        "nl": "Praktijk, wachtkamer"
+      },
+      "demo": {
+        "fr": "Cabinet du Parc",
+        "en": "Park Practice",
+        "de": "Praxis am Park",
+        "es": "Consulta del Parque",
+        "it": "Studio Medico del Parco",
+        "pl": "Gabinet przy Parku",
+        "ro": "Cabinetul din Parc",
+        "nl": "Praktijk aan het Park"
+      },
       "ttl": 3,
       "fr": {
         "template": "{nom} : c’est votre tour (ticket n°{numero}). {Salle}",
-        "lists": [{ "name": "Salle", "options": ["Merci de vous présenter au cabinet 1.", "Merci de vous présenter au cabinet 2.", "Merci de revenir en salle d’attente."] }]
+        "lists": [
+          {
+            "name": "Salle",
+            "options": [
+              "Merci de vous présenter au cabinet 1.",
+              "Merci de vous présenter au cabinet 2.",
+              "Merci de revenir en salle d’attente."
+            ]
+          }
+        ]
       },
       "en": {
         "template": "{name}: it’s your turn (ticket #{number}). {Room}",
-        "lists": [{ "name": "Room", "options": ["Please come to room 1.", "Please come to room 2.", "Please come back to the waiting room."] }]
+        "lists": [
+          {
+            "name": "Room",
+            "options": [
+              "Please come to room 1.",
+              "Please come to room 2.",
+              "Please come back to the waiting room."
+            ]
+          }
+        ]
+      },
+      "de": {
+        "template": "{name}: Sie sind an der Reihe (Ticket Nr. {number}). {Raum}",
+        "lists": [
+          {
+            "name": "Raum",
+            "options": [
+              "Bitte kommen Sie in Sprechzimmer 1.",
+              "Bitte kommen Sie in Sprechzimmer 2.",
+              "Bitte gehen Sie zurück ins Wartezimmer."
+            ]
+          }
+        ]
+      },
+      "es": {
+        "template": "{name}: es su turno (ticket n.º {number}). {Sala}",
+        "lists": [
+          {
+            "name": "Sala",
+            "options": [
+              "Pase a la consulta 1.",
+              "Pase a la consulta 2.",
+              "Vuelva a la sala de espera."
+            ]
+          }
+        ]
+      },
+      "it": {
+        "template": "{name}: è il suo turno (biglietto n. {number}). {Sala}",
+        "lists": [
+          {
+            "name": "Sala",
+            "options": [
+              "Si accomodi nello studio 1.",
+              "Si accomodi nello studio 2.",
+              "La preghiamo di tornare in sala d’attesa."
+            ]
+          }
+        ]
+      },
+      "pl": {
+        "template": "{name}: Twoja kolej (bilet nr {number}). {Sala}",
+        "lists": [
+          {
+            "name": "Sala",
+            "options": [
+              "Zapraszamy do gabinetu 1.",
+              "Zapraszamy do gabinetu 2.",
+              "Prosimy wrócić do poczekalni."
+            ]
+          }
+        ]
+      },
+      "ro": {
+        "template": "{name}: este rândul dumneavoastră (tichetul nr. {number}). {Sală}",
+        "lists": [
+          {
+            "name": "Sală",
+            "options": [
+              "Vă rugăm să veniți în cabinetul 1.",
+              "Vă rugăm să veniți în cabinetul 2.",
+              "Vă rugăm să reveniți în sala de așteptare."
+            ]
+          }
+        ]
+      },
+      "nl": {
+        "template": "{name}: het is uw beurt (ticket nr. {number}). {Kamer}",
+        "lists": [
+          {
+            "name": "Kamer",
+            "options": [
+              "Graag naar spreekkamer 1.",
+              "Graag naar spreekkamer 2.",
+              "Graag terug naar de wachtkamer."
+            ]
+          }
+        ]
       }
     },
     {
       "id": "retrait",
       "icon": "package",
-      "name": { "fr": "Click & collect, retrait", "en": "Click & collect" },
-      "demo": { "fr": "Drive du Centre", "en": "Town Centre Pickup" },
+      "name": {
+        "fr": "Click & collect, retrait",
+        "en": "Click & collect",
+        "de": "Click & Collect, Abholung",
+        "es": "Click & collect, recogida",
+        "it": "Click & collect, ritiro",
+        "pl": "Click & collect, odbiór",
+        "ro": "Click & collect, ridicare",
+        "nl": "Click & collect, afhalen"
+      },
+      "demo": {
+        "fr": "Drive du Centre",
+        "en": "Town Centre Pickup",
+        "de": "Abholstation Zentrum",
+        "es": "Punto de Recogida Centro",
+        "it": "Punto Ritiro del Centro",
+        "pl": "Punkt Odbioru Centrum",
+        "ro": "Punct de ridicare Centru",
+        "nl": "Afhaalpunt Centrum"
+      },
       "ttl": 24,
       "fr": {
         "template": "{nom} : votre commande n°{numero} est prête. {Lieu}",
-        "lists": [{ "name": "Lieu", "options": ["Retrait au comptoir.", "Retrait au drive.", "Retrait à l’entrepôt (porte B)."] }]
+        "lists": [
+          {
+            "name": "Lieu",
+            "options": [
+              "Retrait au comptoir.",
+              "Retrait au drive.",
+              "Retrait à l’entrepôt (porte B)."
+            ]
+          }
+        ]
       },
       "en": {
         "template": "{name}: order #{number} is ready. {Where}",
-        "lists": [{ "name": "Where", "options": ["Collect at the counter.", "Collect at the drive-through.", "Collect at the warehouse (door B)."] }]
+        "lists": [
+          {
+            "name": "Where",
+            "options": [
+              "Collect at the counter.",
+              "Collect at the drive-through.",
+              "Collect at the warehouse (door B)."
+            ]
+          }
+        ]
+      },
+      "de": {
+        "template": "{name}: Ihre Bestellung Nr. {number} ist fertig. {Ort}",
+        "lists": [
+          {
+            "name": "Ort",
+            "options": [
+              "Abholung an der Theke.",
+              "Abholung am Drive-in.",
+              "Abholung im Lager (Tor B)."
+            ]
+          }
+        ]
+      },
+      "es": {
+        "template": "{name}: su pedido n.º {number} está listo. {Lugar}",
+        "lists": [
+          {
+            "name": "Lugar",
+            "options": [
+              "Recogida en el mostrador.",
+              "Recogida sin bajar del coche.",
+              "Recogida en el almacén (puerta B)."
+            ]
+          }
+        ]
+      },
+      "it": {
+        "template": "{name}: il suo ordine n. {number} è pronto. {Luogo}",
+        "lists": [
+          {
+            "name": "Luogo",
+            "options": [
+              "Ritiro al banco.",
+              "Ritiro al drive-in.",
+              "Ritiro al magazzino (porta B)."
+            ]
+          }
+        ]
+      },
+      "pl": {
+        "template": "{name}: Twoje zamówienie nr {number} jest gotowe. {Miejsce}",
+        "lists": [
+          {
+            "name": "Miejsce",
+            "options": [
+              "Odbiór przy ladzie.",
+              "Odbiór w okienku drive.",
+              "Odbiór w magazynie (brama B)."
+            ]
+          }
+        ]
+      },
+      "ro": {
+        "template": "{name}: comanda dumneavoastră nr. {number} este gata. {Loc}",
+        "lists": [
+          {
+            "name": "Loc",
+            "options": [
+              "Ridicare de la tejghea.",
+              "Ridicare de la drive-in.",
+              "Ridicare de la depozit (ușa B)."
+            ]
+          }
+        ]
+      },
+      "nl": {
+        "template": "{name}: uw bestelling nr. {number} is klaar. {Plaats}",
+        "lists": [
+          {
+            "name": "Plaats",
+            "options": [
+              "Afhalen aan de balie.",
+              "Afhalen bij de drive-in.",
+              "Afhalen in het magazijn (deur B)."
+            ]
+          }
+        ]
       }
     },
     {
       "id": "autre",
       "icon": "chat-centered-text",
-      "name": { "fr": "Autre : message simple", "en": "Other: simple message" },
-      "demo": { "fr": "Votre commerce", "en": "Your business" },
+      "name": {
+        "fr": "Autre : message simple",
+        "en": "Other: simple message",
+        "de": "Andere: einfache Nachricht",
+        "es": "Otro: mensaje sencillo",
+        "it": "Altro: messaggio semplice",
+        "pl": "Inne: prosta wiadomość",
+        "ro": "Altele: mesaj simplu",
+        "nl": "Overig: eenvoudig bericht"
+      },
+      "demo": {
+        "fr": "Votre commerce",
+        "en": "Your business",
+        "de": "Ihr Geschäft",
+        "es": "Su comercio",
+        "it": "La sua attività",
+        "pl": "Twoja firma",
+        "ro": "Comerțul dumneavoastră",
+        "nl": "Uw zaak"
+      },
       "ttl": 6,
-      "fr": { "template": "", "lists": [] },
-      "en": { "template": "", "lists": [] }
+      "fr": {
+        "template": "",
+        "lists": []
+      },
+      "en": {
+        "template": "",
+        "lists": []
+      },
+      "de": {
+        "template": "",
+        "lists": []
+      },
+      "es": {
+        "template": "",
+        "lists": []
+      },
+      "it": {
+        "template": "",
+        "lists": []
+      },
+      "pl": {
+        "template": "",
+        "lists": []
+      },
+      "ro": {
+        "template": "",
+        "lists": []
+      },
+      "nl": {
+        "template": "",
+        "lists": []
+      }
     }
   ]
 }

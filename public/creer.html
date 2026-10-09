@@ -29,84 +29,90 @@
   <main class="wrap wrap-studio">
     <section id="creer">
       <div class="section-head">
-        <h1 data-i18n="create_title">Créer mes tickets</h1>
-        <p data-i18n="studio_lede">Réglez à gauche, l’aperçu suit en direct. Vos réglages d’impression restent sur cet appareil.</p>
+        <div class="label-row title-row"><h1 data-i18n="create_title">Créer mes tickets</h1><span data-tip="studio_lede"></span></div>
       </div>
       <div class="studio">
         <form id="create-form" class="studio-form" novalidate>
-          <details class="card" id="lot-card" open>
-            <summary data-i18n="studio_lot">Votre lot</summary>
-            <fieldset class="field" id="mode-field">
-              <legend><label data-i18n="mode_title">Comment vos clients obtiennent-ils leur numéro ?</label></legend>
-              <div class="choice-row">
-                <label class="choice"><input type="radio" name="mode" value="tickets" checked><span data-icon="ticket"></span><span data-i18n="mode_tickets">Tickets imprimés</span></label>
-                <label class="choice"><input type="radio" name="mode" value="poster"><span data-icon="qr-code"></span><span data-i18n="mode_poster">Affiche à scanner</span></label>
-                <label class="choice"><input type="radio" name="mode" value="both"><span data-icon="squares-four"></span><span data-i18n="mode_both">Les deux</span></label>
+          <div class="card studio-tabs">
+            <div class="tabbar" role="tablist" aria-label="Créer mes tickets">
+              <button type="button" role="tab" id="tab-info" aria-controls="panel-info" aria-selected="true"><span data-icon="ticket"></span><span data-i18n="tab_info">Informations</span></button>
+              <button type="button" role="tab" id="tab-message" aria-controls="panel-message" aria-selected="false" tabindex="-1"><span data-icon="chat-centered-text"></span><span data-i18n="tab_message">Message</span></button>
+              <button type="button" role="tab" id="tab-look" aria-controls="panel-look" aria-selected="false" tabindex="-1"><span data-icon="palette"></span><span data-i18n="tab_look">Apparence</span></button>
+            </div>
+            <section class="tab-panel" role="tabpanel" id="panel-info" aria-labelledby="tab-info">
+              <fieldset class="field" id="mode-field">
+                <legend><label data-i18n="mode_title">Comment vos clients obtiennent-ils leur numéro ?</label></legend>
+                <div class="choice-row">
+                  <label class="choice"><input type="radio" name="mode" value="tickets" checked><span data-icon="ticket"></span><span data-i18n="mode_tickets">Tickets imprimés</span></label>
+                  <label class="choice"><input type="radio" name="mode" value="poster"><span data-icon="qr-code"></span><span data-i18n="mode_poster">Affiche à scanner</span></label>
+                  <label class="choice"><input type="radio" name="mode" value="both"><span data-icon="squares-four"></span><span data-i18n="mode_both">Les deux</span></label>
+                </div>
+                <p class="small muted" id="mode-hint"></p>
+              </fieldset>
+              <div class="field">
+                <label for="name" data-i18n="create_name">Nom affiché aux clients</label>
+                <input id="name" name="name" type="text" maxlength="60" required autocomplete="organization" data-i18n-placeholder="create_name_ph">
               </div>
-              <p class="small muted" id="mode-hint"></p>
-            </fieldset>
-            <div class="field">
-              <label for="name" data-i18n="create_name">Nom affiché aux clients</label>
-              <input id="name" name="name" type="text" maxlength="60" required autocomplete="organization" data-i18n-placeholder="create_name_ph">
-            </div>
-            <div class="inline-fields field">
-              <div id="count-field">
-                <label for="count" data-i18n="create_count">Nombre de tickets</label>
-                <input id="count" name="count" type="number" min="1" max="999999" value="120" inputmode="numeric" required>
+              <div class="inline-fields field">
+                <div id="count-field">
+                  <label for="count" data-i18n="create_count">Nombre de tickets</label>
+                  <input id="count" name="count" type="number" min="1" max="999999" value="120" inputmode="numeric" required>
+                </div>
+                <div>
+                  <label for="first" data-i18n="create_first">Premier numéro</label>
+                  <input id="first" name="first" type="number" min="1" max="999999" value="1" inputmode="numeric" required>
+                </div>
               </div>
-              <div>
-                <label for="first" data-i18n="create_first">Premier numéro</label>
-                <input id="first" name="first" type="number" min="1" max="999999" value="1" inputmode="numeric" required>
+              <fieldset class="field">
+                <legend><label data-i18n="create_channels">Moyens proposés à vos clients</label></legend>
+                <div class="choice-row cols-4">
+                  <label class="choice"><input type="checkbox" name="channels" value="push" checked><span data-icon="bell-ringing"></span><span data-i18n="ch_push"></span></label>
+                  <label class="choice"><input type="checkbox" name="channels" value="sms" checked><span data-icon="chat-circle-text"></span><span data-i18n="ch_sms"></span></label>
+                  <label class="choice"><input type="checkbox" name="channels" value="wa" checked><span data-icon="whatsapp-logo"></span><span data-i18n="ch_wa"></span></label>
+                  <label class="choice"><input type="checkbox" name="channels" value="mail" checked><span data-icon="envelope-simple"></span><span data-i18n="ch_mail"></span></label>
+                </div>
+              </fieldset>
+              <div class="field">
+                <div class="label-row"><label for="ttl" data-i18n="create_ttl">Durée de vie d’un ticket après son premier scan</label><span data-tip="ttl_hint"></span></div>
+                <select id="ttl" name="ttl" class="select"></select>
               </div>
-            </div>
-            <fieldset class="field">
-              <legend><label data-i18n="create_channels">Moyens proposés à vos clients</label></legend>
-              <div class="choice-row cols-4">
-                <label class="choice"><input type="checkbox" name="channels" value="push" checked><span data-icon="bell-ringing"></span><span data-i18n="ch_push"></span></label>
-                <label class="choice"><input type="checkbox" name="channels" value="sms" checked><span data-icon="chat-circle-text"></span><span data-i18n="ch_sms"></span></label>
-                <label class="choice"><input type="checkbox" name="channels" value="wa" checked><span data-icon="whatsapp-logo"></span><span data-i18n="ch_wa"></span></label>
-                <label class="choice"><input type="checkbox" name="channels" value="mail" checked><span data-icon="envelope-simple"></span><span data-i18n="ch_mail"></span></label>
+              <div class="field">
+                <div class="label-row"><label for="password" data-i18n="create_password">Mot de passe du lot (facultatif, conseillé)</label><span data-tip="create_password_hint"></span></div>
+                <input id="password" name="password" type="password" autocomplete="new-password" minlength="8">
+                <div class="field" id="password2-field" hidden>
+                  <label for="password2" data-i18n="create_password2">Confirmez le mot de passe</label>
+                  <input id="password2" name="password2" type="password" autocomplete="new-password">
+                </div>
               </div>
-            </fieldset>
-            <div class="field">
-              <div class="label-row"><label for="ttl" data-i18n="create_ttl">Durée de vie d’un ticket après son premier scan</label><span data-tip="ttl_hint"></span></div>
-              <select id="ttl" name="ttl" class="select"></select>
-            </div>
-            <div class="field">
-              <div class="label-row"><label for="password" data-i18n="create_password">Mot de passe du lot (facultatif, conseillé)</label><span data-tip="create_password_hint"></span></div>
-              <input id="password" name="password" type="password" autocomplete="new-password" minlength="8">
-              <div class="field" id="password2-field" hidden>
-                <label for="password2" data-i18n="create_password2">Confirmez le mot de passe</label>
-                <input id="password2" name="password2" type="password" autocomplete="new-password">
+            </section>
+            <section class="tab-panel" role="tabpanel" id="panel-message" aria-labelledby="tab-message" hidden>
+              <div id="message-slot"></div>
+              <p class="small muted" data-i18n="act_later"></p>
+              <div class="field">
+                <label for="promo" data-i18n="create_promo">Votre message (facultatif)</label>
+                <input id="promo" name="promo" type="text" maxlength="140" data-i18n-placeholder="create_promo_ph">
               </div>
-            </div>
-          </details>
-          <details class="card" id="message-card">
-            <summary data-i18n="studio_message">Message et variables</summary>
-            <div id="message-slot"></div>
-            <p class="small muted" data-i18n="act_later"></p>
-            <div class="field">
-              <label for="promo" data-i18n="create_promo">Votre message (facultatif)</label>
-              <input id="promo" name="promo" type="text" maxlength="140" data-i18n-placeholder="create_promo_ph">
-            </div>
-            <div class="field">
-              <label for="link" data-i18n="create_link">Votre lien (facultatif)</label>
-              <input id="link" name="link" type="url" maxlength="200" inputmode="url" data-i18n-placeholder="create_link_ph">
-            </div>
-            <p class="small muted" data-i18n="promo_hint"></p>
-          </details>
-          <details class="card" id="layout-card">
-            <summary data-i18n="studio_layout">Papier et mise en page</summary>
-            <div id="design-layout"></div>
-          </details>
-          <details class="card">
-            <summary data-i18n="studio_colors">Couleurs et logo</summary>
-            <div id="design-colors"></div>
-          </details>
-          <details class="card pro-tools" id="pro-tools">
-            <summary><span data-i18n="pro_tools_title">Options Pro</span><span class="badge pro-badge"><span data-icon="star"></span>Pro</span></summary>
-            <div id="pro-slot"></div>
-          </details>
+              <div class="field">
+                <label for="link" data-i18n="create_link">Votre lien (facultatif)</label>
+                <input id="link" name="link" type="url" maxlength="200" inputmode="url" data-i18n-placeholder="create_link_ph">
+              </div>
+              <p class="small muted" data-i18n="promo_hint"></p>
+            </section>
+            <section class="tab-panel" role="tabpanel" id="panel-look" aria-labelledby="tab-look" hidden>
+              <section class="panel-sec" id="layout-section">
+                <h3 data-i18n="studio_layout">Papier et mise en page</h3>
+                <div id="design-layout"></div>
+              </section>
+              <section class="panel-sec">
+                <h3><span data-i18n="studio_colors">Couleurs et logo</span><span class="badge pro-badge"><span data-icon="star"></span>Pro</span></h3>
+                <div id="design-colors"></div>
+              </section>
+              <section class="panel-sec pro-tools" id="pro-tools">
+                <h3><span data-i18n="pro_tools_title">Options Pro</span><span class="badge pro-badge"><span data-icon="star"></span>Pro</span></h3>
+                <div id="pro-slot"></div>
+              </section>
+            </section>
+          </div>
           <p class="error" id="create-error" role="alert" hidden></p>
           <button class="btn btn-big btn-block" type="submit" data-i18n="create_btn">Créer mes tickets</button>
           <p class="small muted center" data-i18n="service_note"></p>

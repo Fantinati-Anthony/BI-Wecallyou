@@ -48,7 +48,19 @@ export const DEFAULT_DESIGN = Object.freeze({
   logo: null,
   logoRatio: 2,
   product: null,
+  verso: false, // recto-verso : le mode d'emploi au dos de chaque ticket
+  posterText: Object.freeze({}), // textes de l'affiche (et du verso) retouchés par le commerçant
 });
+
+/** Textes retouchables de l'affiche et du verso des tickets, avec leur longueur maximale. Absent = texte d'origine. */
+export const POSTER_TEXT = Object.freeze({ title: 60, sub: 60, cta: 80, s1t: 30, s1: 140, s2t: 30, s2: 140, s3t: 30, s3: 140 });
+function cleanPosterText(o) {
+  const out = {};
+  if (o && typeof o === 'object') {
+    for (const [key, max] of Object.entries(POSTER_TEXT)) if (typeof o[key] === 'string') out[key] = o[key].replace(/\s+/g, ' ').trim().slice(0, max);
+  }
+  return out;
+}
 
 const blank = (v) => v === null || v === undefined || v === '';
 const mm = (v, [min, max], fallback) => (blank(v) || !Number.isFinite(Number(v)) ? fallback : Math.round(Math.min(max, Math.max(min, Number(v))) * 100) / 100);
@@ -86,6 +98,8 @@ export function normalizeDesign(o = {}) {
     logo: typeof o.logo === 'string' && o.logo.startsWith('data:image/') ? o.logo : null,
     logoRatio: mm(o.logoRatio, [0.2, 8], DEFAULT_DESIGN.logoRatio),
     product: typeof o.product === 'string' && /^[\w-]{1,40}$/.test(o.product) ? o.product : null,
+    verso: !roll && o.verso === true, // une imprimante à tickets n'imprime que d'un côté
+    posterText: cleanPosterText(o.posterText),
   };
 }
 
@@ -218,6 +232,29 @@ function itemsOf(role, c) {
 export function headSize(c, t, width) {
   if (c.head === 'logo') return Math.min(t * 3.4, width / c.logoRatio);
   return Math.min(t * 1.15, Math.max(t * 0.85, width / (widthOf(c.name, 1, 1) || 1)));
+}
+
+/**
+ * Verso d'un ticket : les étapes (pastille numérotée, titre en gras, texte) à la plus grande taille qui
+ * tient dans w × h (mm), de 4,2 à 1,3 mm ; titres seuls si les textes ne tiennent pas ; null si rien ne tient.
+ */
+export function fitBack(steps, w, h) {
+  const height = (t, withText) => {
+    const col = w - 2.2 * t; // pastille du numéro et son espace
+    if (col <= 0) return Infinity;
+    let total = (steps.length - 1) * 0.6 * t;
+    for (const step of steps) {
+      const title = wrap(step.title, t, 1, col);
+      const text = withText && step.text ? wrap(step.text, t * 0.88, 0, col) : 0;
+      if (title === null || text === null) return Infinity;
+      total += Math.max(1.5 * t, title * t * LH) + text * t * 0.88 * LH;
+    }
+    return total;
+  };
+  for (const withText of [true, false]) {
+    for (let t = 4.2; t >= 1.3; t = Math.round((t - 0.1) * 100) / 100) if (height(t, withText) <= h) return { t, withText };
+  }
+  return null;
 }
 
 /** Hauteur d'un paragraphe, ou null s'il ne tient pas en largeur. */

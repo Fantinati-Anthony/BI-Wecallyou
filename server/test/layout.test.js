@@ -5,6 +5,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { PAPERS, STUBS, LIMITS, QR_MIN_MM, QR_MIN_THERMAL_MM, DEFAULT_DESIGN, PRO_DESIGN, normalizeDesign, withoutPro, pageOf, gridOf, fitDesign, gridLimits, fitGrid, presetGrids } from '../../public/assets/layout.js';
 
+const LANGS = ['fr', 'en', 'de', 'es', 'it', 'pl', 'ro', 'nl'];
+
 const content = (extra = {}) => ({
   head: 'name',
   name: 'Snack du Stade',
@@ -103,7 +105,7 @@ test('catalogue de papiers : identifiants uniques, liens https, chaque papier ti
   }
 });
 
-test('modèles par activité : valides pour le serveur, dans les deux langues, sans virgule dans les options', async () => {
+test('modèles par activité : valides pour le serveur, dans les 8 langues, sans virgule dans les options', async () => {
   const { activities } = JSON.parse(readFileSync(new URL('../../public/activites.json', import.meta.url), 'utf8'));
   const { LIFETIMES, PRO_LIFETIMES } = await import('../lib/store.js');
   const icons = readFileSync(new URL('../../public/assets/icons.js', import.meta.url), 'utf8');
@@ -112,9 +114,10 @@ test('modèles par activité : valides pour le serveur, dans les deux langues, s
   for (const activity of activities) {
     assert.ok(icons.includes(`'${activity.icon}':`), `${activity.id} : icône ${activity.icon}`);
     assert.ok([...LIFETIMES, ...PRO_LIFETIMES].includes(activity.ttl), `${activity.id} : durée`);
-    for (const lang of ['fr', 'en']) {
+    for (const lang of LANGS) {
       const { template, lists } = activity[lang];
-      assert.ok(activity.name[lang], `${activity.id} : nom ${lang}`);
+      assert.ok(activity.name[lang] && activity.demo[lang], `${activity.id} : nom ${lang}`);
+      assert.ok(lists.every((l) => l.name.length <= 24), `${activity.id} : nom de liste trop long (${lang})`);
       assert.ok(template.length <= 280);
       assert.ok(lists.length <= 5);
       for (const list of lists) {
@@ -155,4 +158,22 @@ test('sans Pro : couleurs d’origine et pas de logo, le reste de la mise en pag
   const kept = normalizeDesign(chosen);
   for (const key of ['paper', 'cols', 'rows', 'stubs', 'stub', 'align', 'mono', 'showNumber']) assert.deepEqual(free[key], kept[key], key);
   assert.equal(kept.logo, logo); // en Pro, rien n'est retiré
+});
+
+test('traductions : les 8 langues ont les mêmes clés, les mêmes variables et aucun tiret long', async () => {
+  const load = async (lang) => (await import(`../../public/assets/i18n/${lang}.js`)).default;
+  const fr = await load('fr');
+  // Les noms de variables des modèles de message ({nom}, {name}…) changent selon la langue ; les autres, jamais.
+  const vars = (text) => [...text.matchAll(/{([^}]+)}/g)].map((m) => m[1]).filter((v) => !/^(nom|numero|groupe|name|number|group|Lieu|Place|Where|Ort|Lugar|Luogo|Miejsce|Loc|Plaats)$/.test(v)).sort().join();
+  for (const lang of LANGS) {
+    const texts = await load(lang);
+    assert.deepEqual(Object.keys(texts), Object.keys(fr), lang);
+    for (const [key, text] of Object.entries(texts)) {
+      assert.equal(typeof text, 'string', `${lang}.${key}`);
+      assert.equal(vars(text), vars(fr[key]), `${lang}.${key} : variables`);
+      assert.ok(!text.includes('—'), `${lang}.${key} : tiret long`);
+    }
+    // Les variables intégrées comprises par le serveur : {nom}/{name}, {numero}/{number}, {groupe}/{group}.
+    assert.ok(texts.var_builtins.split(',').every((v) => ['nom', 'numero', 'groupe', 'name', 'number', 'group'].includes(v)), `${lang}.var_builtins`);
+  }
 });

@@ -90,9 +90,9 @@ try {
   await m.locator('.hero-cta a[href="/creer"]').click();
   await m.waitForSelector('#c-act', { state: 'attached' });
   // « Message et variables » : l'activité touchée sur l'accueil est proposée, et se change dans une fenêtre.
-  assert.match(await m.locator('#message-card .act-current').textContent(), /Pressing/);
+  assert.match(await m.locator('#panel-message .act-current').textContent(), /Pressing/);
   assert.match(await m.locator('#ctp').inputValue(), /votre dépôt n°\{numero\}/);
-  await m.click('summary[data-i18n=studio_message]');
+  await m.click('#tab-message');
   await m.click('#c-act');
   await m.waitForSelector('dialog.act-dialog[open]');
   assert.equal(await m.locator('.act-block').count(), 10);
@@ -103,23 +103,24 @@ try {
   await m.click('.act-use'); // message du modèle « pressing » non retouché : remplacé sans question
   await m.waitForSelector('dialog.act-dialog', { state: 'detached' });
   assert.equal(await m.locator('#ctp').inputValue(), '');
-  assert.match(await m.locator('#message-card .msg-example').textContent(), /c’est à vous/); // message par défaut
+  assert.match(await m.locator('#panel-message .msg-example').textContent(), /c’est à vous/); // message par défaut
   assert.equal(await m.locator('#c-wl').isDisabled(), true);
   assert.equal(await m.locator('#ttl option[value="720"]').isDisabled(), true);
   // Logo et couleurs des tickets : offre Pro, grisés ici.
   assert.equal(await m.locator('#d-tbg').isDisabled(), true);
   assert.equal(await m.locator('#d-logo').isDisabled(), true);
   assert.equal(await m.locator('#design-colors .pro-lock:not([hidden])').count(), 1);
-  await m.click('#pro-tools summary');
+  await m.click('#tab-look');
   assert.equal(await m.locator('#pro-tools .pro-lock').isVisible(), true);
-  assert.equal(await m.locator('#message-card').getAttribute('open'), null); // un seul volet ouvert à la fois
+  assert.equal(await m.locator('#panel-message').isHidden(), true); // un seul onglet affiché à la fois
+  assert.equal(await m.locator('#tab-look').getAttribute('aria-selected'), 'true');
   step('accueil : comparatif Gratuit / Pro ; page « Créer » : activités, options Pro grisées sans compte Pro');
-  await m.click('summary[data-i18n=studio_lot]');
+  await m.click('#tab-info');
   await m.fill('#name', 'Snack Tony');
   await m.fill('#count', '30');
   await m.fill('#password', 'motdepasse-tres-long');
   await m.fill('#password2', 'motdepasse-tres-long');
-  await m.click('summary[data-i18n=studio_message]');
+  await m.click('#tab-message');
   await m.fill('#promo', 'Suivez-nous sur Instagram @snacktony');
   await m.fill('#link', 'https://instagram.com/snacktony');
   await m.click('button[type=submit]');
@@ -385,8 +386,8 @@ try {
   await p3.waitForSelector('h1:has-text("Snack Tony")');
   // L'activité choisie à l'inscription suit le compte : proposée par défaut à la création des tickets.
   await p3.goto(`${BASE}/creer`);
-  await p3.waitForSelector('#message-card .act-current b', { state: 'attached' });
-  assert.match(await p3.locator('#message-card .act-current').textContent(), /Buvette/);
+  await p3.waitForSelector('#panel-message .act-current b', { state: 'attached' });
+  assert.match(await p3.locator('#panel-message .act-current').textContent(), /Buvette/);
   step('autre téléphone : connexion par identifiant, le lot et l’activité du compte sont retrouvés');
 
   // Mot de passe oublié : la fiche de secours (son QR) permet d'en choisir un nouveau.
@@ -464,17 +465,17 @@ try {
   // Compte Pro : les options Pro du générateur s'ouvrent et s'appliquent au nouveau lot.
   await p4.goto(`${BASE}/creer`);
   await p4.waitForSelector('#c-wl:not([disabled])', { state: 'attached' });
-  await p4.click('summary[data-i18n=studio_message]');
+  await p4.click('#tab-message');
   await p4.click('#c-act');
   await p4.click('.act-block[data-id="pressing"]');
   await p4.click('.act-use');
   await p4.waitForSelector('dialog.act-dialog', { state: 'detached' });
-  await p4.click('summary[data-i18n=studio_lot]');
+  await p4.click('#tab-info');
   await p4.fill('#name', 'Pressing Lumière');
   await p4.fill('#count', '20');
   await p4.selectOption('#ttl', '720');
   // En Pro, les couleurs du ticket s'ouvrent et passent dans l'aperçu.
-  await p4.click('summary[data-i18n=studio_colors]');
+  await p4.click('#tab-look');
   assert.equal(await p4.locator('#design-colors .pro-lock').isVisible(), false);
   await p4.fill('#d-tbg', '#fff6e5');
   await p4.waitForSelector('.pv-frame .sheet-tickets[style*="--t-bg: #fff6e5"]', { state: 'attached' });
@@ -488,7 +489,7 @@ try {
   await p4.waitForSelector('.pv-frame .doc-band img.doc-logo-img', { state: 'attached' });
   assert.equal(await p4.locator('.pv-frame .doc-band .doc-logo svg').count(), 0);
   await p4.locator('[data-tab="tickets"]').dispatchEvent('click');
-  await p4.click('#pro-tools summary');
+  await p4.click('#tab-look');
   await p4.check('#c-wl');
   await p4.fill('#th-screenNumber', '#2b7fff');
   await p4.click('#create-form button[type=submit]');
@@ -640,6 +641,34 @@ try {
   });
   assert.deepEqual(overflow.problems, []);
   step(`mise en page : aucun débordement sur ${overflow.checked} combinaisons (papier, grille, souche, nom long, 6 chiffres)`);
+
+  // Langue : le drapeau de l'en-tête passe tout en allemand, tickets compris (une seule langue) ;
+  // recto-verso : chaque page a son dos, avec le mode d'emploi au dos de chaque ticket, sans débordement.
+  {
+    const ctx = await browser.newContext({ locale: 'fr-FR', viewport: { width: 1280, height: 900 } });
+    const p = await ctx.newPage();
+    p.on('pageerror', (err) => errors.push(err.message));
+    await p.goto(`${BASE}/creer`);
+    await p.click('.lang-btn');
+    await p.click('.lang-menu a[lang="de"]');
+    await p.waitForSelector('html[lang="de"]');
+    await waitText(p.locator('#tab-info [data-i18n="tab_info"]'), 'Angaben');
+    await p.fill('#name', 'Stadion-Imbiss');
+    await p.click('#tab-look');
+    await p.check('#d-verso');
+    await p.locator('.pv-frame .sheet-tickets .p-scan').first().waitFor({ state: 'attached' });
+    const scan = await p.locator('.pv-frame .p-scan').first().textContent();
+    assert.ok(scan && !/Scannez/.test(scan), scan); // ticket en allemand
+    assert.equal(await p.locator('.pv-frame .p-sub').count(), 0); // une seule langue
+    await p.locator('.studio-preview [data-tab="back"]').click();
+    await p.waitForSelector('.pv-frame .sheet-back .back-steps li', { state: 'attached' });
+    assert.equal(await p.locator('.pv-frame .sheet-back .back-steps').first().locator('.b-num').count(), 3);
+    const overflow = await p.locator('.pv-frame .sheet-back .part.back-steps').evaluateAll((parts) => parts.filter((part) => part.scrollHeight > part.clientHeight + 1 || part.scrollWidth > part.clientWidth + 1).length);
+    assert.equal(overflow, 0);
+    await shot(p, '28-verso-allemand');
+    await ctx.close();
+  }
+  step('langue : menu drapeau (allemand) ; recto-verso : dos en miroir avec le mode d’emploi, sans débordement');
 
   // Barre du haut : le logo et le menu ne se chevauchent jamais, quelle que soit la page (étroite ou large) et l'écran.
   {

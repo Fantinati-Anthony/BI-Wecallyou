@@ -1,7 +1,7 @@
 // Compte facultatif : retrouver tous ses lots sur n'importe quel téléphone, et profiter du statut Pro
 // activé par les dons. Tout est chiffré ici, dans le navigateur ; le serveur ne garde que des
 // empreintes et un coffre illisible. Mot de passe oublié → fiche de secours (imprimée/téléchargée).
-import { h, tl, api, local, lots, qrSvg, icon } from './common.js';
+import { h, tl, api, local, lots, qrSvg, icon, LANG_KEY } from './common.js';
 import {
   createAccount,
   loginKeys,
@@ -122,6 +122,12 @@ export async function sync(changes = {}, retry = true) {
     dirty = true;
   }
   if (vault.activity && !local.get(ACTIVITY_KEY)) local.set(ACTIVITY_KEY, vault.activity);
+  // Langue choisie (en-tête ou inscription) : la dernière choisie part au coffre, un nouveau téléphone la reprend.
+  const lang = local.get(LANG_KEY);
+  if (lang && lang !== vault.lang) {
+    vault.lang = lang;
+    dirty = true;
+  } else if (!lang && vault.lang) local.set(LANG_KEY, vault.lang);
   for (const id of changes.removeLots ?? []) {
     if (vault.lots[id]) {
       delete vault.lots[id];

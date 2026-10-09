@@ -3,8 +3,8 @@
 // Imprimer). Tout se passe dans le navigateur. La mise en page est gratuite pour tous ; le logo
 // et les couleurs sont réservés à l'offre Pro (grisés sinon, et jamais imprimés sans Pro).
 import { h, t, LANG, render, icon } from './common.js';
-import { PAPERS, LIMITS, QR_WARN_MM, MAX_STUBS, normalizeDesign, withoutPro, fitDesign, fitGrid, gridLimits, pageOf, gridOf, contentKey } from './layout.js';
-import { contentOf, ticketSheets, keySheet, labelOf, posterSheet } from './sheets.js';
+import { PAPERS, LIMITS, QR_WARN_MM, MAX_STUBS, POSTER_TEXT, normalizeDesign, withoutPro, fitDesign, fitGrid, gridLimits, pageOf, gridOf, contentKey } from './layout.js';
+import { contentOf, ticketSheets, keySheet, labelOf, posterSheet, posterTexts } from './sheets.js';
 import { readLogo, pagesFor } from './print.js';
 import { base32, randomBytes } from './crypto.js';
 import { proLock } from './protools.js';
@@ -180,6 +180,11 @@ export function designControls(initial, onChange, contentFor, { pro = false } = 
     }),
   );
 
+  // Recto-verso : le mode d'emploi au dos de chaque ticket (une page sur deux) ; pas sur un rouleau.
+  const verso = h('input', { type: 'checkbox', id: 'd-verso' });
+  verso.addEventListener('change', () => set({ verso: verso.checked }));
+  const versoBox = h('div', {}, h('label', { class: 'check', for: 'd-verso' }, verso, ' ', t('d_verso')), h('p', { class: 'small muted' }, t('d_verso_hint')));
+
   /* réglages fins */
   const margins = ['top', 'right', 'bottom', 'left'].map((side, i) =>
     numberField(`d-m${side[0]}`, t(`d_m_${side}`), {
@@ -262,6 +267,8 @@ export function designControls(initial, onChange, contentFor, { pro = false } = 
     stubHint.textContent = [design.stubs === 0 ? '' : design.stub === 'cell' ? t('stub_cell_hint') : design.stub === 'auto' ? t('stub_auto_hint') : '', design.stubs > 1 ? t('stubs_many_hint') : ''].filter(Boolean).join(' ');
     stubHint.hidden = !stubHint.textContent;
 
+    verso.checked = design.verso;
+    versoBox.hidden = roll;
     margins.forEach((m, i) => show(m, design.margins[i]));
     show(gapX, design.gapX);
     show(gapY, design.gapY);
@@ -288,6 +295,8 @@ export function designControls(initial, onChange, contentFor, { pro = false } = 
     get: view,
     refresh,
     applyProduct,
+    /** Modifie des réglages venus d'ailleurs (textes de l'affiche…), avec le même suivi que les champs. */
+    patch: (values) => set(values),
     /** Le compte devient (ou cesse d'être) Pro : champs ouverts ou grisés, aperçu et grille recalculés. */
     setPro(on) {
       if (isPro === Boolean(on)) return;
@@ -309,6 +318,7 @@ export function designControls(initial, onChange, contentFor, { pro = false } = 
       stubHint,
       h('label', {}, t('d_align')),
       align,
+      versoBox,
       advanced,
       catalog.dialog,
     ),
@@ -319,6 +329,51 @@ export function designControls(initial, onChange, contentFor, { pro = false } = 
       monoHint,
       h('label', { class: 'check', for: 'd-num' }, showNumber, ' ', t('create_show_number')),
       proBox,
+    ),
+  };
+}
+
+/* ------------------------------------------------- textes de l'affiche */
+
+/**
+ * Textes de l'affiche et du verso des tickets : ceux d'origine, pré-remplis et modifiables. Seuls les
+ * textes changés sont gardés (les autres suivent la langue). onChange(posterText). Renvoie { element, reset }.
+ */
+export function posterTextFields({ initial = {}, lang = LANG, onChange }) {
+  const base = posterTexts(lang, {});
+  const origin = { title: base.title, sub: base.sub, cta: base.cta };
+  base.steps.forEach((step, i) => Object.assign(origin, { [`s${i + 1}t`]: step.title, [`s${i + 1}`]: step.text }));
+  let values = { ...initial };
+  const inputs = {};
+  for (const key of Object.keys(POSTER_TEXT)) {
+    const long = /^s\d$/.test(key);
+    const input = h(long ? 'textarea' : 'input', { id: `pt-${key}`, class: long ? 'textarea' : null, type: long ? null : 'text', rows: long ? 2 : null, maxlength: POSTER_TEXT[key] });
+    input.value = values[key] ?? origin[key];
+    input.addEventListener('input', () => {
+      const value = input.value.trim();
+      if (value === origin[key]) delete values[key];
+      else values[key] = value;
+      onChange({ ...values });
+    });
+    inputs[key] = input;
+  }
+  const field = (key, label) => h('div', { class: 'field' }, h('label', { for: `pt-${key}` }, label), inputs[key]);
+  const reset = h('button', { type: 'button', class: 'linklike small' }, t('pt_reset'));
+  reset.addEventListener('click', () => {
+    values = {};
+    for (const [key, input] of Object.entries(inputs)) input.value = origin[key];
+    onChange({});
+  });
+  return {
+    element: h(
+      'div',
+      { class: 'stack' },
+      h('p', { class: 'small muted' }, t('pt_hint')),
+      field('title', t('pt_f_title')),
+      field('sub', t('pt_f_sub')),
+      field('cta', t('pt_f_cta')),
+      [1, 2, 3].map((n) => h('fieldset', { class: 'pt-step' }, h('legend', {}, t('pt_f_step', { n })), inputs[`s${n}t`], inputs[`s${n}`])),
+      reset,
     ),
   };
 }
@@ -455,7 +510,7 @@ export function livePreview() {
   const tabs = h(
     'div',
     { class: 'segmented', role: 'group' },
-    ['tickets', 'key', 'poster'].map((name) => {
+    ['tickets', 'back', 'key', 'poster'].map((name) => {
       const button = h('button', { type: 'button', 'data-tab': name, 'aria-pressed': String(name === tab) }, t(`pv_${name}`));
       button.addEventListener('click', () => setTab(name));
       return button;
@@ -468,13 +523,14 @@ export function livePreview() {
   }
   const close = h('button', { type: 'button', class: 'btn btn-ghost pv-close' }, icon('x'), t('pv_close'));
   // Zones de découpe : traits et marges mis en évidence à l'écran (jamais imprimés).
-  const cuts = h('button', { type: 'button', class: 'btn btn-ghost pv-cuts', id: 'pv-cuts', 'aria-pressed': 'false' }, icon('scissors'), t('pv_cuts'));
+  const cuts = h('button', { type: 'button', class: 'btn btn-ghost pv-cuts', id: 'pv-cuts', 'aria-pressed': 'false', title: t('pv_cuts'), 'aria-label': t('pv_cuts') }, icon('scissors'));
   cuts.addEventListener('click', () => {
     const on = !frame.classList.contains('show-cuts');
     frame.classList.toggle('show-cuts', on);
     cuts.setAttribute('aria-pressed', String(on));
   });
-  const panel = h('aside', { class: 'studio-preview card', 'aria-label': t('pv_title') }, h('div', { class: 'row' }, h('h3', { class: 'grow' }, t('pv_title')), tabs, cuts, close), info, alert, frame, h('p', { class: 'small muted' }, t('pv_sample')));
+  // Onglets et découpes centrés au-dessus de la page ; les repères (tickets par page, QR…) en dessous.
+  const panel = h('aside', { class: 'studio-preview card', 'aria-label': t('pv_title') }, h('div', { class: 'pv-bar' }, tabs, cuts, close), alert, frame, info, h('p', { class: 'small muted' }, t('pv_sample')));
   const fab = h('button', { type: 'button', class: 'btn pv-fab' }, icon('eye'), t('pv_open'));
   fab.addEventListener('click', () => panel.classList.add('open'));
   close.addEventListener('click', () => panel.classList.remove('open'));
@@ -501,9 +557,10 @@ export function livePreview() {
   function update(ctx) {
     last = ctx;
     // Onglet « Affiche » seulement quand le lot en utilise une ; l'onglet « Tickets » disparaît pour un lot « affiche seule ».
-    tabs.querySelector('[data-tab="poster"]').hidden = !ctx.poster;
-    if (tab === 'poster' && !ctx.poster) setTab('tickets');
     const design = normalizeDesign(ctx.design);
+    tabs.querySelector('[data-tab="poster"]').hidden = !ctx.poster;
+    tabs.querySelector('[data-tab="back"]').hidden = !design.verso;
+    if ((tab === 'poster' && !ctx.poster) || (tab === 'back' && !design.verso)) setTab('tickets');
     const from = ctx.from || 1;
     const lastNumber = from + Math.max(1, ctx.count || 1) - 1;
     const layout = fitDesign(design, contentOf(design, { ...ctx, last: lastNumber }));
@@ -520,7 +577,7 @@ export function livePreview() {
     render(
       info,
       h('li', {}, t('pv_per', { n: layout.perPage })),
-      h('li', {}, t('pv_pages', { n: pagesFor(Math.max(1, ctx.count || layout.perPage), layout.perPage).toLocaleString(LANG) })),
+      h('li', {}, t('pv_pages', { n: (pagesFor(Math.max(1, ctx.count || layout.perPage), layout.perPage) * (design.verso ? 2 : 1)).toLocaleString(LANG) })),
       h('li', {}, t('pv_size', { w: mmText(page.w), h: mmText(page.h) })),
       h('li', {}, t('pv_qr', { qr: Math.floor(layout.qr) })),
     );
@@ -534,7 +591,7 @@ export function livePreview() {
       const tickets = sampleCodes(count).map((codes, i) => ({ ...codes, label: labelOf(from + i) }));
       const sheet = tab === 'poster' && ctx.poster
         ? posterSheet({ lang: ctx.lang, domain: ctx.domain, brand: ctx.key?.brand ?? 'WeCall.You', name: ctx.name || '…', token: ctx.poster.token, logo: design.logo, whiteLabel: ctx.whiteLabel, design })
-        : tab === 'key' && ctx.key ? keySheet({ ...ctx.key, design }) : ticketSheets(tickets, { ...design, lang: ctx.lang, domain: ctx.domain, name: ctx.name, whiteLabel: ctx.whiteLabel, last: lastNumber })[0];
+        : tab === 'key' && ctx.key ? keySheet({ ...ctx.key, design }) : ticketSheets(tickets, { ...design, lang: ctx.lang, domain: ctx.domain, name: ctx.name, whiteLabel: ctx.whiteLabel, last: lastNumber })[tab === 'back' ? 1 : 0];
       render(frame, sheet);
       requestAnimationFrame(fit);
     }, 60);

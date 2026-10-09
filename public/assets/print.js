@@ -52,7 +52,9 @@ export function printPlan({ lot, auth, from, to, options, domain, lang, key = nu
   const batchSize = perPage * pagesPerBatch;
   const count = to - from + 1;
   const batches = Math.ceil(count / batchSize);
-  const withKey = Boolean(key) && keyShares(design);
+  // Recto-verso : chaque page a son dos ; la page clé part à part (elle décalerait les dos).
+  const sides = design.verso ? 2 : 1;
+  const withKey = Boolean(key) && keyShares(design) && !design.verso;
   const keyOnly = () => printPages([keySheet({ ...key, design })], keyPage(design));
 
   // Page clé sur un autre papier (rouleau, étiquettes…) : on l'imprime d'abord, en A4.
@@ -64,14 +66,14 @@ export function printPlan({ lot, auth, from, to, options, domain, lang, key = nu
     });
     box.append(h('p', { class: 'small' }, t('plan_key_first')), keyFirst);
   }
-  box.append(h('p', { class: 'lead' }, t('plan_summary', { count: count.toLocaleString(lang), pages: pagesFor(count, perPage).toLocaleString(lang), batches })));
+  box.append(h('p', { class: 'lead' }, t('plan_summary', { count: count.toLocaleString(lang), pages: (pagesFor(count, perPage) * sides).toLocaleString(lang), batches })));
   if (batches > 1) box.append(h('p', { class: 'small muted' }, t('plan_hint', { pages: pagesPerBatch })));
 
   for (let i = 0; i < batches; i++) {
     const n1 = from + i * batchSize;
     const n2 = Math.min(to, n1 + batchSize - 1);
-    const p1 = i * pagesPerBatch + 1;
-    const p2 = p1 + pagesFor(n2 - n1 + 1, perPage) - 1;
+    const p1 = i * pagesPerBatch * sides + 1;
+    const p2 = p1 + pagesFor(n2 - n1 + 1, perPage) * sides - 1;
     const first = withKey && i === 0;
     const label = t(batches === 1 ? 'print_btn' : 'plan_batch', { i: i + 1, p1, p2, n1, n2 });
     const button = h('button', { type: 'button', class: `btn btn-block ${i === 0 && !(key && !withKey) ? 'btn-big' : 'btn-soft'}` }, icon('printer'), label, first && ` ${t('plan_with_key')}`);
@@ -92,6 +94,7 @@ export function printPlan({ lot, auth, from, to, options, domain, lang, key = nu
   }
 
   box.append(h('p', { class: 'small muted' }, PAPERS[design.paper].roll ? t('plan_tip_roll', { w: PAPERS[design.paper].w }) : t('plan_tip')));
+  if (design.verso) box.append(h('p', { class: 'banner-warn' }, icon('printer'), t('plan_tip_verso')));
   if (key && withKey) {
     const only = h('button', { type: 'button', class: 'linklike small' }, t('plan_key_only'));
     only.addEventListener('click', keyOnly);

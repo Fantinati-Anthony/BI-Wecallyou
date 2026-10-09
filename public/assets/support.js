@@ -33,10 +33,10 @@ if (cfg) {
   const total = cfg.costs.reduce((sum, c) => sum + c.month, 0);
   render(
     document.getElementById('costs'),
-    cfg.costs.map((c) => h('tr', {}, h('td', {}, c[LANG] ?? c.fr), h('td', {}, `${c.month} € / ${LANG === 'fr' ? 'mois' : 'month'}`))),
-    h('tr', {}, h('td', {}, h('strong', {}, 'Total')), h('td', {}, `${total} € / ${LANG === 'fr' ? 'mois' : 'month'}`)),
+    cfg.costs.map((c) => h('tr', {}, h('td', {}, c[LANG] ?? c.en ?? c.fr), h('td', {}, t('sup_per_month', { n: c.month })))),
+    h('tr', {}, h('td', {}, h('strong', {}, t('sup_total'))), h('td', {}, t('sup_per_month', { n: total }))),
   );
-  document.getElementById('updated').textContent = LANG === 'fr' ? `Chiffres mis à jour : ${cfg.updated}.` : `Figures updated: ${cfg.updated}.`;
+  document.getElementById('updated').textContent = t('sup_updated', { date: cfg.updated });
   document.getElementById('tax-fr').textContent = cfg.tax_deductible
     ? 'Oui : WeCall.You est porté par une association, un reçu fiscal vous est envoyé.'
     : 'Non, pas pour l’instant : c’est une contribution volontaire, sans reçu fiscal. Si une association reprend le projet, cela changera.';

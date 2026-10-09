@@ -1,11 +1,11 @@
 // Page d'accueil : création d'un lot de tickets, entièrement dans le navigateur.
 // À gauche les réglages, à droite l'aperçu A4 en direct (studio d'impression).
 // Les options Pro sont visibles par tous, grisées tant que le compte connecté n'est pas Pro.
-import { h, t, LANG, api, render, translatePage, errorText, lots, local, icon, oneOpen } from './common.js';
+import { h, t, LANG, api, render, translatePage, errorText, lots, local, icon } from './common.js';
 import { createLot, secretToText, b64u, randomBytes } from './crypto.js';
 import { printPlan, printOptions } from './print.js';
 import { contentOf, keySheet, posterSheet, fillPrintRoot, keyPage, setPrintPage } from './sheets.js';
-import { designControls, livePreview } from './studio.js';
+import { designControls, livePreview, posterTextFields } from './studio.js';
 import { supportCard, nudgeAfterPrint, loadSupport } from './donate.js';
 import { session, sync } from './account.js';
 import { PRO_LIFETIMES, themeFields, proLock } from './protools.js';
@@ -21,7 +21,28 @@ const SAMPLE_POSTER = 'A'.repeat(23); // aperçu : la vraie affiche reçoit son 
 const SAMPLE_SCREEN = 'B'.repeat(23); // aperçu de la page clé : le vrai écran public a son lien à la création
 
 translatePage();
-oneOpen(document.getElementById('create-form')); // un seul volet ouvert à la fois
+
+/* Réglages en trois onglets : Informations, Message, Apparence (clavier : flèches, Début, Fin). */
+const tabs = [...document.querySelectorAll('#create-form [role=tab]')];
+document.querySelector('#create-form [role=tablist]').setAttribute('aria-label', t('create_title'));
+function showTab(tab, focus = false) {
+  for (const other of tabs) {
+    const on = other === tab;
+    other.setAttribute('aria-selected', String(on));
+    other.tabIndex = on ? 0 : -1;
+    document.getElementById(other.getAttribute('aria-controls')).hidden = !on;
+  }
+  if (focus) tab.focus();
+}
+tabs.forEach((tab, i) => {
+  tab.addEventListener('click', () => showTab(tab));
+  tab.addEventListener('keydown', (event) => {
+    const to = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[event.key];
+    if (to === undefined) return;
+    event.preventDefault();
+    showTab(tabs[(to + tabs.length) % tabs.length], true);
+  });
+});
 
 const form = document.getElementById('create-form');
 const errorBox = document.getElementById('create-error');
@@ -43,6 +64,7 @@ const monthlyCost = support ? support.costs.reduce((sum, c) => sum + c.month, 0)
 // Statut connu sur ce téléphone, puis confirmé par le serveur. Installation indépendante « allPro » : tout est ouvert.
 let pro = Boolean(info.allPro || session.get()?.pro);
 let design = null; // studio d'impression (plus bas) : son logo et ses couleurs suivent le statut Pro
+let posterTextsBox = null; // textes de l'affiche et du verso (plus bas)
 const whiteLabel = h('input', { type: 'checkbox', id: 'c-wl' });
 const theme = themeFields({ enabled: pro });
 const lock = proLock(!session.get());
@@ -117,6 +139,7 @@ design = designControls(
   local.get(DRAFT, {}),
   (value) => {
     local.set(DRAFT, value);
+    showPosterTexts();
     refresh();
   },
   contentFor,
@@ -150,11 +173,24 @@ function applyMode() {
   local.set(MODE, mode);
   document.getElementById('mode-hint').textContent = t(`mode_hint_${mode}`);
   document.getElementById('count-field').hidden = mode === 'poster';
-  document.getElementById('layout-card').hidden = mode === 'poster';
+  document.getElementById('layout-section').hidden = mode === 'poster';
   refresh();
   preview.setTab(mode === 'poster' ? 'poster' : 'tickets');
+  showPosterTexts();
 }
 for (const input of modeInputs) input.addEventListener('change', applyMode);
+// Textes de l'affiche et du verso des tickets (onglet Message) : utiles avec une affiche ou un verso.
+posterTextsBox = h(
+  'section',
+  { class: 'panel-sec', id: 'poster-texts' },
+  h('h3', {}, t('pt_title')),
+  posterTextFields({ initial: design.get().posterText, onChange: (posterText) => design.patch({ posterText }) }).element,
+);
+document.getElementById('panel-message').append(posterTextsBox);
+function showPosterTexts() {
+  if (!posterTextsBox) return;
+  posterTextsBox.hidden = modeOf() === 'tickets' && !design.get().verso;
+}
 applyMode();
 
 password.addEventListener('input', () => {

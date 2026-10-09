@@ -2,6 +2,9 @@
 // et une voix. Aucune donnée de client : seulement des numéros et les repères choisis à l'appel.
 import { h, t, LANG, api, render, translatePage, local, setColors, icon } from './common.js';
 
+/** Voix de l'annonce, selon la langue de l'écran. */
+const VOICES = { fr: 'fr-FR', en: 'en-GB', de: 'de-DE', es: 'es-ES', it: 'it-IT', pl: 'pl-PL', ro: 'ro-RO', nl: 'nl-NL' };
+
 translatePage();
 
 const token = (location.pathname.split('/')[2] || '').toUpperCase();
@@ -100,7 +103,7 @@ function say(announcement) {
     ? `${t('e_say', { n: Number(announcement.labels[0]) })} ${announcement.tag ? `${announcement.tag}.` : ''}`
     : t('e_say_group', { tag: announcement.tag || announcement.labels.map(Number).join(', ') });
   const utterance = new SpeechSynthesisUtterance(text.replaceAll('·', ','));
-  utterance.lang = LANG === 'fr' ? 'fr-FR' : 'en-GB';
+  utterance.lang = VOICES[LANG] ?? 'en-GB';
   utterance.rate = 0.95;
   speechSynthesis.cancel();
   setTimeout(() => speechSynthesis.speak(utterance), prefs.sound && audio ? 1300 : 0);

@@ -2,7 +2,7 @@
 // format libre, rouleau d'imprimante à tickets, étiquettes…). La mise en page vient de layout.js.
 import { h, tl, qrSvg, ticketUrl, inkOn, icon } from './common.js';
 import { secretToText } from './crypto.js';
-import { normalizeDesign, fitDesign, headSize, pageOf } from './layout.js';
+import { normalizeDesign, fitDesign, headSize, pageOf, fitBack } from './layout.js';
 
 /** Numéro tel qu'imprimé : au moins trois chiffres. */
 export const labelOf = (n) => String(n).padStart(3, '0');
@@ -156,14 +156,86 @@ export function ticketSheets(tickets, options) {
     '--s-bg': design.mono ? '#ffffff' : design.stubBg,
     '--s-ink': design.mono ? '#000000' : inkOn(design.stubBg),
   };
+  const sheet = (cells, extra = {}, cls = '') => {
+    const page = h('section', { class: `sheet sheet-tickets align-${design.align}${design.mono ? ' mono' : ''}${cls}` });
+    for (const [k, v] of Object.entries({ ...vars, ...extra })) page.style.setProperty(k, v);
+    page.append(...cells);
+    return page;
+  };
+  // Recto-verso : le dos de la grille est décalé de la marge opposée (la feuille se retourne sur son bord long).
+  const gridW = design.cols * fit.cell.w + (design.cols - 1) * design.gapX;
+  const backVars = { '--m-left': mm(fit.page.w - ml - gridW) };
+  const back = design.verso ? backContent(ctx, posterTexts(options.lang, design).steps) : null;
   const pages = [];
   for (let i = 0; i < tickets.length; i += fit.perPage) {
-    const page = h('section', { class: `sheet sheet-tickets align-${design.align}${design.mono ? ' mono' : ''}` });
-    for (const [k, v] of Object.entries(vars)) page.style.setProperty(k, v);
-    page.append(...cellsOf(tickets.slice(i, i + fit.perPage), ctx));
-    pages.push(page);
+    const cells = cellsOf(tickets.slice(i, i + fit.perPage), ctx);
+    pages.push(sheet(cells));
+    if (back) pages.push(sheet(mirror(cells, design, back), backVars, ' sheet-back'));
   }
   return pages;
+}
+
+/**
+ * Verso d'une page de tickets : chaque case passe de l'autre côté (miroir gauche-droite, pour une
+ * impression recto verso « bord long »). Au dos du ticket, le mode d'emploi ; au dos des souches, rien.
+ */
+function mirror(cells, design, back) {
+  const { cols, rows } = design;
+  const grid = [...cells];
+  while (grid.length < cols * rows) grid.push(h('div', { class: 'pair empty' }));
+  const out = [];
+  for (let r = 0; r < rows; r++) {
+    for (let c = cols - 1; c >= 0; c--) {
+      const cell = grid[r * cols + c];
+      if (cell.classList.contains('empty')) {
+        out.push(h('div', { class: 'pair empty' }));
+        continue;
+      }
+      const mode = [...cell.classList].find((cls) => cls.startsWith('stub-')) ?? 'stub-none';
+      const parts = [...cell.children].map((part) => (part.classList.contains('client') ? back() : h('div', { class: 'part stub back-blank' })));
+      if (mode === 'stub-right') parts.reverse(); // le ticket passe à droite, ses souches à gauche
+      out.push(h('div', { class: `pair back ${mode}` }, parts));
+    }
+  }
+  return out;
+}
+
+/** Dos d'un ticket : les étapes de l'affiche, à la plus grande taille qui tient (layout.js). */
+function backContent(ctx, steps) {
+  const { fit } = ctx;
+  const w = fit.stub === 'right' ? fit.cell.w * fit.split : fit.cell.w;
+  const hgt = fit.stub === 'bottom' ? fit.cell.h * fit.split : fit.cell.h;
+  const pad = fit.client.pad;
+  const size = fitBack(steps, w - 2 * pad, hgt - 2 * pad);
+  return () => {
+    const part = h('div', { class: 'part back-steps' });
+    part.style.setProperty('--pad', mm(pad));
+    if (!size) return part; // trop petit pour un mode d'emploi lisible : le dos reste blanc
+    part.style.setProperty('--b-t', mm(size.t));
+    part.append(
+      h(
+        'ol',
+        {},
+        steps.map((step, i) => h('li', {}, h('span', { class: 'b-num' }, String(i + 1)), h('div', {}, h('b', {}, step.title), size.withText && step.text && h('span', { class: 'b-text' }, step.text)))),
+      ),
+    );
+    return part;
+  };
+}
+
+/**
+ * Textes de l'affiche et du verso des tickets : ceux que le commerçant a retouchés, sinon ceux
+ * d'origine dans la langue d'impression. Sous-titre par défaut : le titre en anglais (vide s'il l'a effacé).
+ */
+export function posterTexts(lang, design = {}) {
+  const custom = normalizeDesign(design).posterText;
+  const pick = (key, text) => custom[key] || tl(lang, text);
+  return {
+    title: pick('title', 'poster_title'),
+    sub: custom.sub ?? (lang === 'en' ? '' : tl('en', 'poster_title')),
+    cta: pick('cta', 'poster_cta'),
+    steps: [1, 2, 3].map((i) => ({ title: pick(`s${i}t`, `poster_s${i}_t`), text: pick(`s${i}`, `poster_s${i}`) })),
+  };
 }
 
 /** Format de la page clé : A4, ou Letter si les tickets sont imprimés sur du Letter. */
@@ -300,12 +372,8 @@ export const screenUrl = (domain, token) => `HTTPS://${domain.toUpperCase()}/ECR
  */
 export function posterSheet({ lang, domain, brand, name, token, logo = null, whiteLabel = false, design = {} }) {
   const page = keyPage(design);
-  const other = lang === 'fr' ? 'en' : 'fr';
-  const steps = [
-    ['qr-code', 'poster_s1'],
-    ['bell-ringing', 'poster_s2'],
-    ['megaphone', 'poster_s3'],
-  ];
+  const text = posterTexts(lang, design);
+  const glyphs = ['qr-code', 'bell-ringing', 'megaphone'];
   const sheet = h(
     'section',
     { class: 'sheet sheet-key sheet-doc sheet-poster' },
@@ -315,15 +383,15 @@ export function posterSheet({ lang, domain, brand, name, token, logo = null, whi
       'div',
       { class: 'poster-main' },
       logo && h('img', { class: 'poster-logo', src: logo, alt: '' }),
-      h('h1', {}, tl(lang, 'poster_title')),
-      h('p', { class: 'poster-other' }, tl(other, 'poster_title')),
+      h('h1', {}, text.title),
+      text.sub && h('p', { class: 'poster-other' }, text.sub),
       h('div', { class: 'poster-qr' }, qrSvg(posterUrl(domain, token), 'M')),
-      h('p', { class: 'poster-cta' }, tl(lang, 'poster_cta')),
+      h('p', { class: 'poster-cta' }, text.cta),
     ),
     h(
       'ol',
       { class: 'k-steps' },
-      steps.map(([glyph, text], i) => h('li', {}, h('div', { class: 'k-step-head' }, h('span', { class: 'k-num' }, String(i + 1)), icon(glyph), h('b', {}, tl(lang, `${text}_t`))), h('p', {}, tl(lang, text)))),
+      text.steps.map((step, i) => h('li', {}, h('div', { class: 'k-step-head' }, h('span', { class: 'k-num' }, String(i + 1)), icon(glyphs[i]), h('b', {}, step.title)), h('p', {}, step.text))),
     ),
     h('p', { class: 'k-privacy' }, icon('lock-key'), h('span', {}, tl(lang, 'poster_privacy'))),
     !whiteLabel && docFoot(lang, domain, brand),

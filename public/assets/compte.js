@@ -1,6 +1,6 @@
 // Page « Mon compte » : connexion, création (avec fiche de secours), mot de passe oublié,
 // et, une fois connecté, statut Pro, lots du compte et gestion de la sécurité.
-import { h, t, LANG, api, render, translatePage, errorText, lots, local, icon } from './common.js';
+import { h, t, LANG, LANGS, LANG_KEY, api, render, translatePage, errorText, lots, local, icon } from './common.js';
 import { textToSecret, secretToText } from './crypto.js';
 import { session, signup, login, recover, sync, changePassword, rotateRecovery, logout, deleteAccount, printKit, downloadKit, removeLot, IDENT, MIN_PASSWORD } from './account.js';
 import { proLock } from './protools.js';
@@ -84,6 +84,7 @@ function loginForm() {
   onSubmit(form, button, async () => {
     const res = await login(ident.input.value, pw.input.value);
     if (res.error) return error.show(res.error === 'account_login' ? 'err_account_login' : res.error);
+    await sync(); // langue et activité du compte retrouvées avant d'ouvrir l'espace
     location.href = '/m';
   });
   return form;
@@ -94,6 +95,8 @@ function signupForm() {
   const pw = field('sp', 'acc_password', { type: 'password', autocomplete: 'new-password' }, 'acc_password_hint');
   const pw2 = field('sp2', 'acc_password2', { type: 'password', autocomplete: 'new-password' });
   const activity = activityField(local.get(ACTIVITY_KEY));
+  // Langue de l'interface et des tickets imprimés.
+  const lang = h('select', { id: 's-lang', class: 'select' }, Object.entries(LANGS).map(([code, name]) => h('option', { value: code, selected: code === LANG }, name)));
   const error = errorBox();
   const button = h('button', { class: 'btn btn-big btn-block', type: 'submit' }, t('acc_signup_btn'));
   const form = h(
@@ -102,6 +105,7 @@ function signupForm() {
     ident.element,
     pw.element,
     pw2.element,
+    h('div', { class: 'field' }, h('label', { for: 's-lang' }, t('acc_lang')), lang, h('p', { class: 'small muted' }, t('acc_lang_hint'))),
     h('div', { class: 'field' }, h('label', {}, t('acc_activity')), activity.element, h('p', { class: 'small muted' }, t('acc_activity_hint'))),
     error,
     button,
@@ -111,10 +115,9 @@ function signupForm() {
     const res = await signup(ident.input.value, pw.input.value);
     if (res.error) return error.show(res.error === 'ident_taken' ? 'err_ident_taken' : res.error);
     const chosen = activity.value();
-    if (chosen) {
-      local.set(ACTIVITY_KEY, chosen);
-      await sync({ activity: chosen });
-    }
+    if (chosen) local.set(ACTIVITY_KEY, chosen);
+    local.set(LANG_KEY, lang.value);
+    await sync(chosen ? { activity: chosen } : {}); // langue et activité gardées chiffrées dans le compte
     kitStep(session.get().ident, res.recovery);
   });
   return form;

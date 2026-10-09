@@ -6,7 +6,7 @@ import { unlock, callTickets } from './call.js';
 import { composer, needsComposer, groupOf, parseNumbers } from './message.js';
 import { keySheet, fillPrintRoot, contentOf, keyPage, setPrintPage, posterSheet, posterUrl, labelOf as ticketLabel } from './sheets.js';
 import { printPlan, printOptions } from './print.js';
-import { designControls, livePreview } from './studio.js';
+import { designControls, livePreview, posterTextFields } from './studio.js';
 import { withoutPro } from './layout.js';
 import { PRO_LIFETIMES, themeFields, proLock } from './protools.js';
 import { loadActivities, messageEditor } from './activities.js';
@@ -576,7 +576,7 @@ async function printTab(panel, { lot, access }) {
     h('details', { class: 'card', open: true }, h('summary', {}, t('m_print_layout')), controls.layout),
     h('details', { class: 'card' }, h('summary', {}, t('m_print_colors')), controls.colors),
     h('section', { class: 'card stack' }, plan, reprintKey),
-    posterCard(lot, access),
+    posterCard(lot, access, controls),
   );
   oneOpen(form); // un seul volet ouvert à la fois
   render(panel, h('div', { class: 'studio' }, form, preview.element), preview.fab);
@@ -586,8 +586,14 @@ async function printTab(panel, { lot, access }) {
 /* ------------------------------------------------------------------ affiche */
 
 /** Affiche à scanner : QR à l'écran, impression A4, numérotation reprise au début, lien renouvelé. */
-function posterCard(lot, access) {
+function posterCard(lot, access, controls = null) {
   const status = h('p', { class: 'small', role: 'status' });
+  // Textes de l'affiche (et du verso des tickets) : gardés avec les réglages d'impression de ce lot.
+  const texts = posterTextFields({
+    initial: printOptions.get(lot.lot).posterText,
+    onChange: (posterText) => (controls ? controls.patch({ posterText }) : printOptions.set(lot.lot, { posterText })),
+  });
+  const editTexts = h('details', { class: 'advanced' }, h('summary', {}, t('pt_title')), texts.element);
   const qr = h('div', { class: 'poster-mini' }, qrSvg(posterUrl(info.domain, lot.poster)));
   const print = h('button', { type: 'button', class: 'btn btn-block', id: 'print-poster' }, icon('printer'), t('poster_print'));
   print.addEventListener('click', () => {
@@ -616,6 +622,7 @@ function posterCard(lot, access) {
     h('h2', { class: 'row' }, icon('qr-code'), t('poster_card_title')),
     h('p', { class: 'small muted' }, t('poster_card_hint', { n: ticketLabel(lot.posterFrom ?? lot.printTo + 1) })),
     h('div', { class: 'poster-row' }, qr, h('div', { class: 'stack grow' }, print)),
+    editTexts,
     reset,
     status,
   );
