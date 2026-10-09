@@ -164,10 +164,10 @@ export default {
 
   create_count: 'Liczba biletów',
   create_first: 'Pierwszy numer',
-  create_ttl: 'Ważność biletu po pierwszym skanie',
+  create_ttl: 'Ważność biletu',
   ttl_option: '{h} h',
-  ttl_hint: 'Potem wszystkie dane tego biletu są usuwane; zostają tylko anonimowe statystyki. Dane kontaktowe są usuwane 30 min po wywołaniu.',
-  create_password: 'Hasło serii (opcjonalne, zalecane)',
+  ttl_hint: 'Liczona od pierwszego skanu. Potem wszystkie dane tego biletu są usuwane; zostają tylko anonimowe statystyki. Dane kontaktowe są usuwane 30 min po wywołaniu.',
+  create_password: 'Hasło serii (zalecane)',
   create_password2: 'Potwierdź hasło',
   create_password_hint: 'Jest dodatkowym elementem szyfrowania: bez niego strona 1 jest bezużyteczna. Nie jest nigdzie zapisane i nikt nie może go odzyskać, nawet my: zanotuj je.',
   err_password_match: 'Hasła nie są takie same.',

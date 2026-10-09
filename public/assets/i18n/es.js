@@ -164,10 +164,10 @@ export default {
 
   create_count: 'Número de tickets',
   create_first: 'Primer número',
-  create_ttl: 'Duración de un ticket tras su primer escaneo',
+  create_ttl: 'Duración de un ticket',
   ttl_option: '{h} h',
-  ttl_hint: 'Después, se borra todo lo relativo a este ticket; solo quedan estadísticas anónimas. Los datos de contacto se borran 30 min después de la llamada.',
-  create_password: 'Contraseña del lote (opcional, recomendada)',
+  ttl_hint: 'Se cuenta desde el primer escaneo. Después, se borra todo lo relativo a este ticket; solo quedan estadísticas anónimas. Los datos de contacto se borran 30 min después de la llamada.',
+  create_password: 'Contraseña del lote (recomendada)',
   create_password2: 'Confirme la contraseña',
   create_password_hint: 'Se suma al cifrado: sin ella, la página 1 no sirve de nada. No está escrita en ningún sitio y nadie puede recuperarla, ni siquiera nosotros: anótela.',
   err_password_match: 'Las dos contraseñas no coinciden.',

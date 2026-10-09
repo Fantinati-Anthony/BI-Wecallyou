@@ -164,10 +164,10 @@ export default {
 
   create_count: 'Număr de tichete',
   create_first: 'Primul număr',
-  create_ttl: 'Durata de viață a unui tichet după prima scanare',
+  create_ttl: 'Durata de viață a unui tichet',
   ttl_option: '{h} h',
-  ttl_hint: 'După aceea, tot ce ține de acest tichet este șters; rămân doar statistici anonime. Datele de contact sunt șterse la 30 de minute după apel.',
-  create_password: 'Parola lotului (opțională, recomandată)',
+  ttl_hint: 'Se calculează de la prima scanare. După aceea, tot ce ține de acest tichet este șters; rămân doar statistici anonime. Datele de contact sunt șterse la 30 de minute după apel.',
+  create_password: 'Parola lotului (recomandată)',
   create_password2: 'Confirmați parola',
   create_password_hint: 'Se adaugă la criptare: fără ea, pagina 1 nu folosește la nimic. Nu este scrisă nicăieri și nimeni nu o poate recupera, nici măcar noi: notați-o.',
   err_password_match: 'Cele două parole nu se potrivesc.',

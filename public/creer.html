@@ -40,7 +40,7 @@
               <button type="button" role="tab" id="tab-look" aria-controls="panel-look" aria-selected="false" tabindex="-1"><span data-icon="palette"></span><span data-i18n="tab_look">Apparence</span></button>
             </div>
             <section class="tab-panel" role="tabpanel" id="panel-info" aria-labelledby="tab-info">
-              <div class="field">
+              <div class="field cap">
                 <label for="name" data-i18n="create_name">Nom affiché aux clients</label>
                 <input id="name" name="name" type="text" maxlength="60" required autocomplete="organization" data-i18n-placeholder="create_name_ph">
               </div>
@@ -54,11 +54,11 @@
                 </div>
               </fieldset>
               <div class="inline-fields field">
-                <div id="count-field">
+                <div class="cap num" id="count-field">
                   <label for="count" data-i18n="create_count">Nombre de tickets</label>
                   <input id="count" name="count" type="number" min="1" max="999999" value="120" inputmode="numeric" required>
                 </div>
-                <div id="first-field">
+                <div class="cap num" id="first-field">
                   <label for="first" data-i18n="create_first">Premier numéro</label>
                   <input id="first" name="first" type="number" min="1" max="999999" value="1" inputmode="numeric" required>
                 </div>
@@ -72,26 +72,26 @@
                   <label class="choice"><input type="checkbox" name="channels" value="mail" checked><span data-icon="envelope-simple"></span><span data-i18n="ch_mail"></span></label>
                 </div>
               </fieldset>
-              <div class="field">
-                <div class="label-row"><label for="ttl" data-i18n="create_ttl">Durée de vie d’un ticket après son premier scan</label><span data-tip="ttl_hint"></span></div>
+              <div class="field cap">
+                <div class="label-row"><label for="ttl" data-i18n="create_ttl">Durée de vie d’un ticket</label><span data-tip="ttl_hint"></span></div>
                 <select id="ttl" name="ttl" class="select"></select>
               </div>
-              <div class="field">
-                <div class="label-row"><label for="password" data-i18n="create_password">Mot de passe du lot (facultatif, conseillé)</label><span data-tip="create_password_hint"></span></div>
+              <div class="field cap">
+                <div class="label-row"><label for="password" data-i18n="create_password">Mot de passe du lot (conseillé)</label><span data-tip="create_password_hint"></span></div>
                 <input id="password" name="password" type="password" autocomplete="new-password" minlength="8">
-                <div class="field" id="password2-field" hidden>
-                  <label for="password2" data-i18n="create_password2">Confirmez le mot de passe</label>
-                  <input id="password2" name="password2" type="password" autocomplete="new-password">
-                </div>
+              </div>
+              <div class="field cap" id="password2-field" hidden>
+                <label for="password2" data-i18n="create_password2">Confirmez le mot de passe</label>
+                <input id="password2" name="password2" type="password" autocomplete="new-password">
               </div>
             </section>
             <section class="tab-panel" role="tabpanel" id="panel-message" aria-labelledby="tab-message" hidden>
               <div id="message-slot"></div>
-              <div class="field">
+              <div class="field cap">
                 <div class="label-row"><label for="promo" data-i18n="create_promo">Votre message (facultatif)</label><span data-tip="promo_hint"></span></div>
                 <input id="promo" name="promo" type="text" maxlength="140" data-i18n-placeholder="create_promo_ph">
               </div>
-              <div class="field">
+              <div class="field cap">
                 <label for="link" data-i18n="create_link">Votre lien (facultatif)</label>
                 <input id="link" name="link" type="url" maxlength="200" inputmode="url" data-i18n-placeholder="create_link_ph">
               </div>

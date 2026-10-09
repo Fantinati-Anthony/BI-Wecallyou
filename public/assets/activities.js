@@ -195,18 +195,15 @@ export function messageEditor({ activities, selected = null, initial = null, nam
   // Libellé et sa bulle d'explication « ? » : le formulaire reste compact.
   const labelled = (id, key, hint) => h('div', { class: 'label-row' }, h('label', { for: id }, t(key)), helpTip(t(hint)));
   return {
-    activityElement: h('div', {}, labelled(ids.choose, 'studio_activity', 'act_later'), h('div', { class: 'act-line' }, label, choose)),
+    activityElement: h('div', { class: 'cap auto' }, labelled(ids.choose, 'studio_activity', 'act_later'), h('div', { class: 'act-line cap-ctl' }, label, choose)),
     element: h(
       'div',
       { class: 'stack' },
-      labelled(ids.template, 's_template', 's_template_hint'),
-      template,
+      h('div', { class: 'cap col' }, labelled(ids.template, 's_template', 's_template_hint'), template),
       vars.element,
       example,
-      labelled(ids.lists, 's_lists', 's_lists_hint'),
-      lists,
-      labelled(ids.groups, 's_groups', 's_groups_hint'),
-      groups,
+      h('div', { class: 'cap col' }, labelled(ids.lists, 's_lists', 's_lists_hint'), lists),
+      h('div', { class: 'cap col' }, labelled(ids.groups, 's_groups', 's_groups_hint'), groups),
     ),
     value: () => ({ template: template.value, lists: textToLists(lists.value), groups: textToGroups(groups.value) }),
     /** Le message tel qu'un client le recevrait pour ce numéro (aperçu du téléphone). */

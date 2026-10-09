@@ -164,10 +164,10 @@ export default {
 
   create_count: 'Nombre de tickets',
   create_first: 'Premier numéro',
-  create_ttl: 'Durée de vie d’un ticket après son premier scan',
+  create_ttl: 'Durée de vie d’un ticket',
   ttl_option: '{h} h',
-  ttl_hint: 'Ensuite, tout ce qui concerne ce ticket est effacé ; seules restent des statistiques anonymes. Les coordonnées, elles, sont effacées 30 min après l’appel.',
-  create_password: 'Mot de passe du lot (facultatif, conseillé)',
+  ttl_hint: 'Comptée à partir du premier scan. Ensuite, tout ce qui concerne ce ticket est effacé ; seules restent des statistiques anonymes. Les coordonnées, elles, sont effacées 30 min après l’appel.',
+  create_password: 'Mot de passe du lot (conseillé)',
   create_password2: 'Confirmez le mot de passe',
   create_password_hint: 'Il s’ajoute au chiffrement : sans lui, la page 1 ne sert à rien. Il n’est écrit nulle part et personne ne peut le retrouver, pas même nous : notez-le.',
   err_password_match: 'Les deux mots de passe ne correspondent pas.',

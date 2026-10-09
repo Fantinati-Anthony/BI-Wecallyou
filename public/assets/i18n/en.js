@@ -164,10 +164,10 @@ export default {
 
   create_count: 'Number of tickets',
   create_first: 'First number',
-  create_ttl: 'Ticket lifetime after its first scan',
+  create_ttl: 'Ticket lifetime',
   ttl_option: '{h} h',
-  ttl_hint: 'After that, everything about the ticket is deleted; only anonymous statistics remain. Contact details are deleted 30 min after the call.',
-  create_password: 'Batch password (optional, recommended)',
+  ttl_hint: 'Counted from the first scan. After that, everything about the ticket is deleted; only anonymous statistics remain. Contact details are deleted 30 min after the call.',
+  create_password: 'Batch password (recommended)',
   create_password2: 'Confirm the password',
   create_password_hint: 'It becomes part of the encryption: without it, page 1 is useless. It is written nowhere and nobody can recover it, not even us: write it down.',
   err_password_match: 'The two passwords don’t match.',

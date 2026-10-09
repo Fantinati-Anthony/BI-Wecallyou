@@ -692,9 +692,16 @@ try {
     const labels = (await p.locator('.pv-frame .part.client .p-num').allTextContents()).map(Number);
     assert.equal(new Set(labels).size, labels.length);
     assert.ok(labels.some((n, i) => i > 0 && n < labels[i - 1]), labels.join(',')); // pas dans l'ordre
+    // Téléphone du client et « Tout », sans promo ni lien (cas qui plantait).
+    await p.locator('.studio-preview [data-tab="client"]').click();
+    await p.waitForSelector('.pv-frame .pv-phones .pvp-ready', { state: 'attached' });
+    assert.equal(await p.locator('.pv-frame .pvp-promo').count(), 0);
+    await p.locator('.studio-preview [data-tab="all"]').click();
+    await p.waitForSelector('.pv-frame .pv-all .pv-tile-client .pvp-ready', { state: 'attached' });
+    assert.ok((await p.locator('.pv-frame .pv-all .pv-tile').count()) >= 4);
     await ctx.close();
   }
-  step('« les deux » : numéros des tickets mélangés dans l’aperçu, pas de premier numéro');
+  step('« les deux » : numéros des tickets mélangés dans l’aperçu, pas de premier numéro ; vues Client et Tout sans promo');
 
   // Barre du haut : le logo et le menu ne se chevauchent jamais, quelle que soit la page (étroite ou large) et l'écran.
   {

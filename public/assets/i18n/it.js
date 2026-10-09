@@ -164,10 +164,10 @@ export default {
 
   create_count: 'Numero di biglietti',
   create_first: 'Primo numero',
-  create_ttl: 'Durata di un biglietto dopo la prima scansione',
+  create_ttl: 'Durata di un biglietto',
   ttl_option: '{h} h',
-  ttl_hint: 'Dopodiché, tutto ciò che riguarda il biglietto viene cancellato; restano solo statistiche anonime. I recapiti, invece, vengono cancellati 30 min dopo la chiamata.',
-  create_password: 'Password del lotto (facoltativa, consigliata)',
+  ttl_hint: 'Si conta dalla prima scansione. Dopodiché, tutto ciò che riguarda il biglietto viene cancellato; restano solo statistiche anonime. I recapiti, invece, vengono cancellati 30 min dopo la chiamata.',
+  create_password: 'Password del lotto (consigliata)',
   create_password2: 'Confermi la password',
   create_password_hint: 'Si aggiunge alla cifratura: senza di essa, la pagina 1 non serve a nulla. Non è scritta da nessuna parte e nessuno può recuperarla, nemmeno noi: la annoti.',
   err_password_match: 'Le due password non corrispondono.',

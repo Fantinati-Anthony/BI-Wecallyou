@@ -164,10 +164,10 @@ export default {
 
   create_count: 'Aantal tickets',
   create_first: 'Eerste nummer',
-  create_ttl: 'Geldigheidsduur van een ticket na de eerste scan',
+  create_ttl: 'Geldigheidsduur van een ticket',
   ttl_option: '{h} uur',
-  ttl_hint: 'Daarna wordt alles over dit ticket gewist; alleen anonieme statistieken blijven over. Contactgegevens worden al 30 min na de oproep gewist.',
-  create_password: 'Wachtwoord van de reeks (optioneel, aanbevolen)',
+  ttl_hint: 'Gerekend vanaf de eerste scan. Daarna wordt alles over dit ticket gewist; alleen anonieme statistieken blijven over. Contactgegevens worden al 30 min na de oproep gewist.',
+  create_password: 'Wachtwoord van de reeks (aanbevolen)',
   create_password2: 'Bevestig het wachtwoord',
   create_password_hint: 'Het wordt deel van de versleuteling: zonder wachtwoord is pagina 1 nutteloos. Het staat nergens genoteerd en niemand kan het terughalen, ook wij niet: schrijf het op.',
   err_password_match: 'De twee wachtwoorden komen niet overeen.',

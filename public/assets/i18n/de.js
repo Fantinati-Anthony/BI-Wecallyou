@@ -164,10 +164,10 @@ export default {
 
   create_count: 'Anzahl der Tickets',
   create_first: 'Erste Nummer',
-  create_ttl: 'Gültigkeitsdauer eines Tickets nach dem ersten Scan',
+  create_ttl: 'Gültigkeitsdauer eines Tickets',
   ttl_option: '{h} Std.',
-  ttl_hint: 'Danach wird alles zu diesem Ticket gelöscht; es bleiben nur anonyme Statistiken. Die Kontaktdaten dagegen werden 30 Min. nach dem Aufruf gelöscht.',
-  create_password: 'Passwort der Serie (optional, empfohlen)',
+  ttl_hint: 'Gezählt ab dem ersten Scan. Danach wird alles zu diesem Ticket gelöscht; es bleiben nur anonyme Statistiken. Die Kontaktdaten dagegen werden 30 Min. nach dem Aufruf gelöscht.',
+  create_password: 'Passwort der Serie (empfohlen)',
   create_password2: 'Passwort bestätigen',
   create_password_hint: 'Es fließt in die Verschlüsselung ein: Ohne es ist Seite 1 nutzlos. Es ist nirgends hinterlegt, und niemand kann es wiederherstellen, nicht einmal wir: Notieren Sie es sich.',
   err_password_match: 'Die beiden Passwörter stimmen nicht überein.',

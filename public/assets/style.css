@@ -286,6 +286,36 @@ details[open] > summary { margin-bottom: 14px; }
 .check input { width: 18px; height: 18px; margin: 0; accent-color: var(--brand); }
 .check .i { color: var(--brand-text); }
 .inline-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+/* Capsule : le libellé à gauche (deux lignes au plus), le champ à droite, dans un seul cadre. */
+.cap {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: stretch;
+  min-height: 50px; margin: 0 0 10px; border: 1px solid var(--line); border-radius: var(--r-ctl); background: var(--surface);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.cap.num { grid-template-columns: minmax(0, 1fr) minmax(3.6rem, 38%); }
+.cap.fit { grid-template-columns: minmax(0, 1fr) auto; } /* le contrôle prend sa largeur (couleur, boutons), le libellé le reste */
+.cap.auto { grid-template-columns: auto minmax(0, 1fr); } /* libellé court : le contrôle prend le reste */
+.cap.col { grid-template-columns: minmax(0, 1fr); } /* texte long : le libellé en tête, la zone de texte dessous */
+.cap.col > :is(label, .label-row) { align-self: start; padding: 10px 13px 2px; }
+.cap > .textarea { min-width: 0; margin: 0; border: 0; border-radius: 0 0 calc(var(--r-ctl) - 1px) calc(var(--r-ctl) - 1px); background-color: transparent; box-shadow: none; padding-top: 6px; }
+.cap > .textarea:focus-visible { box-shadow: none; }
+.cap .act-current { font-size: 0.95rem; }
+.cap:focus-within { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
+.cap > label, .cap > .label-row { align-self: center; min-width: 0; margin: 0; padding: 6px 8px 6px 13px; font-size: 0.86rem; line-height: 1.22; overflow-wrap: break-word; hyphens: auto; }
+.cap > .label-row { gap: 6px; }
+.cap > .label-row label { margin: 0; font-size: inherit; line-height: inherit; }
+.cap label .small { display: block; font-weight: 500; font-size: 0.78rem; }
+.cap > :is(input, select.select, .cap-ctl) { min-width: 0; min-height: 48px; margin: 0; border: 0; border-left: 1px solid var(--line); border-radius: 0 calc(var(--r-ctl) - 1px) calc(var(--r-ctl) - 1px) 0; background-color: transparent; box-shadow: none; }
+.cap > :is(input, select.select):focus-visible { box-shadow: none; }
+.cap > input { padding-inline: 12px; }
+.cap.num > input { padding-inline: 10px; text-align: right; font-variant-numeric: tabular-nums; }
+.cap > .cap-ctl { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 6px 8px; }
+.cap > .cap-ctl .color { width: 42px; height: 34px; }
+.cap > .cap-ctl .btn { min-width: 0; max-width: 100%; white-space: normal; }
+.cap > :is(p, .small) { grid-column: 1 / -1; margin: 0; padding: 0 13px 9px; }
+.cap[hidden] { display: none; }
+.inline-fields > .cap, .stack > .cap { margin-bottom: 0; }
+.cap:has(> :is(input, select):disabled) { background: var(--surface-2); }
 
 /* ------------------------------------------------------------ messages */
 
@@ -541,7 +571,7 @@ details[open] > summary { margin-bottom: 14px; }
 /* Options Pro du générateur : visibles par tous, grisées sans Pro */
 .pro-badge { margin-left: 2px; padding: 2px 9px; font-size: 0.78rem; background: var(--brand-soft); color: var(--brand-text); }
 .pro-badge .i { width: 1em; height: 1em; }
-.pro-tools.locked .check, .pro-tools.locked .theme-preview, .pro-tools.locked .grid-4 { opacity: 0.5; }
+.pro-tools.locked .check, .pro-tools.locked .theme-preview, .pro-tools.locked .cap { opacity: 0.5; }
 .pro-tools.locked .check { cursor: not-allowed; }
 /* Logo et couleurs du studio : visibles par tous, grisés sans Pro (le lien vers l'offre reste actif). */
 .pro-only { border: 0; margin: 0; padding: 0; min-width: 0; }

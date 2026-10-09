@@ -38,7 +38,7 @@ function colorField(id, label, onChange) {
       return swatch;
     }),
   );
-  return { input, element: h('div', { class: 'field' }, h('label', { for: id }, label), h('div', { class: 'row' }, input, swatches)) };
+  return { input, element: h('div', { class: 'field cap' }, h('label', { for: id }, label), h('div', { class: 'cap-ctl' }, input, swatches)) };
 }
 
 /** Champ numérique : la valeur est bornée, et réaffichée bornée quand on quitte le champ. */
@@ -50,7 +50,7 @@ function numberField(id, label, { min, max, step = 1, onInput }) {
     onInput(Math.min(Number(input.max), Math.max(Number(input.min), value)));
   });
   const note = h('span', { class: 'small muted' });
-  return { input, note, element: h('div', {}, h('label', { for: id }, label, ' ', note), input) };
+  return { input, note, element: h('div', { class: 'cap num' }, h('label', { for: id }, label, ' ', note), input) };
 }
 
 function pressed(group, test) {
@@ -141,7 +141,7 @@ export function designControls(initial, onChange, contentFor, { pro = false } = 
       return button;
     }),
   );
-  const orientationBox = h('div', { class: 'field' }, h('label', {}, t('d_orientation')), orientation);
+  const orientationBox = h('div', { class: 'cap fit' }, h('label', {}, t('d_orientation')), h('div', { class: 'cap-ctl' }, orientation));
 
   /* grille : colonnes × lignes, chacune bornée pour que le QR code reste lisible */
   const cols = numberField('d-cols', t('d_cols'), { min: 1, max: LIMITS.cols[1], onInput: (v) => set({ cols: v }) });
@@ -202,7 +202,7 @@ export function designControls(initial, onChange, contentFor, { pro = false } = 
     'details',
     { class: 'advanced' },
     h('summary', {}, t('d_advanced')),
-    h('div', { class: 'stack' }, h('div', { class: 'grid-4' }, margins.map((m) => m.element)), h('div', { class: 'inline-fields' }, gapX.element, gapY.element), h('label', { class: 'check', for: 'd-cut' }, cut, ' ', t('d_cut')), h('p', { class: 'small muted' }, t('d_advanced_hint'))),
+    h('div', { class: 'stack' }, h('div', { class: 'inline-fields' }, margins.map((m) => m.element)), h('div', { class: 'inline-fields' }, gapX.element, gapY.element), h('label', { class: 'check', for: 'd-cut' }, cut, ' ', t('d_cut')), h('p', { class: 'small muted' }, t('d_advanced_hint'))),
   );
 
   /* couleurs et logo */
@@ -308,7 +308,7 @@ export function designControls(initial, onChange, contentFor, { pro = false } = 
       { class: 'stack' },
       h('div', { class: 'row' }, catalog.button),
       productLine,
-      h('div', { class: 'field' }, h('label', { for: 'd-paper' }, t('d_paper')), paper),
+      h('div', { class: 'cap auto' }, h('label', { for: 'd-paper' }, t('d_paper')), paper),
       size,
       orientationBox,
       h('div', { class: 'inline-fields' }, cols.element, rows.element),
@@ -316,8 +316,7 @@ export function designControls(initial, onChange, contentFor, { pro = false } = 
       h('div', { class: 'stub-row' }, stubCount, stubNone),
       stubPlace,
       stubHint,
-      h('label', {}, t('d_align')),
-      align,
+      h('div', { class: 'cap fit' }, h('label', {}, t('d_align')), h('div', { class: 'cap-ctl' }, align)),
       versoBox,
       advanced,
       catalog.dialog,
@@ -357,7 +356,7 @@ export function posterTextFields({ initial = {}, lang = LANG, onChange }) {
     });
     inputs[key] = input;
   }
-  const field = (key, label) => h('div', { class: 'field' }, h('label', { for: `pt-${key}` }, label), inputs[key]);
+  const field = (key, label) => h('div', { class: 'cap' }, h('label', { for: `pt-${key}` }, label), inputs[key]);
   const reset = h('button', { type: 'button', class: 'linklike small' }, t('pt_reset'));
   reset.addEventListener('click', () => {
     values = {};
@@ -520,7 +519,7 @@ function screenView({ name, numbers, promo, theme }) {
  */
 function clientView({ name, label, channels, promo, link, message, theme }) {
   const accent = theme?.accent ?? null;
-  const promoCard = (promo || link) && h('div', { class: 'pvp-promo' }, icon('megaphone'), h('span', {}, promo, promo && link && ' ', link && h('u', {}, link.replace(/^https:\/\//, ''))));
+  const promoCard = promo || link ? h('div', { class: 'pvp-promo' }, icon('megaphone'), h('span', {}, promo, promo && link && ' ', link && h('u', {}, link.replace(/^https:\/\//, '')))) : null;
   const head = h('div', { class: 'pvp-ticket' }, h('div', { class: 'pvp-merchant' }, name || '…'), h('div', { class: 'pvp-number' }, label));
   const choose = h(
     'div',

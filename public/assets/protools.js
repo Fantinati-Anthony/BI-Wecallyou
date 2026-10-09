@@ -21,7 +21,7 @@ export function themeFields({ initial = null, enabled = true, canReset = enabled
       touched = true;
       draw();
     });
-    return { key, input, element: h('div', { class: 'field' }, h('label', { for: `th-${key}` }, t(`theme_${key}`)), input) };
+    return { key, input, element: h('div', { class: 'cap fit' }, h('label', { for: `th-${key}` }, t(`theme_${key}`)), h('div', { class: 'cap-ctl' }, input)) };
   });
   function draw() {
     for (const { key, input } of inputs) preview.style.setProperty(`--tp-${key}`, input.value);
@@ -40,7 +40,7 @@ export function themeFields({ initial = null, enabled = true, canReset = enabled
   setEnabled(enabled, canReset);
   draw();
   return {
-    element: h('div', { class: 'stack' }, h('h3', {}, t('s_theme')), h('p', { class: 'small muted' }, t('s_theme_hint')), preview, h('div', { class: 'grid-4' }, inputs.map((i) => i.element)), reset),
+    element: h('div', { class: 'stack' }, h('h3', {}, t('s_theme')), h('p', { class: 'small muted' }, t('s_theme_hint')), preview, h('div', { class: 'inline-fields' }, inputs.map((i) => i.element)), reset),
     value() {
       if (!touched) return undefined;
       const theme = Object.fromEntries(inputs.map(({ key, input }) => [key, input.value]));
