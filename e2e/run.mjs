@@ -35,6 +35,17 @@ await new Promise((resolve) => server.listen(PORT, resolve));
 const browser = await chromium.launch();
 const shot = (page, name) => page.screenshot({ path: path.join(out, `${name}.png`), fullPage: true });
 const step = (text) => console.log(`✔ ${text}`);
+// Les pages interdisent l'évaluation de code (CSP stricte) : on lit simplement le texte affiché.
+async function waitText(locator, expected, timeout = 15_000) {
+  const end = Date.now() + timeout;
+  let seen = '';
+  while (Date.now() < end) {
+    seen = (await locator.textContent().catch(() => '')) ?? '';
+    if (seen === expected) return;
+    await new Promise((resolve) => setTimeout(resolve, 200));
+  }
+  throw new Error(`attendu « ${expected} », affiché « ${seen} »`);
+}
 const noPrint = () => {
   window.print = () => {};
 };
@@ -140,14 +151,60 @@ try {
   await m.getByRole('button', { name: 'Stats' }).click();
   await m.waitForSelector('.stats strong');
   await shot(m, '11-stats');
+  step('suivi et statistiques');
+
+  /* ------------------- listes, modèle, groupe, écran public, appel de groupe */
+  await m.getByRole('button', { name: 'Réglages' }).click();
+  await m.fill('#sli', 'Terrain : Terrain 1, Terrain 2, Terrain 3\nÉquipe : U11 > Rouge, U11 > Bleu, U13 > Vert');
+  await m.fill('#stp', '{groupe} : attendus au {Terrain} !');
+  await m.fill('#sgr', 'U11 Rouge : 6-8');
+  await m.click('form.stack button[type=submit]');
+  await m.waitForSelector('p.ok');
+  await shot(m, '12-reglages-message');
+  step('réglages : listes (dont une sous-liste), modèle et groupe');
+
   await m.getByRole('button', { name: 'Appels' }).click();
-  await m.getByRole('button', { name: /Écran d’affichage/ }).click();
-  await m.waitForSelector('.display .d-number');
-  assert.equal(await m.locator('.display .d-number').textContent(), '005');
-  await m.setViewportSize({ width: 1280, height: 720 });
-  await m.screenshot({ path: path.join(out, '12-ecran-affichage.png') });
-  await m.setViewportSize({ width: 420, height: 900 });
-  step('suivi, statistiques et écran d’affichage');
+  await m.click('summary:has-text("Écran public")');
+  const screenUrl = await m.locator('.screen-link').textContent();
+  const screenPath = new URL(screenUrl).pathname;
+  const tablet = await browser.newContext({ locale: 'fr-FR', viewport: { width: 1280, height: 720 } });
+  const tab = await tablet.newPage();
+  tab.on('pageerror', (err) => errors.push(err.message));
+  await tab.goto(`${BASE}${screenPath}`);
+  await waitText(tab.locator('.s-number'), '005');
+  step('écran public ouvert sur une « tablette » par son lien secret');
+
+  // Un spectateur attend devant l'écran avec le ticket 007, page ouverte.
+  const watcher = await client.newPage();
+  await watcher.goto(`${BASE}/${tickets[6].c}`);
+  await watcher.getByRole('button', { name: /wait to be called/ }).click();
+
+  const composerSelects = m.locator('.composer select');
+  await composerSelects.nth(0).selectOption('Terrain 3');
+  await composerSelects.nth(1).selectOption('U11');
+  await composerSelects.nth(2).selectOption('Rouge');
+  assert.match(await m.locator('.composer textarea').inputValue(), /\{groupe\} : attendus au Terrain 3 !/);
+  await m.selectOption('#grp', '0');
+  await m.getByRole('button', { name: /Appeler les 3 tickets/ }).click();
+  await m.waitForSelector('.result .call-title:has-text("U11 Rouge : 3 tickets appelés")');
+  await shot(m, '13-appel-groupe');
+
+  await waitText(tab.locator('.s-number'), '006 · 007 · 008');
+  assert.equal(await tab.locator('.s-tag').textContent(), 'U11 Rouge · Terrain 3');
+  await tab.screenshot({ path: path.join(out, '14-ecran-public.png') });
+  await watcher.waitForSelector('.ready-message', { timeout: 15_000 });
+  assert.equal(await watcher.locator('.ready-message').textContent(), 'U11 Rouge : attendus au Terrain 3 !');
+  await watcher.screenshot({ path: path.join(out, '15-client-message.png'), fullPage: true });
+  step('appel du groupe « U11 Rouge » au Terrain 3 : écran public et page du client à jour');
+
+  // Souche avec compositeur : on choisit, on vérifie, on appelle.
+  await m.goto(`${BASE}/${tickets[8].s}`);
+  await m.waitForSelector('.composer');
+  await m.locator('.composer select').nth(0).selectOption('Terrain 1');
+  await m.getByRole('button', { name: /Appeler le 009/ }).click();
+  await m.waitForSelector('.result .call-title');
+  await waitText(tab.locator('.s-number'), '009');
+  step('souche avec message personnalisé, annoncée sur l’écran');
 
   /* ------------------------------ autre téléphone : page 1 + mot de passe */
   const lotsSaved = await m.evaluate(() => JSON.parse(localStorage.getItem('wcy:lots')));

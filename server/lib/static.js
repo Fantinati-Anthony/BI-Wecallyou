@@ -30,6 +30,7 @@ const REWRITES = [
   [/^\/soutenir\/?$/i, 'soutenir.html'],
   [/^\/merci\/?$/, 'merci.html'],
   [/^\/confidentialite\/?$/, 'confidentialite.html'],
+  [/^\/ecran\/[A-Za-z2-7]{23}\/?$/i, 'ecran.html'],
   [/^\/[A-Za-z2-7]{26}\/?$/, 't.html'],
   [/^\/[A-Za-z2-7]{26}\/manifest\.webmanifest$/, 'manifest.webmanifest'],
 ];

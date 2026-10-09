@@ -253,7 +253,7 @@ test('file d’attente : position et attente estimée, calculées sur le rythme 
 
   const screen = await call('GET', '/lot/queue', undefined, lot.authToken);
   assert.equal(screen.last, '003');
-  assert.deepEqual(screen.recent, ['003', '002', '001']);
+  assert.deepEqual(screen.recent.map((c) => c.label), ['003', '002', '001']);
   assert.equal(screen.avgMs, 180_000);
   assert.equal((await call('GET', '/lot/queue')).status, 401);
 });
@@ -272,6 +272,57 @@ test('sécurité : requêtes malformées, essais de clés au hasard, relais verr
   for (let i = 0; i < 70 && status !== 429; i++) status = (await call('GET', '/lot', undefined, wc.b64u.encode(wc.randomBytes(32)))).status;
   assert.equal(status, 429);
   assert.equal((await call('GET', '/info')).ok, true); // le serveur tient
+});
+
+test('listes, groupes, message personnalisé et écran public', async () => {
+  const lot = await newLot();
+  const settings = await call(
+    'POST',
+    '/lot/settings',
+    {
+      name: 'Tournoi U11',
+      channels: ['push', 'sms'],
+      template: '{groupe} : attendus au {Terrain} !',
+      lists: [{ name: 'Terrain', options: ['Terrain 1', 'Terrain 2', 'Terrain 3'] }, { name: 'Équipe', options: ['U11 > Rouge', 'U11 > Bleu'] }],
+      groups: [{ name: 'U11 Rouge', numbers: '12-14, 20' }],
+    },
+    lot.authToken,
+  );
+  assert.equal(settings.status, 200);
+  assert.equal(settings.lists[1].options[0], 'U11 > Rouge');
+  assert.match(settings.screen, /^[A-Z2-7]{23}$/);
+  for (const bad of [{ lists: [{ name: '<script>', options: [] }] }, { groups: [{ name: 'x', numbers: '1-5000' }] }, { groups: [{ name: 'x', numbers: 'abc' }] }]) {
+    assert.equal((await call('POST', '/lot/settings', { name: 'x', channels: [], ...bad }, lot.authToken)).status, 400);
+  }
+
+  // La souche connaît les variables et le groupe de son ticket ; le ticket client, non.
+  const twelve = (await call('POST', '/lot/tickets', { from: 12, to: 12 }, lot.authToken)).tickets[0];
+  const stub = await call('GET', `/t/${twelve.s}`);
+  assert.equal(stub.group, 'U11 Rouge');
+  assert.equal(stub.template, '{groupe} : attendus au {Terrain} !');
+  assert.equal('lists' in (await call('GET', `/t/${twelve.c}`)), false);
+
+  // Appel du groupe entier avec le message choisi au moment de l'envoi.
+  const group = await call('POST', '/call', { numbers: '12-14, 20', message: 'U11 Rouge : attendus au Terrain 3 !', tag: 'U11 Rouge · Terrain 3' }, lot.authToken);
+  assert.deepEqual(group.calls.map((c) => c.label), ['012', '013', '014', '020']);
+  const client = await call('GET', `/t/${twelve.c}`);
+  assert.equal(client.called, true);
+  assert.equal(client.message, 'U11 Rouge : attendus au Terrain 3 !');
+  assert.equal((await call('POST', '/call', { numbers: '1-500' }, lot.authToken)).status, 400);
+
+  // Écran public : numéros et repères seulement, lien révocable.
+  const screen = await call('GET', `/screen/${settings.screen}`);
+  assert.equal(screen.name, 'Tournoi U11');
+  assert.equal(screen.recent[0].tag, 'U11 Rouge · Terrain 3');
+  assert.equal(screen.recent.length, 4);
+  assert.ok(screen.recent.every((c) => c.batch && c.batch === screen.recent[0].batch)); // un seul appel de groupe
+  assert.ok(!JSON.stringify(screen).includes('pubEcdh'));
+  const forged = settings.screen.slice(0, 22) + (settings.screen[22] === 'A' ? 'B' : 'A');
+  assert.equal((await call('GET', `/screen/${forged}`)).status, 404);
+  const reset = await call('POST', '/lot/screen/reset', {}, lot.authToken);
+  assert.notEqual(reset.screen, settings.screen);
+  assert.equal((await call('GET', `/screen/${settings.screen}`)).status, 404);
+  assert.equal((await call('GET', `/screen/${reset.screen}`)).ok, true);
 });
 
 test('statistiques anonymes du mois', async () => {

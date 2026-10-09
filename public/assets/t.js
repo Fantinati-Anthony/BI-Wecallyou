@@ -2,7 +2,8 @@
 // Souche : si ce téléphone est connecté au lot, l'appel part tout de suite.
 import { h, t, LANG, api, render, translatePage, errorText, local, isIOS, isStandalone, ordinal } from './common.js';
 import { sealForLot, b64u } from './crypto.js';
-import { unlock, callTicket } from './call.js';
+import { unlock, callTickets } from './call.js';
+import { composer, needsComposer, groupOf } from './message.js';
 
 translatePage();
 
@@ -120,16 +121,28 @@ function watch() {
 }
 
 let readyShown = false;
-function ready() {
+async function ready() {
   if (readyShown) return;
   readyShown = true;
   clearInterval(refreshTimer);
   document.title = `🔔 ${t('ready_title')}`;
+  ring();
+  // Le message de l'appel (ex. « attendus au Terrain 3 ») vient avec l'état à jour du ticket.
+  if (!data.called) {
+    const fresh = await api(`/t/${token}`);
+    if (fresh.ok) data = fresh;
+  }
   render(
     app,
-    h('div', { class: 'ready', role: 'alert' }, h('h1', {}, t('ready_title')), h('div', { class: 'number' }, data.label), h('p', {}, t('ready_text', { n: data.label, m: data.name })), promo()),
+    h(
+      'div',
+      { class: 'ready', role: 'alert' },
+      h('h1', {}, t('ready_title')),
+      h('div', { class: 'number' }, data.label),
+      data.message ? h('p', { class: 'ready-message' }, data.message) : h('p', {}, t('ready_text', { n: data.label, m: data.name })),
+      promo(),
+    ),
   );
-  ring();
   api('/seen', { body: { t: token } });
 }
 
@@ -255,13 +268,24 @@ async function stub() {
   if (!login) {
     return view(h('div', { class: 'card' }, h('h2', {}, t('stub_title')), h('p', {}, t('stub_login'))), h('a', { class: 'btn btn-ghost btn-block', href: '/m' }, t('to_dashboard')));
   }
-  view(h('p', { class: 'lead center' }, t('calling', { n: data.label })));
+  view(h('p', { class: 'lead center' }, t('loading')));
   const [lot, info] = await Promise.all([api('/lot', { auth: login.auth }), api('/info')]);
   if (!lot.ok) return errorView(lot.error);
   const access = await unlock(data.lot, lot.wrapped);
-  const result = await callTicket({ lot, access, target: { t: token }, brand: info.brand, contact: info.contact });
-  if (!result.ok) return errorView(result.error);
-  view(result.element, h('a', { class: 'btn btn-ghost btn-block', href: '/m' }, t('to_dashboard')));
+  const dashboard = h('a', { class: 'btn btn-ghost btn-block', href: '/m' }, t('to_dashboard'));
+  const run = async (message = '', tag = '') => {
+    view(h('p', { class: 'lead center' }, t('calling', { n: data.label })));
+    const result = await callTickets({ lot, access, target: { t: token }, brand: info.brand, contact: info.contact, message, tag });
+    if (!result.ok) return errorView(result.error);
+    view(result.element, dashboard);
+  };
+  // Sans modèle ni listes : l'appel part dès le scan. Sinon : choix des variables, retouche, puis appel.
+  if (!needsComposer(lot)) return run();
+  const group = groupOf(lot, data.n);
+  const box = composer(lot, { label: data.label, group });
+  const go = h('button', { type: 'button', class: 'btn btn-big btn-block' }, `📣 ${t('call_this', { n: data.label })}`);
+  go.addEventListener('click', () => run(box.message(), box.tag(group)));
+  view(h('div', { class: 'card stack' }, h('p', { class: 'small muted' }, t('stub_compose')), box.element, go), dashboard);
 }
 
 /* ------------------------------------------------------------------ départ */

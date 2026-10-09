@@ -1,8 +1,9 @@
 // Espace commerçant : connexion par la page 1 du PDF (et le mot de passe du lot s'il y en a un),
 // appels, suivi des tickets, statistiques, impression, réglages et écran d'affichage.
-import { h, t, LANG, api, render, translatePage, errorText, lots, local, fmtTime } from './common.js';
+import { h, t, LANG, api, render, translatePage, errorText, lots, local, fmtTime, qrSvg } from './common.js';
 import { textToSecret, secretToText, lotMaterial, authTokenOf, openLot, b64u, openFromClient } from './crypto.js';
-import { unlock, callTicket } from './call.js';
+import { unlock, callTickets } from './call.js';
+import { composer, needsComposer, groupOf, parseNumbers } from './message.js';
 import { LAYOUTS, keySheet, fillPrintRoot } from './sheets.js';
 import { printPlan, printOptions, readLogo } from './print.js';
 import { supportCard, loadSupport } from './donate.js';
@@ -120,9 +121,11 @@ async function dashboard(lotId) {
 
 /* ------------------------------------------------------------------ appels */
 
-async function waitingItems(lot, access, onCall) {
+async function waitingItems(lot, access, onCall, onlyGroup = '') {
   const items = [];
   for (const w of lot.waiting) {
+    const group = groupOf(lot, w.n);
+    if (onlyGroup && group !== onlyGroup) continue;
     const kinds = [];
     for (const sub of w.subs) {
       try {
@@ -136,7 +139,15 @@ async function waitingItems(lot, access, onCall) {
         'li',
         { class: w.calledAt ? 'called' : '' },
         h('span', { class: 'num' }, w.label),
-        h('span', { class: 'grow' }, kinds.map((k) => ICON[k] ?? '❔').join(' '), ' ', h('span', { class: 'small muted' }, w.calledAt ? t('m_called_at', { time: fmtTime(w.calledAt) }) : t('m_since', { time: fmtTime(w.subs[0].at) }))),
+        h(
+          'span',
+          { class: 'grow' },
+          group && h('span', { class: 'badge' }, group),
+          ' ',
+          kinds.map((k) => ICON[k] ?? '❔').join(' '),
+          ' ',
+          h('span', { class: 'small muted' }, w.calledAt ? t('m_called_at', { time: fmtTime(w.calledAt) }) : t('m_since', { time: fmtTime(w.subs[0].at) })),
+        ),
         h('button', { type: 'button', class: 'btn btn-soft', onclick: () => onCall(w.n) }, t('m_call_btn')),
       ),
     );
@@ -155,15 +166,59 @@ function statsRow(queue) {
   );
 }
 
+/** Écran public : lien secret à ouvrir sur une tablette ou une TV (QR à scanner), révocable. */
+function screenCard(lot, access) {
+  let token = lot.screen;
+  const url = () => `https://${info.domain}/ecran/${token}`;
+  const qr = h('div', { class: 'screen-qr' });
+  const link = h('p', { class: 'small muted screen-link' });
+  const open = h('a', { class: 'btn btn-block', target: '_blank', rel: 'noopener' }, t('sc_open'));
+  const copy = h('button', { type: 'button', class: 'btn btn-soft btn-block' }, t('sc_copy'));
+  const reset = h('button', { type: 'button', class: 'linklike small' }, t('sc_reset'));
+  const draw = () => {
+    render(qr, qrSvg(`HTTPS://${info.domain.toUpperCase()}/ECRAN/${token}`, 'M'));
+    link.textContent = url();
+    open.setAttribute('href', url());
+  };
+  copy.addEventListener('click', async () => {
+    await navigator.clipboard?.writeText(url()).catch(() => {});
+    copy.textContent = t('sc_copied');
+  });
+  reset.addEventListener('click', async () => {
+    if (!confirm(t('sc_reset_confirm'))) return;
+    const res = await api('/lot/screen/reset', { body: {}, auth: access.auth });
+    if (res.ok) {
+      token = res.screen;
+      draw();
+    }
+  });
+  draw();
+  return h(
+    'details',
+    { class: 'card' },
+    h('summary', {}, t('sc_title')),
+    h('div', { class: 'stack' }, h('p', {}, t('sc_text')), h('p', { class: 'small' }, t('sc_scan')), qr, link, open, copy, reset),
+  );
+}
+
 async function callTab(panel, { lot, access, reload }) {
   const result = h('div');
-  const number = h('input', { id: 'n', type: 'number', min: 1, max: 999999, inputmode: 'numeric', placeholder: t('m_number') });
-  const doCall = async (n) => {
-    render(result, h('p', { class: 'muted' }, t('calling', { n: String(n).padStart(3, '0') })));
-    const out = await callTicket({ lot, access, target: { n }, brand: info.brand, contact: info.contact });
+  // Modèle ou listes définis : on choisit les variables et on peut retoucher le message avant l'envoi.
+  // Aperçu sur un ticket parlant : le premier d'un groupe s'il y en a, pour que {groupe} se voie.
+  const example = parseNumbers(lot.groups[0]?.numbers ?? '')?.[0] ?? lot.from ?? 1;
+  const box = needsComposer(lot) ? composer(lot, { label: String(example).padStart(3, '0'), group: groupOf(lot, example) }) : null;
+  const show = (out) => {
     render(result, out.ok ? h('div', { class: 'card' }, out.element) : h('p', { class: 'banner-warn' }, errorText(out.error)));
     result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     refresh();
+  };
+  const send = (target, group = '', groupName = '') =>
+    callTickets({ lot, access, target, brand: info.brand, contact: info.contact, message: box?.message() ?? '', tag: box ? box.tag(group) : group, groupName });
+
+  const number = h('input', { id: 'n', type: 'number', min: 1, max: 999999, inputmode: 'numeric', placeholder: t('m_number') });
+  const doCall = async (n) => {
+    render(result, h('p', { class: 'muted' }, t('calling', { n: String(n).padStart(3, '0') })));
+    show(await send({ n }, groupOf(lot, n)));
   };
   const form = h('form', { class: 'row' }, h('div', { class: 'grow' }, number), h('button', { class: 'btn', type: 'submit' }, t('m_call_btn')));
   form.addEventListener('submit', (event) => {
@@ -171,26 +226,57 @@ async function callTab(panel, { lot, access, reload }) {
     const n = Number(number.value);
     if (Number.isInteger(n) && n >= 1) doCall(n);
   });
+
+  // Appel d'un groupe entier (équipe, catégorie…) avec le même message.
+  let groupSection = null;
+  if (lot.groups.length) {
+    const select = h('select', { class: 'select', id: 'grp' }, lot.groups.map((g, i) => h('option', { value: i }, `${g.name} · ${g.numbers}`)));
+    const go = h('button', { type: 'button', class: 'btn btn-block' });
+    const label = () => {
+      go.textContent = `📣 ${t('g_call', { count: parseNumbers(lot.groups[select.value].numbers)?.length ?? 0 })}`;
+    };
+    select.addEventListener('change', label);
+    go.addEventListener('click', async () => {
+      const g = lot.groups[select.value];
+      render(result, h('p', { class: 'muted' }, t('calling', { n: g.name })));
+      show(await send({ numbers: g.numbers }, g.name, g.name));
+    });
+    label();
+    groupSection = h('section', { class: 'card stack' }, h('h2', {}, t('g_title')), h('label', { for: 'grp' }, t('g_choose')), select, go);
+  }
+
+  // Inscrits en attente, filtrables par groupe.
+  const filter = lot.groups.length
+    ? h('select', { class: 'select' }, h('option', { value: '' }, t('filter_all')), lot.groups.map((g) => h('option', { value: g.name }, g.name)))
+    : null;
   const stats = h('div');
   const list = h('ul', { class: 'waiting-list' });
+  let current = lot;
+  const drawList = async () => {
+    const items = await waitingItems(current, access, doCall, filter?.value ?? '');
+    render(list, items.length ? items : h('li', { class: 'muted' }, t('m_none')));
+  };
+  filter?.addEventListener('change', drawList);
   const refresh = async () => {
     const fresh = await reload();
     if (!fresh.ok) return;
+    current = fresh;
     render(stats, statsRow(fresh.queue));
-    const items = await waitingItems(fresh, access, doCall);
-    render(list, items.length ? items : h('li', { class: 'muted' }, t('m_none')));
+    await drawList();
   };
+
   render(
     panel,
     stats,
-    h('button', { type: 'button', class: 'btn btn-ghost btn-block', onclick: () => displayMode(access) }, t('m_display')),
-    h('section', { class: 'card stack' }, h('h2', {}, t('m_call_title')), h('p', { class: 'small muted' }, t('m_call_hint')), form, result),
-    h('section', { class: 'card' }, h('h2', {}, t('m_waiting')), list),
+    screenCard(lot, access),
+    h('section', { class: 'card stack' }, h('h2', {}, t('m_call_title')), h('p', { class: 'small muted' }, t('m_call_hint')), box?.element, form),
+    groupSection,
+    result,
+    h('section', { class: 'card stack' }, h('h2', {}, t('m_waiting')), filter, list),
   );
   render(stats, statsRow(lot.queue));
   render(list, h('li', { class: 'muted' }, t('loading')));
-  const items = await waitingItems(lot, access, doCall);
-  render(list, items.length ? items : h('li', { class: 'muted' }, t('m_none')));
+  await drawList();
   refreshTimer = setInterval(() => !document.hidden && refresh(), 10_000);
 }
 
@@ -335,31 +421,100 @@ async function printTab(panel, { lot, access }) {
 
 /* ----------------------------------------------------------------- réglages */
 
+const listsToText = (lists) => lists.map((l) => `${l.name} : ${l.options.join(', ')}`).join('\n');
+const groupsToText = (groups) => groups.map((g) => `${g.name} : ${g.numbers}`).join('\n');
+
+/** « Nom : a, b, c » par ligne → [{ name, options }]. */
+const textToLists = (text) =>
+  text
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const [name, ...rest] = line.split(':');
+      return { name: name.trim(), options: rest.join(':').split(',').map((o) => o.trim()).filter(Boolean) };
+    });
+
+/** « Nom : 12-18, 25 » par ligne → [{ name, numbers }]. */
+const textToGroups = (text) =>
+  text
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const at = line.lastIndexOf(':');
+      return { name: line.slice(0, at).trim(), numbers: line.slice(at + 1).trim() };
+    });
+
 function settingsTab(panel, { lot, access, reload }) {
   const name = h('input', { id: 'sn', type: 'text', maxlength: 60, value: lot.name });
   const promo = h('input', { id: 'sp', type: 'text', maxlength: 140, value: lot.promo, placeholder: t('create_promo_ph') });
   const link = h('input', { id: 'sl', type: 'url', maxlength: 200, value: lot.link, placeholder: t('create_link_ph') });
   const ttl = h('select', { id: 'st', class: 'select' }, LIFETIMES.map((hours) => h('option', { value: hours, selected: hours === lot.ttl }, t('ttl_option', { h: hours }))));
   const checks = CHANNELS.map((c) => h('label', { class: 'check' }, h('input', { type: 'checkbox', value: c, checked: lot.channels.includes(c) }), ` ${ICON[c]} `, t(`ch_${c}`)));
+  const template = h('input', { id: 'stp', type: 'text', maxlength: 280, value: lot.template, placeholder: t('s_template_ph') });
+  const lists = h('textarea', { id: 'sli', class: 'textarea', rows: 3, placeholder: t('s_lists_ph') });
+  const groups = h('textarea', { id: 'sgr', class: 'textarea', rows: 3, placeholder: t('s_groups_ph') });
+  lists.value = listsToText(lot.lists);
+  groups.value = groupsToText(lot.groups);
+
+  // Insertion d'une variable dans le modèle d'un simple appui.
+  const chips = h('div', { class: 'pills' });
+  const drawChips = () => {
+    const names = [...t('var_builtins').split(','), ...textToLists(lists.value).map((l) => l.name)].filter(Boolean);
+    render(
+      chips,
+      names.map((n) => {
+        const chip = h('button', { type: 'button', class: 'chip' }, `{${n}}`);
+        chip.addEventListener('click', () => {
+          template.setRangeText(`{${n}}`, template.selectionStart ?? template.value.length, template.selectionEnd ?? template.value.length, 'end');
+          template.focus();
+        });
+        return chip;
+      }),
+    );
+  };
+  lists.addEventListener('input', drawChips);
+  drawChips();
+
   const status = h('p', { role: 'status' });
   const form = h(
     'form',
-    { class: 'card stack' },
-    h('h2', {}, t('m_settings_title')),
-    h('label', { for: 'sn' }, t('create_name')),
-    name,
-    h('label', {}, t('create_channels')),
-    h('div', { class: 'checks' }, checks),
-    h('label', { for: 'st' }, t('create_ttl')),
-    ttl,
-    h('p', { class: 'small muted' }, t('ttl_hint')),
-    h('label', { for: 'sp' }, t('create_promo')),
-    promo,
-    h('label', { for: 'sl' }, t('create_link')),
-    link,
-    h('p', { class: 'small muted' }, t('promo_hint')),
+    { class: 'stack' },
+    h(
+      'section',
+      { class: 'card stack' },
+      h('h2', {}, t('m_settings_title')),
+      h('label', { for: 'sn' }, t('create_name')),
+      name,
+      h('label', {}, t('create_channels')),
+      h('div', { class: 'checks' }, checks),
+      h('label', { for: 'st' }, t('create_ttl')),
+      ttl,
+      h('p', { class: 'small muted' }, t('ttl_hint')),
+      h('label', { for: 'sp' }, t('create_promo')),
+      promo,
+      h('label', { for: 'sl' }, t('create_link')),
+      link,
+      h('p', { class: 'small muted' }, t('promo_hint')),
+    ),
+    h(
+      'section',
+      { class: 'card stack' },
+      h('h2', {}, t('s_message')),
+      h('label', { for: 'sli' }, t('s_lists')),
+      lists,
+      h('p', { class: 'small muted' }, t('s_lists_hint')),
+      h('label', { for: 'stp' }, t('s_template')),
+      template,
+      chips,
+      h('p', { class: 'small muted' }, t('s_template_hint')),
+      h('label', { for: 'sgr' }, t('s_groups')),
+      groups,
+      h('p', { class: 'small muted' }, t('s_groups_hint')),
+    ),
     status,
-    h('button', { class: 'btn btn-block', type: 'submit' }, t('m_save')),
+    h('button', { class: 'btn btn-big btn-block', type: 'submit' }, t('m_save')),
   );
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -370,6 +525,9 @@ function settingsTab(panel, { lot, access, reload }) {
         link: link.value,
         ttl: Number(ttl.value),
         channels: checks.map((c) => c.querySelector('input')).filter((i) => i.checked).map((i) => i.value),
+        template: template.value,
+        lists: textToLists(lists.value),
+        groups: textToGroups(groups.value),
       },
       auth: access.auth,
     });
@@ -398,55 +556,6 @@ function settingsTab(panel, { lot, access, reload }) {
     Object.keys(lots.all()).length > 1 && lotSwitcher(lot.lot),
     h('p', { class: 'center' }, h('a', { href: '/' }, t('m_new_lot'))),
   );
-}
-
-/* ------------------------------------------------------- écran d'affichage */
-
-async function displayMode(access) {
-  const name = h('div', { class: 'd-name' });
-  const number = h('div', { class: 'd-number' }, '—');
-  const recent = h('div', { class: 'd-recent' });
-  const pace = h('div');
-  const close = h('button', { type: 'button', class: 'd-close' }, t('d_close'));
-  const screen = h(
-    'div',
-    { class: 'display', role: 'dialog' },
-    name,
-    h('div', { class: 'd-main' }, h('div', { class: 'd-label' }, t('d_now')), number, recent),
-    h('div', { class: 'd-foot' }, pace, h('div', {}, t('d_hint'))),
-    close,
-  );
-  document.body.append(screen);
-  let lock = null;
-  try {
-    await document.documentElement.requestFullscreen?.();
-    lock = await navigator.wakeLock?.request('screen');
-  } catch {
-    /* plein écran ou veille non disponibles : l'écran fonctionne quand même */
-  }
-  let last = null;
-  const update = async () => {
-    const q = await api('/lot/queue', { auth: access.auth });
-    if (!q.ok) return;
-    name.textContent = q.name;
-    if (q.last !== last) {
-      number.textContent = q.last ?? '—';
-      number.classList.remove('bump');
-      void number.offsetWidth; // relance l'animation
-      if (last !== null) number.classList.add('bump');
-      last = q.last;
-    }
-    render(recent, q.recent.slice(1, 6).map((n) => h('span', {}, n)));
-    pace.textContent = q.avgMs ? t('d_wait', { min: Math.max(1, Math.round(q.avgMs / 60000)) }) : '';
-  };
-  await update();
-  const timer = setInterval(update, 3000);
-  close.addEventListener('click', () => {
-    clearInterval(timer);
-    lock?.release?.();
-    if (document.fullscreenElement) document.exitFullscreen?.();
-    screen.remove();
-  });
 }
 
 /* ------------------------------------------------------------------ départ */

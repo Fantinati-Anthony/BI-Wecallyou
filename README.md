@@ -17,7 +17,9 @@ Snacks, food trucks, boulangeries, buvettes, tournois sportifs, vestiaires, cord
 - **Le client choisit** parmi les moyens autorisés par le commerçant : notification (Android direct, iPhone après ajout à l’écran d’accueil), SMS, WhatsApp, e-mail, ou rien.
 - **File d’attente en direct** : « Vous êtes le 3e · attente estimée ≈ 6 min », calculé sur le rythme réel des appels. La page du client passe au vert en temps réel quand c’est son tour.
 - **Espace commerçant** : appel par scan de la souche ou par numéro, inscrits en attente, suivi de chaque ticket (scanné, inscrit, appelé, notification remise, vu par le client), statistiques anonymes, réimpression, réglages.
-- **Écran d’affichage** pour tablette ou TV : grand numéro appelé, derniers appels, rythme.
+- **Écran public** pour tablette ou TV : un lien secret (avec QR pour l’ouvrir d’un scan), révocable. Grand numéro appelé en direct, carillon et **annonce vocale** (« Numéro 42. Terrain 3. »), derniers appels, rythme. Seulement des numéros, jamais d’inscrits.
+- **Messages sur mesure** : modèle avec variables (`{nom}`, `{numero}`, `{groupe}` et vos propres listes déroulantes, avec sous-listes `U11 > Rouge`). Au moment de l’appel, on choisit dans les listes et on peut retoucher le texte avant l’envoi.
+- **Groupes de tickets** (équipes, catégories : « U11 Rouge : 12-18, 25 ») : un appel prévient tout le groupe, avec un e-mail groupé en copie cachée. Inscrits filtrables par groupe.
 - **Votre message** (facultatif) : partenaire, sponsor, réseaux sociaux, affiché sur la page du ticket et ajouté aux messages. C’est la seule « pub » possible : celle du créateur du lot.
 - **Français et anglais**, selon la langue du téléphone ; chaque client reçoit son message dans sa langue.
 - **Dons** ponctuels ou mensuels via Stripe, présentés au moment de la création des tickets, sans jamais bloquer.

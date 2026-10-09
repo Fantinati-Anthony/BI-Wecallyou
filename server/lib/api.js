@@ -2,6 +2,8 @@ import { Role, label } from './token.js';
 import { fail, readJson, sendJson, clientIp, RateLimit } from './http.js';
 import { checkMessage, relay } from './relay.js';
 import { LIFETIMES, DEFAULT_LIFETIME } from './store.js';
+import { createHmac, timingSafeEqual } from 'node:crypto';
+import * as base32 from './base32.js';
 
 export const CHANNELS = ['push', 'sms', 'wa', 'mail'];
 const MAX_TICKETS_PER_REQUEST = 1200; // un « cahier » d'impression (50 pages de 24 tickets)
@@ -30,11 +32,66 @@ function placeInQueue(queue, n) {
 const queueView = (queue, waiting) => ({
   last: queue.last ? label(queue.last.n) : null,
   lastAt: queue.last?.at ?? null,
-  recent: queue.recent.map(label),
+  recent: queue.recent.map((c) => ({ label: label(c.n), at: c.at, tag: c.tag, batch: c.batch })),
   calls: queue.calls,
   avgMs: queue.avgMs,
   waiting,
 });
+
+/* ------------------------------------------------- listes, groupes, modèle */
+
+const MAX_GROUP_CALL = 200;
+
+/**
+ * Listes personnalisées du lot (variables du message) : [{ name: 'Terrain', options: ['Terrain 1', …] }].
+ * Une option « U11 > Rouge » crée une sous-liste (deux menus déroulants).
+ */
+function cleanLists(value) {
+  if (value === undefined) return undefined;
+  if (!Array.isArray(value) || value.length > 5) fail(400, 'lists');
+  return value.map((list) => {
+    const name = cleanText(list?.name, 24);
+    if (!/^[\p{L}\p{N}][\p{L}\p{N} _-]*$/u.test(name)) fail(400, 'lists');
+    const options = Array.isArray(list.options) ? list.options.map((o) => cleanText(o, 60)).filter(Boolean).slice(0, 50) : [];
+    return { name, options };
+  });
+}
+
+/** Plage « 12-18, 25 » → liste de numéros (vérifiée et bornée). */
+export function parseNumbers(text, max = MAX_GROUP_CALL) {
+  const numbers = new Set();
+  for (const part of String(text).split(/[,;\s]+/).filter(Boolean)) {
+    const match = /^(\d{1,6})(?:-(\d{1,6}))?$/.exec(part);
+    if (!match) return null;
+    const a = Number(match[1]);
+    const b = Number(match[2] ?? match[1]);
+    if (a < 1 || b < a || b > MAX_NUMBER || b - a + 1 > max) return null;
+    for (let n = a; n <= b && numbers.size <= max; n++) numbers.add(n);
+    if (numbers.size > max) return null;
+  }
+  return numbers.size ? [...numbers].sort((x, y) => x - y) : null;
+}
+
+/** Variables intégrées du message : {nom}/{name}, {numero}/{number}, {groupe}/{group}. */
+export function fillBuiltins(text, { name, label: number, group }) {
+  const values = { nom: name, name, numero: number, number, num: number, groupe: group, group };
+  return text.replace(/\{([\p{L}\p{N} _-]{1,24})\}/gu, (match, key) => {
+    const value = values[key.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase()];
+    return value === undefined ? match : value;
+  });
+}
+
+/** Groupes de tickets : [{ name: 'U11 Rouge', numbers: '12-18, 25' }]. */
+function cleanGroups(value) {
+  if (value === undefined) return undefined;
+  if (!Array.isArray(value) || value.length > 100) fail(400, 'groups');
+  return value.map((group) => {
+    const name = cleanText(group?.name, 40) || fail(400, 'groups');
+    const numbers = cleanText(group?.numbers, 200);
+    if (!parseNumbers(numbers)) fail(400, 'groups');
+    return { name, numbers };
+  });
+}
 
 /* ------------------------------------------------------------ validations */
 
@@ -118,10 +175,40 @@ export function createApi({ config, store, tokens, events }) {
     pubVapid: lot.pubVapid,
   });
 
+  /** Nom du premier groupe du lot qui contient ce numéro ('' sinon). */
+  const groupOf = (lot, n) => (lot.groups ?? []).find((g) => parseNumbers(g.numbers)?.includes(n))?.name ?? '';
+
+  /** Ce que seul le commerçant voit : modèle de message, listes, groupes, lien de l'écran public. */
+  const privateLot = (lot) => ({
+    ...publicLot(lot),
+    template: lot.template ?? '',
+    lists: lot.lists ?? [],
+    groups: lot.groups ?? [],
+    screen: screenToken(lot),
+  });
+
+  /**
+   * Lien de l'écran public : numéro de lot + signature (HMAC) ; rien à stocker.
+   * Changer `screenGen` révoque tous les anciens liens.
+   */
+  function screenToken(lot) {
+    const id = Buffer.alloc(4);
+    id.writeUInt32BE(lot.id);
+    const tag = createHmac('sha256', config.statusKey).update(`screen|${lot.id}|${lot.screenGen ?? 0}`).digest().subarray(0, 10);
+    return base32.encode(Buffer.concat([id, tag]));
+  }
+
+  async function lotOfScreen(token) {
+    const bin = /^[A-Z2-7]{23}$/.test(token) ? base32.decode(token) : null;
+    const lot = bin?.length === 14 ? await store.lot(bin.readUInt32BE(0)) : null;
+    const expected = lot ? Buffer.from(screenToken(lot)) : null;
+    return expected && timingSafeEqual(expected, Buffer.from(token)) ? lot : fail(404, 'invalid');
+  }
+
   /** Appel d'un ticket : état publié pour les pages ouvertes, blocs chiffrés rendus au commerçant. */
-  const call = async (lot, n) => {
+  const call = async (lot, n, info = {}) => {
     const firstEvent = (await store.events(lot.id, n))[0]?.[0];
-    const previous = await store.call(lot.id, n);
+    const previous = await store.call(lot.id, n, info);
     events.notify(store.statusId(lot.id, n));
     await store.event(lot.id, n, previous === null ? 'call' : 'recall');
     if (previous === null && firstEvent) {
@@ -173,11 +260,26 @@ export function createApi({ config, store, tokens, events }) {
       const waiting = await store.waiting(lot.id);
       return {
         ok: true,
-        ...publicLot(lot),
+        ...privateLot(lot),
         wrapped: lot.wrapped,
         waiting: waiting.map((w) => ({ n: w.n, label: label(w.n), calledAt: w.calledAt, subs: w.subs })),
         queue: queueView(await store.queue(lot.id), waiting.filter((w) => w.calledAt === null).length),
       };
+    }],
+
+    // Nouveau lien d'écran public : l'ancien cesse aussitôt de fonctionner.
+    ['POST', /^\/lot\/screen\/reset$/, async (req) => {
+      const lot = await lotOf(req);
+      lot.screenGen = (lot.screenGen ?? 0) + 1;
+      await store.saveLot(lot);
+      return { ok: true, screen: screenToken(lot) };
+    }],
+
+    // Écran public (tablette, TV) : lien secret à diffuser, seulement des numéros et des repères.
+    ['GET', /^\/screen\/([A-Za-z2-7]{23})$/, async (req, [token]) => {
+      limits.check(`screen:${clientIp(req)}`, 300, 10 * MINUTE);
+      const lot = await lotOfScreen(token.toUpperCase());
+      return { ok: true, name: lot.name, promo: lot.promo ?? '', link: lot.link ?? '', ...queueView(await store.queue(lot.id), null) };
     }],
 
     // Écran d'affichage (tablette, TV) : seulement des numéros, rafraîchi toutes les quelques secondes.
@@ -208,8 +310,11 @@ export function createApi({ config, store, tokens, events }) {
       lot.link = cleanLink(body.link);
       lot.ttl = lifetime(body.ttl ?? lot.ttl);
       lot.channels = cleanChannels(body.channels);
+      if (body.template !== undefined) lot.template = cleanText(body.template, 280);
+      lot.lists = cleanLists(body.lists) ?? lot.lists ?? [];
+      lot.groups = cleanGroups(body.groups) ?? lot.groups ?? [];
       await store.saveLot(lot);
-      return { ok: true, ...publicLot(lot) };
+      return { ok: true, ...privateLot(lot) };
     }],
 
     // Suivi : tickets actifs (journal sans donnée personnelle) et statistiques des 30 derniers jours.
@@ -238,7 +343,8 @@ export function createApi({ config, store, tokens, events }) {
     ['GET', /^\/t\/([A-Za-z2-7]{26})$/, async (req, [token]) => {
       const ticket = ticketOf(token);
       const lot = (await store.lot(ticket.lot)) ?? fail(404, 'invalid');
-      const called = (await store.calledAt(lot.id, ticket.n)) !== null;
+      const callInfo = await store.callInfo(lot.id, ticket.n);
+      const called = callInfo !== null;
       // Premier scan du client : le ticket s'active (et commence sa durée de vie).
       if (ticket.role === Role.CLIENT && !(await store.isActive(lot.id, ticket.n))) await store.event(lot.id, ticket.n, 'scan');
       return {
@@ -249,6 +355,11 @@ export function createApi({ config, store, tokens, events }) {
         ...publicLot(lot),
         status: store.statusId(lot.id, ticket.n),
         called,
+        // Le message de l'appel (ex. « attendus au Terrain 3 ») s'affiche aussi sur la page du client.
+        message: callInfo?.m ?? '',
+        tag: callInfo?.tag ?? '',
+        // La souche du commerçant a besoin des variables pour proposer le message avant l'appel.
+        ...(ticket.role === Role.STUB ? { template: lot.template ?? '', lists: lot.lists ?? [], group: groupOf(lot, ticket.n) } : {}),
         queue: called ? null : placeInQueue(await store.queue(lot.id), ticket.n),
       };
     }],
@@ -285,15 +396,28 @@ export function createApi({ config, store, tokens, events }) {
       return { ok: true };
     }],
 
+    // Appel d'un ticket (souche ou numéro) ou d'un groupe entier, avec le message choisi au moment de l'envoi.
     ['POST', /^\/call$/, async (req) => {
       const lot = await lotOf(req);
       const body = await readJson(req);
+      const message = cleanText(body.message, 280);
+      const tag = cleanText(body.tag, 80);
+      // {numero}, {nom}, {groupe} : remplacés pour chaque ticket (le message s'affiche aussi chez le client).
+      const infoFor = (n) => ({ m: fillBuiltins(message, { name: lot.name, label: label(n), group: groupOf(lot, n) }), tag });
+      if (body.numbers !== undefined) {
+        const numbers = parseNumbers(Array.isArray(body.numbers) ? body.numbers.join(',') : body.numbers) ?? fail(400, 'numbers');
+        const batch = Date.now().toString(36); // même appel de groupe : une seule annonce sur l'écran
+        const calls = [];
+        for (const n of numbers) calls.push(await call(lot, n, { ...infoFor(n), b: batch }));
+        return { ok: true, calls };
+      }
       if (body.t !== undefined) {
         const ticket = ticketOf(body.t, Role.STUB);
         if (ticket.lot !== lot.id) fail(403, 'other_lot');
-        return call(lot, ticket.n);
+        return call(lot, ticket.n, infoFor(ticket.n));
       }
-      return call(lot, number(body.n));
+      const n = number(body.n);
+      return call(lot, n, infoFor(n));
     }],
 
     ['POST', /^\/sub\/drop$/, async (req) => {

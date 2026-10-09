@@ -13,6 +13,7 @@ export const EVENTS = ['scan', 'sub', 'unsub', 'call', 'recall', 'push', 'send',
 
 const DAY = 86_400_000;
 const MAX_SERVICE_GAP = 20 * 60_000;
+const GROUP_WINDOW = 3000;
 const sha256 = (text) => createHash('sha256').update(text).digest('hex');
 const ignoreMissing = (err) => {
   if (err.code !== 'ENOENT') throw err;
@@ -333,14 +334,30 @@ export class Store {
     }
   }
 
-  /** Marque le ticket comme appelé et publie le fichier d'état. Renvoie l'heure d'un appel précédent. */
-  async call(lot, n) {
+  /**
+   * Marque le ticket comme appelé et publie le fichier d'état. Renvoie l'heure d'un appel précédent.
+   * `info` = { m: message envoyé, tag: repère court pour l'écran (ex. « Terrain 3 ») } : du texte
+   * écrit par le commerçant, jamais une donnée de client.
+   */
+  async call(lot, n, info = {}) {
     const previous = await this.calledAt(lot, n);
     await fs.mkdir(path.dirname(this.callFile(lot, n)), { recursive: true, mode: 0o700 });
-    await fs.writeFile(this.callFile(lot, n), ''); // la date du fichier = l'heure de l'appel
+    await fs.writeFile(this.callFile(lot, n), JSON.stringify(info), { mode: 0o600 }); // date du fichier = heure de l'appel
     await fs.writeFile(this.statusFile(this.statusId(lot, n)), 'pret');
     this.forgetQueue(lot);
     return previous;
+  }
+
+  /** Message et repère de l'appel d'un ticket ({} s'il n'en a pas, null s'il n'est pas appelé). */
+  async callInfo(lot, n) {
+    try {
+      const raw = await fs.readFile(this.callFile(lot, n), 'utf8');
+      return raw ? JSON.parse(raw) : {};
+    } catch (err) {
+      if (err instanceof SyntaxError) return {};
+      ignoreMissing(err);
+      return null;
+    }
   }
 
   /**
@@ -364,14 +381,22 @@ export class Store {
       if (stat) calls.push({ n: Number(name), at: Math.round(stat.mtimeMs) });
     }
     calls.sort((a, b) => b.at - a.at);
+    // Un appel de groupe (plusieurs tickets à la seconde) compte pour un seul passage.
+    const moments = calls.filter((c, i) => i === 0 || calls[i - 1].at - c.at > GROUP_WINDOW);
     const intervals = [];
-    for (let i = 0; i + 1 < calls.length && intervals.length < 10; i++) {
-      const gap = calls[i].at - calls[i + 1].at;
+    for (let i = 0; i + 1 < moments.length && intervals.length < 10; i++) {
+      const gap = moments[i].at - moments[i + 1].at;
       if (gap <= MAX_SERVICE_GAP) intervals.push(gap); // une pause (> 20 min) ne fausse pas la moyenne
+    }
+    const recent = calls.slice(0, 30);
+    for (const call of recent) {
+      const info = (await this.callInfo(lot, call.n)) ?? {};
+      call.tag = info.tag ?? '';
+      call.batch = info.b ?? '';
     }
     const value = {
       last: calls[0] ?? null,
-      recent: calls.slice(0, 6).map((c) => c.n),
+      recent,
       calls: calls.length,
       avgMs: intervals.length >= 2 ? Math.round(intervals.reduce((a, b) => a + b, 0) / intervals.length) : null,
     };
