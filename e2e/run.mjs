@@ -545,6 +545,26 @@ try {
   assert.deepEqual(overflow.problems, []);
   step(`mise en page : aucun débordement sur ${overflow.checked} combinaisons (papier, grille, souche, nom long, 6 chiffres)`);
 
+  // Barre du haut : le logo et le menu ne se chevauchent jamais, quelle que soit la page (étroite ou large) et l'écran.
+  {
+    const ctx = await browser.newContext({ locale: 'fr-FR' });
+    const p = await ctx.newPage();
+    const pages = ['/', '/compte', '/m', '/pro', '/soutenir', '/mentions', '/creer'];
+    for (const width of [340, 390, 768, 1024, 1440]) {
+      await p.setViewportSize({ width, height: 800 });
+      for (const url of pages) {
+        await p.goto(`${BASE}${url}`);
+        await p.waitForSelector('.topnav svg');
+        const brand = await p.locator('.topbar .brand').boundingBox();
+        const nav = await p.locator('.topnav').boundingBox();
+        assert.ok(brand.x + brand.width <= nav.x + 1, `${url} à ${width} px : le logo passe sous le menu`);
+        assert.ok(nav.x + nav.width <= width + 1, `${url} à ${width} px : le menu sort de l'écran`);
+      }
+    }
+    await ctx.close();
+  }
+  step('barre du haut : logo et menu sans chevauchement sur 7 pages × 5 largeurs');
+
   assert.deepEqual(errors, []);
   step('aucune erreur JavaScript');
 } finally {
