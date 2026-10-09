@@ -4,6 +4,7 @@
 import { h, t, LANG, render, translatePage } from './common.js';
 import { session, sync } from './account.js';
 import { loadSupport } from './donate.js';
+import { comparison } from './plans.js';
 
 translatePage();
 
@@ -15,17 +16,13 @@ const pro = cfg?.pro ?? { tiers: [], monthly: [], once: {} };
 /** Lien Stripe avec l'identifiant du compte : c'est ce qui permet d'activer le Pro au bon endroit. */
 const withAccount = (url) => (url && account ? `${url}${url.includes('?') ? '&' : '?'}client_reference_id=${account.id}` : '');
 
-const options = h(
-  'ul',
-  { class: 'steps' },
-  [t('pro_opt_brand'), t('pro_opt_colors'), t('pro_opt_ttl'), t('pro_opt_stats'), t('pro_opt_priority')].map((text) => h('li', {}, text)),
-);
+const lowest = Math.min(...(pro.tiers ?? []).map((tier) => tier.month)) || 1;
 
 function payment(usage) {
   if (!account || !synced) {
     return h(
       'section',
-      { class: 'card stack' },
+      { class: 'card stack', id: 'payer' },
       h('p', {}, t('pro_need_account')),
       h('a', { class: 'btn btn-big btn-block', href: '/compte#creer' }, t('acc_tab_signup')),
       h('a', { class: 'btn btn-ghost btn-block', href: '/compte' }, t('acc_tab_login')),
@@ -52,7 +49,7 @@ function payment(usage) {
   const onceLink = withAccount(pro.once?.url);
   return h(
     'section',
-    { class: 'card stack' },
+    { class: 'card stack', id: 'payer' },
     status,
     usage && h('p', {}, t('pro_usage', { active: usage.active.toLocaleString() })),
     h('p', { class: 'lead' }, h('strong', {}, t('pro_suggested', { price: suggested }))),
@@ -74,7 +71,8 @@ render(
   app,
   h('h1', {}, t('pro_title')),
   h('p', { class: 'lead' }, t('pro_intro')),
-  h('section', { class: 'card' }, options),
+  comparison(lowest),
+  h('div', { class: 'row offers-cta' }, h('a', { class: 'btn btn-big', href: '#payer' }, t('cmp_choose'))),
   payment(synced?.usage),
   h('p', { class: 'small muted center' }, t('pro_selfhost')),
 );

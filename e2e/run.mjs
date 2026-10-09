@@ -60,6 +60,13 @@ try {
   m.on('pageerror', (err) => errors.push(err.message));
   await m.goto(BASE);
   await shot(m, '01-accueil');
+  // Sans compte Pro : le comparatif est là, les options Pro du générateur sont visibles mais grisées.
+  await m.waitForSelector('.compare .plan.is-pro');
+  assert.doesNotMatch(await m.locator('.compare').textContent(), /cmp_|plan_/); // aucune clé de traduction oubliée
+  assert.equal(await m.locator('#c-wl').isDisabled(), true);
+  assert.equal(await m.locator('#ttl option[value="720"]').isDisabled(), true);
+  assert.equal(await m.locator('#pro-tools .pro-lock').isVisible(), true);
+  step('accueil : comparatif Gratuit / Pro, options Pro grisées sans compte Pro');
   await m.fill('#name', 'Snack Tony');
   await m.fill('#count', '30');
   await m.fill('#password', 'motdepasse-tres-long');
@@ -272,6 +279,7 @@ try {
   // Page Pro : usage du compte et prix conseillé (le don, lui, reste sans contrepartie).
   await p4.goto(`${BASE}/pro`);
   await p4.waitForSelector('text=Prix conseillé pour votre usage : 1 € / mois');
+  assert.equal(await p4.locator('.compare tbody th[scope="row"]').count() >= 10, true); // comparatif sur la page Pro
   await shot(p4, '18-page-pro');
 
   // Abonnement Pro (Stripe, simulé et signé) : 3 € pour un conseillé à 1 € = 3 mois de Pro.
@@ -325,6 +333,25 @@ try {
   assert.match(table, /\n\d{4}-\d{2}-\d{2};\d+;/);
   await shot(p4, '20-stats-pro');
   step('statistiques Pro : 12 mois et export tableur');
+
+  // Compte Pro : les options Pro du générateur s'ouvrent et s'appliquent au nouveau lot.
+  await p4.goto(BASE);
+  await p4.waitForSelector('#c-wl:not([disabled])');
+  await p4.fill('#name', 'Pressing Lumière');
+  await p4.fill('#count', '20');
+  await p4.selectOption('#ttl', '720');
+  await p4.check('#c-wl');
+  await p4.fill('#th-screenNumber', '#2b7fff');
+  await p4.click('#create-form button[type=submit]');
+  await p4.waitForSelector('#created:not([hidden])', { timeout: 30_000 });
+  assert.equal(await p4.locator('#created .banner-warn:has-text("options Pro")').count(), 0);
+  await p4.goto(`${BASE}/m`);
+  await p4.waitForSelector('h1:has-text("Pressing Lumière")');
+  await p4.getByRole('button', { name: 'Réglages' }).click();
+  assert.equal(await p4.locator('#st').inputValue(), '720');
+  assert.equal(await p4.locator('#swl').isChecked(), true);
+  assert.equal(await p4.locator('#th-screenNumber').inputValue(), '#2b7fff');
+  step('compte Pro : lot créé avec 30 jours, marque masquée et couleurs dès le générateur');
 
   /* ------------------------------------------- studio d'impression */
   await m.goto(`${BASE}/m`);

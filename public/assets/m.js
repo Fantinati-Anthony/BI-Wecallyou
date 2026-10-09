@@ -1,12 +1,13 @@
 // Espace commerçant : connexion par la page 1 du PDF (et le mot de passe du lot s'il y en a un),
 // appels, suivi des tickets, statistiques, impression, réglages et écran d'affichage.
-import { h, t, LANG, api, render, translatePage, errorText, lots, local, fmtTime, qrSvg, inkOn, icon } from './common.js';
+import { h, t, LANG, api, render, translatePage, errorText, lots, local, fmtTime, qrSvg, icon } from './common.js';
 import { textToSecret, secretToText, lotMaterial, authTokenOf, openLot, b64u, openFromClient } from './crypto.js';
 import { unlock, callTickets } from './call.js';
 import { composer, needsComposer, groupOf, parseNumbers } from './message.js';
 import { keySheet, fillPrintRoot, contentOf, keyPage, setPrintPage } from './sheets.js';
 import { printPlan, printOptions } from './print.js';
 import { designControls, livePreview } from './studio.js';
+import { PRO_LIFETIMES, themeFields, proLock } from './protools.js';
 import { supportCard, loadSupport } from './donate.js';
 import { session, sync, removeLot } from './account.js';
 
@@ -31,9 +32,6 @@ const app = document.getElementById('app');
 const CHANNELS = ['push', 'sms', 'wa', 'mail'];
 const ICON = { push: 'bell-ringing', sms: 'chat-circle-text', wa: 'whatsapp-logo', mail: 'envelope-simple' };
 const LIFETIMES = [1, 3, 6, 12, 24, 48];
-const PRO_LIFETIMES = [72, 168, 360, 720]; // 3, 7, 15 et 30 jours (Pro)
-/** Couleurs d'origine de l'écran public et de la page client (personnalisables en Pro). */
-const THEME_DEFAULTS = { screenBg: '#0e1013', screenText: '#f4f5f7', screenNumber: '#ff8a5c', accent: '#c8461c' };
 let info = null;
 let refreshTimer = null;
 
@@ -513,45 +511,15 @@ function settingsTab(panel, { lot, access, reload }) {
     PRO_LIFETIMES.map((hours) => h('option', { value: hours, selected: hours === lot.ttl, disabled: !lot.pro && hours !== lot.ttl }, t('ttl_days', { d: hours / 24 }))),
   );
   const whiteLabel = h('input', { type: 'checkbox', id: 'swl', checked: lot.whiteLabelSetting, disabled: !lot.pro && !lot.whiteLabelSetting });
-  // Couleurs de l'écran public et de la page client (Pro) : aperçu en direct, retour aux couleurs d'origine toujours possible.
-  let themeTouched = false;
-  const themePreview = h('div', { class: 'theme-preview', 'aria-hidden': 'true' }, h('div', { class: 'tp-screen' }, h('span', {}, lot.name), h('b', {}, '042')), h('div', { class: 'tp-btn' }, t('theme_button')));
-  const themeInputs = Object.entries(THEME_DEFAULTS).map(([key, fallback]) => {
-    const input = h('input', { type: 'color', class: 'color', id: `th-${key}`, value: lot.themeSetting?.[key] ?? fallback, disabled: !lot.pro });
-    input.addEventListener('input', () => {
-      themeTouched = true;
-      drawTheme();
-    });
-    return { key, input, element: h('div', { class: 'field' }, h('label', { for: `th-${key}` }, t(`theme_${key}`)), input) };
-  });
-  const drawTheme = () => {
-    for (const { key, input } of themeInputs) themePreview.style.setProperty(`--tp-${key}`, input.value);
-    themePreview.style.setProperty('--tp-ink', inkOn(themeInputs.find((i) => i.key === 'accent').input.value));
-  };
-  drawTheme();
-  const resetTheme = h('button', { type: 'button', class: 'linklike small' }, t('theme_reset'));
-  resetTheme.addEventListener('click', () => {
-    for (const { key, input } of themeInputs) input.value = THEME_DEFAULTS[key];
-    themeTouched = true;
-    drawTheme();
-  });
-  /** Couleurs à envoyer : undefined si rien n'a changé, null pour les couleurs d'origine. */
-  const themeValue = () => {
-    if (!themeTouched) return undefined;
-    const theme = Object.fromEntries(themeInputs.map(({ key, input }) => [key, input.value]));
-    return Object.entries(theme).every(([key, value]) => value === THEME_DEFAULTS[key]) ? null : theme;
-  };
+  // Couleurs de l'écran public et de la page client (Pro) : les retirer reste toujours possible.
+  const theme = themeFields({ initial: lot.themeSetting, enabled: lot.pro, canReset: lot.pro || Boolean(lot.themeSetting), name: lot.name });
   const proSection = h(
     'section',
     { class: 'card stack' },
     h('h2', { class: 'row' }, icon('star'), t('s_pro_options')),
     h('label', { class: 'check', for: 'swl' }, whiteLabel, ' ', t('s_whitelabel')),
-    h('h3', {}, t('s_theme')),
-    h('p', { class: 'small muted' }, t('s_theme_hint')),
-    themePreview,
-    h('div', { class: 'grid-4' }, themeInputs.map((i) => i.element)),
-    resetTheme,
-    !lot.pro && h('p', { class: 'small' }, h('a', { href: '/pro' }, t('pro_link'))),
+    theme.element,
+    !lot.pro && proLock(!lot.owned),
   );
   const checks = CHANNELS.map((c) => h('label', { class: 'check' }, h('input', { type: 'checkbox', value: c, checked: lot.channels.includes(c) }), icon(ICON[c]), t(`ch_${c}`)));
   const template = h('input', { id: 'stp', type: 'text', maxlength: 280, value: lot.template, placeholder: t('s_template_ph') });
@@ -629,7 +597,7 @@ function settingsTab(panel, { lot, access, reload }) {
         link: link.value,
         ttl: Number(ttl.value),
         whiteLabel: whiteLabel.checked,
-        theme: themeValue(),
+        theme: theme.value(),
         channels: checks.map((c) => c.querySelector('input')).filter((i) => i.checked).map((i) => i.value),
         template: template.value,
         lists: textToLists(lists.value),

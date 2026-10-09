@@ -3,6 +3,7 @@
 import { h, t, LANG, qrSvg } from './common.js';
 import { ticketSheets } from './sheets.js';
 import { sealForLot, b64u } from './crypto.js';
+import { comparison, minProPrice } from './plans.js';
 
 /* Métiers qui utilisent WeCallYou : une ligne qui défile (deux copies pour boucler sans à-coup). */
 const track = document.querySelector('[data-i18n-list="uses_list"]');
@@ -10,6 +11,10 @@ if (track) {
   const items = t('uses_list').split('|');
   track.replaceChildren(...items.map((item) => h('li', {}, item)), ...items.map((item) => h('li', { 'aria-hidden': 'true' }, item)));
 }
+
+/* Comparatif Gratuit / Pro, au prix le plus bas de l'offre. */
+const compare = document.getElementById('compare');
+if (compare) minProPrice().then((price) => compare.append(comparison(price)));
 
 /* Ticket de démonstration : son QR code ouvre ce site, jamais un faux ticket. */
 const slot = document.getElementById('hero-ticket');

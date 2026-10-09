@@ -368,6 +368,44 @@ details[open] > summary { margin-bottom: 14px; }
 .thanks-mark .i { width: 44px; height: 44px; }
 .thanks .row { justify-content: center; }
 
+/* Comparatif Gratuit / Pro (accueil et page Pro) */
+.offers { padding: 8px 0 80px; }
+.offers-cta { margin-top: 20px; }
+.compare-wrap { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-box); padding: 6px 10px 14px; overflow-x: auto; }
+.compare { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.97rem; }
+.compare th, .compare td { padding: 11px 12px; text-align: left; vertical-align: middle; }
+.compare thead th, .compare thead td { vertical-align: bottom; padding: 22px 12px 18px; }
+.compare .plan, .compare td.v { width: 24%; text-align: center; }
+.compare .plan-name { display: inline-flex; align-items: center; gap: 6px; font: 650 1.1rem/1.2 var(--font-display); letter-spacing: -0.01em; }
+.compare .plan-price { font: 750 2.3rem/1 var(--font-display); letter-spacing: -0.04em; margin: 8px 0 4px; font-variant-numeric: tabular-nums; }
+.compare .plan-sub { font-size: 0.82rem; font-weight: 400; color: var(--muted); }
+.compare .is-pro { background: color-mix(in srgb, var(--brand-soft) 60%, transparent); }
+.compare thead .is-pro { border-radius: 14px 14px 0 0; }
+.compare thead .is-pro .plan-name, .compare thead .is-pro .plan-price { color: var(--brand-text); }
+.compare tbody:last-child tr:last-child .is-pro { border-radius: 0 0 14px 14px; }
+.compare tr.group th { padding: 22px 12px 8px; font: 600 0.85rem var(--font-ui); color: var(--muted); }
+.compare tbody + tbody tr.group > * { border-top: 1px solid var(--line); }
+.compare tbody th[scope='row'] { font-weight: 500; }
+.compare .yes { color: var(--ok); }
+.compare .no { color: var(--muted); opacity: 0.55; }
+.compare td.v .i { width: 1.3em; height: 1.3em; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (max-width: 560px) {
+  .compare { font-size: 0.88rem; }
+  .compare th, .compare td { padding: 9px 6px; }
+  .compare .plan, .compare td.v { width: 27%; }
+  .compare .plan-price { font-size: 1.3rem; white-space: nowrap; }
+}
+
+/* Options Pro du générateur : visibles par tous, grisées sans Pro */
+.pro-badge { margin-left: 2px; padding: 2px 9px; font-size: 0.78rem; background: var(--brand-soft); color: var(--brand-text); }
+.pro-badge .i { width: 1em; height: 1em; }
+.pro-tools.locked .check, .pro-tools.locked .theme-preview, .pro-tools.locked .grid-4 { opacity: 0.5; }
+.pro-tools.locked .check { cursor: not-allowed; }
+.pro-lock { display: flex; gap: 10px; align-items: flex-start; margin: 0; padding: 12px 14px; border-radius: var(--r-ctl); background: var(--brand-soft); color: var(--text); }
+.pro-lock .i { color: var(--brand-text); margin-top: 2px; }
+select option:disabled { color: var(--muted); }
+
 /* ------------------------------------------------------------ ticket (page client) */
 
 .ticket-head {
