@@ -429,6 +429,28 @@ select option:disabled { color: var(--muted); }
 .lot-card.add:hover { color: var(--text); }
 .lot-card.add .i { width: 28px; height: 28px; }
 
+/* Carrousel des activités (création d'un lot, réglages du message) */
+.carousel { position: relative; min-width: 0; max-width: 100%; }
+.carousel-nav { display: flex; justify-content: flex-end; gap: 6px; margin-bottom: 8px; }
+.carousel-nav .btn { min-height: 38px; padding: 6px 10px; }
+.activity-track {
+  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(200px, 240px); gap: 10px;
+  overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: thin;
+  padding: 3px 3px 10px; margin: 0 -3px;
+}
+.activity {
+  scroll-snap-align: start; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-height: 176px; padding: 16px;
+  border: 1px solid var(--line); border-radius: var(--r-box); background: var(--surface); color: var(--text);
+  font: inherit; text-align: left; cursor: pointer; transition: border-color 0.15s ease;
+}
+.activity:hover { border-color: var(--muted); }
+.activity[aria-pressed='true'] { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
+.activity-icon { display: grid; place-items: center; width: 42px; height: 42px; border-radius: var(--r-ctl); background: var(--brand-soft); color: var(--brand-text); }
+.activity-icon .i { width: 24px; height: 24px; }
+.activity-name { font: 650 1.05rem/1.2 var(--font-display); letter-spacing: -0.01em; }
+.activity-example { font-size: 0.84rem; line-height: 1.4; color: var(--muted); }
+.act-sent { margin: 12px 0 0; padding: 12px 14px; border-radius: var(--r-ctl); background: var(--surface-2); }
+
 /* ------------------------------------------------------------ ticket (page client) */
 
 .ticket-head {
@@ -489,6 +511,7 @@ select option:disabled { color: var(--muted); }
 /* ------------------------------------------------------------ studio d'impression */
 
 .studio { display: grid; grid-template-columns: minmax(320px, 430px) minmax(0, 1fr); gap: 20px; align-items: start; }
+.studio > *, .studio-form > * { min-width: 0; } /* un carrousel large ne doit jamais élargir la page */
 .studio-form > details { margin-bottom: 12px; }
 .studio-form > details > summary { font: 650 1.12rem/1.2 var(--font-display); letter-spacing: -0.015em; }
 .studio-preview { position: sticky; top: 16px; margin: 0; }

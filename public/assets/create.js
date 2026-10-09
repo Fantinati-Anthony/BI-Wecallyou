@@ -9,11 +9,13 @@ import { designControls, livePreview } from './studio.js';
 import { supportCard, nudgeAfterPrint, loadSupport } from './donate.js';
 import { session, sync } from './account.js';
 import { PRO_LIFETIMES, themeFields, proLock } from './protools.js';
+import { loadActivities, activityPicker, presetOf, exampleOf } from './activities.js';
 
 const LIFETIMES = [1, 3, 6, 12, 24, 48];
 const DEFAULT_LIFETIME = 6;
 const MAX_FREE_LIFETIME = 48;
 const DRAFT = 'wcy:design-draft'; // derniers réglages d'impression, repris à la prochaine création
+const ACTIVITY = 'wcy:activity'; // dernière activité choisie
 
 translatePage();
 
@@ -54,6 +56,39 @@ function setPro(on) {
 }
 setPro(pro);
 if (session.get() && !info.allPro) sync().then((account) => account && setPro(Boolean(account.pro)));
+
+/* ------------------------------------------------------------ votre activité */
+
+// Un message et des variables adaptés au métier (le lot les reçoit à sa création), et une durée conseillée.
+const activities = await loadActivities();
+let chosen = activities.find((a) => a.id === local.get(ACTIVITY)) ?? null;
+const sent = document.getElementById('activity-sent');
+function showChoice() {
+  sent.hidden = !chosen;
+  if (chosen) render(sent, h('strong', {}, t('act_sent')), ' ', exampleOf(chosen, form.elements.name.value.trim()), h('br'), h('span', { class: 'muted' }, t('act_later')));
+}
+function suggestLifetime(activity) {
+  const hours = PRO_LIFETIMES.includes(activity.ttl) && !pro ? MAX_FREE_LIFETIME : activity.ttl;
+  if ([...ttlSelect.options].some((o) => Number(o.value) === hours && !o.disabled)) ttlSelect.value = String(hours);
+}
+const picker = activityPicker({
+  activities,
+  selected: chosen?.id,
+  name: () => form.elements.name.value.trim(),
+  onPick(activity) {
+    chosen = activity;
+    local.set(ACTIVITY, activity.id);
+    suggestLifetime(activity);
+    showChoice();
+  },
+});
+document.getElementById('activity-slot').append(picker.element);
+if (chosen) suggestLifetime(chosen);
+showChoice();
+form.elements.name.addEventListener('input', () => {
+  picker.refresh();
+  showChoice();
+});
 
 /* ------------------------------------------------- studio : réglages + aperçu */
 
@@ -150,13 +185,23 @@ form.addEventListener('submit', async (event) => {
     if (!res.ok) return showError(res.error);
     lots.save(res.lot, { key: secretToText(lot.secret), material: b64u.encode(lot.material), name, password: Boolean(password.value) });
     if (session.get()) await sync(); // connecté : le lot rejoint le compte
+    // Réglages appliqués au lot neuf : modèle de l'activité (gratuit) et options Pro. Si le Pro est
+    // refusé, l'activité est quand même appliquée.
     let result = res;
     let proError = null;
+    const preset = chosen ? presetOf(chosen) : null;
+    const withPreset = Boolean(preset && (preset.template || preset.lists.length));
     const colors = pro ? theme.value() : undefined;
-    if (pro && (proTtl || whiteLabel.checked || colors)) {
-      const applied = await api('/lot/settings', { body: { name, promo, link, channels, ttl, whiteLabel: whiteLabel.checked, theme: colors ?? undefined }, auth: lot.authToken });
+    const withPro = pro && (proTtl || whiteLabel.checked || Boolean(colors));
+    if (withPreset || withPro) {
+      const base = { name, promo, link, channels, template: withPreset ? preset.template : undefined, lists: withPreset ? preset.lists : undefined };
+      let applied = await api('/lot/settings', { body: { ...base, ttl, whiteLabel: withPro && whiteLabel.checked, theme: withPro ? (colors ?? undefined) : undefined }, auth: lot.authToken });
+      if (!applied.ok && withPro) {
+        proError = applied.error;
+        applied = withPreset ? await api('/lot/settings', { body: { ...base, ttl: proTtl ? MAX_FREE_LIFETIME : ttl }, auth: lot.authToken }) : applied;
+      }
       if (applied.ok) result = { ...res, whiteLabel: applied.whiteLabel };
-      else proError = applied.error;
+      else proError ??= applied.error;
     }
     printOptions.set(res.lot, design.get());
     password.value = password2.value = '';

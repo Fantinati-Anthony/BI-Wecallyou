@@ -8,6 +8,7 @@ import { keySheet, fillPrintRoot, contentOf, keyPage, setPrintPage } from './she
 import { printPlan, printOptions } from './print.js';
 import { designControls, livePreview } from './studio.js';
 import { PRO_LIFETIMES, themeFields, proLock } from './protools.js';
+import { loadActivities, activityPicker, presetOf } from './activities.js';
 import { supportCard, loadSupport } from './donate.js';
 import { session, sync, removeLot } from './account.js';
 
@@ -86,7 +87,7 @@ function connectView({ key = '', needsPassword = false, message = '' } = {}) {
     form,
     others.length > 0 && h('p', { class: 'center' }, h('button', { type: 'button', class: 'btn btn-ghost', onclick: lotsView }, icon('squares-four'), t('lots_back'))),
     !session.get() && h('p', { class: 'center' }, h('a', { href: '/compte' }, t('acc_login_link'))),
-    h('p', { class: 'center' }, h('a', { href: '/' }, t('m_new_lot'))),
+    h('p', { class: 'center' }, h('a', { href: '/creer' }, t('m_new_lot'))),
   );
   (needsPassword && key ? pwInput : keyInput).focus();
 }
@@ -151,7 +152,7 @@ async function lotsView() {
       'div',
       { class: 'lot-grid' },
       cards,
-      h('a', { class: 'lot-card add', href: '/#creer' }, icon('plus'), h('span', { class: 'lot-name' }, t('m_new_lot'))),
+      h('a', { class: 'lot-card add', href: '/creer' }, icon('plus'), h('span', { class: 'lot-name' }, t('m_new_lot'))),
       h('button', { type: 'button', class: 'lot-card add', onclick: () => connectView() }, icon('key'), h('span', { class: 'lot-name' }, t(multi ? 'lots_add_existing' : 'lots_open_key'))),
     ),
     !session.get() && h('p', { class: 'small' }, h('a', { href: '/compte' }, t('acc_login_link'))),
@@ -605,6 +606,25 @@ function settingsTab(panel, { lot, access, reload }) {
   lists.addEventListener('input', drawChips);
   drawChips();
 
+  // Partir d'un modèle d'activité : message et listes adaptés au métier, puis retouches libres.
+  const models = h('div');
+  loadActivities().then((activities) => {
+    const picker = activityPicker({
+      activities,
+      name: () => name.value.trim(),
+      onPick(activity) {
+        const preset = presetOf(activity);
+        const mine = template.value.trim() || lists.value.trim();
+        if (mine && (template.value !== preset.template || lists.value !== listsToText(preset.lists)) && !confirm(t('act_replace_confirm'))) return;
+        template.value = preset.template;
+        lists.value = listsToText(preset.lists);
+        drawChips();
+      },
+    });
+    name.addEventListener('input', picker.refresh);
+    models.append(h('label', {}, t('act_from_model')), picker.element);
+  });
+
   const status = h('p', { role: 'status' });
   const form = h(
     'form',
@@ -632,6 +652,7 @@ function settingsTab(panel, { lot, access, reload }) {
       'section',
       { class: 'card stack' },
       h('h2', {}, t('s_message')),
+      models,
       h('label', { for: 'sli' }, t('s_lists')),
       lists,
       h('p', { class: 'small muted' }, t('s_lists_hint')),
@@ -684,7 +705,7 @@ function settingsTab(panel, { lot, access, reload }) {
     panel,
     form,
     h('section', { class: 'card stack' }, h('h2', {}, t('m_device')), h('p', {}, t('m_add_phone')), forget),
-    h('p', { class: 'center' }, h('a', { href: '/' }, t('m_new_lot'))),
+    h('p', { class: 'center' }, h('a', { href: '/creer' }, t('m_new_lot'))),
   );
 }
 

@@ -12,7 +12,8 @@ Snacks, food trucks, boulangeries, buvettes, tournois sportifs, vestiaires, cord
 
 ## Ce que ça fait
 
-- **Création sans compte** : nom affiché, nombre de tickets (jusqu’à 999 999), premier numéro. Un PDF : page 1 = votre clé de lot et le mode d’emploi, puis les tickets avec leurs souches. Les gros lots s’impriment par cahiers.
+- **Création sans compte** (page `/creer`) : nom affiché, nombre de tickets (jusqu’à 999 999), premier numéro.
+- **Modèles par activité** : un carrousel (snack, boulangerie, pressing, atelier, club, buvette, guichet, cabinet, click & collect…) propose un message, des variables et une durée adaptés au métier ; aussi dans Réglages > Message et variables. Modifiables dans `public/activites.json`. Un PDF : page 1 = votre clé de lot et le mode d’emploi, puis les tickets avec leurs souches. Les gros lots s’impriment par cahiers.
 - **Studio d’impression** (réglages à gauche, aperçu en direct à droite) : A4, Letter, A5, A6, A3, format libre ou **rouleau d’imprimante à tickets** (80 / 58 mm), portrait ou paysage, colonnes et lignes libres. Le maximum est calculé pour que le QR code reste lisible (10 mm au moins, 14 mm en thermique). Souche à droite, en dessous, sur l’étiquette voisine, ou sans souche ; marges et espacements au dixième de millimètre ; couleurs du ticket, du numéro et de la souche, logo, noir et blanc. Dans chaque case, le logo, le nom, le numéro, le QR et les consignes passent **en colonne ou en ligne** selon la place, à la plus grande taille qui tient : **jamais de débordement** (vérifié sur des centaines de combinaisons à chaque test).
 - **Papiers compatibles** : un catalogue (feuilles, A4 micro-perforé, cartes et étiquettes prédécoupées, rouleaux thermiques) règle tout en un appui, avec un lien d’achat facultatif.
 - **Mot de passe de lot (facultatif)** : il entre dans le chiffrement ; sans lui, la page 1 ne vaut rien.
@@ -26,7 +27,7 @@ Snacks, food trucks, boulangeries, buvettes, tournois sportifs, vestiaires, cord
 - **Français et anglais**, selon la langue du téléphone ; chaque client reçoit son message dans sa langue.
 - **Dons** ponctuels ou mensuels via Stripe, présentés au moment de la création des tickets, sans jamais bloquer.
 - **Compte facultatif, chiffré** : un identifiant et un mot de passe (pas d’e-mail) pour retrouver tous ses lots sur n’importe quel téléphone. Mot de passe oublié → **fiche de secours** imprimable et téléchargeable (identifiant + clé de secours + QR).
-- **Deux offres bien séparées** : le **don**, sans aucune contrepartie, et **WeCallYou Pro**, un petit abonnement avec options qui sollicitent le serveur : marque masquée, couleurs du commerce sur l’écran public et la page du client, tickets actifs jusqu’à 30 jours (pressing, SAV, réparations), statistiques sur un an et export CSV, priorité en cas d’affluence. Ce qui se calcule dans le navigateur (mise en page et couleurs des tickets imprimés) reste gratuit. Prix conseillé selon l’usage (tickets actifs sur 30 jours) ; payer moins raccourcit le Pro en proportion, personne n’est bloqué. Tout le reste reste gratuit, et tout le code reste libre (`"allPro": true` dans `config.json` débloque tout sur une installation indépendante).
+- **Deux offres bien séparées** : le **don**, sans aucune contrepartie, et **WeCallYou Pro**, un petit abonnement avec options qui sollicitent le serveur : marque masquée, couleurs du commerce sur l’écran public et la page du client, plusieurs lots réunis (« Mes lots », un compte), tickets actifs jusqu’à 30 jours (pressing, SAV, réparations), statistiques sur un an et export CSV, priorité en cas d’affluence. Ce qui se calcule dans le navigateur (mise en page et couleurs des tickets imprimés) reste gratuit. Prix conseillé selon l’usage (tickets actifs sur 30 jours) ; payer moins raccourcit le Pro en proportion, personne n’est bloqué. Tout le reste reste gratuit, et tout le code reste libre (`"allPro": true` dans `config.json` débloque tout sur une installation indépendante).
 
 ## Sécurité et vie privée
 
@@ -67,7 +68,8 @@ Voir [SECURITY.md](SECURITY.md) pour signaler une faille.
 
 ```
 public/            pages statiques servies par Apache (ou par Node en local)
-  index.html       accueil + création d’un lot
+  index.html       accueil (présentation, comparatif Gratuit / Pro)
+  creer.html       création d’un lot : activité, papier, mise en page, options Pro
   t.html           page d’un ticket (client ou souche) : /<code de 26 caractères>
   m.html           espace commerçant
   assets/          JS en modules ES, sans dépendance (sauf qrcode.js, MIT, hébergé ici)
@@ -76,6 +78,7 @@ public/            pages statiques servies par Apache (ou par Node en local)
   etat/            fichiers « prêt », secours du temps réel
   soutien.json     dons : liens Stripe, objectif, frais (à éditer à la main)
   papiers.json     catalogue des papiers compatibles et leurs liens d’achat (à éditer à la main)
+  activites.json   modèles de message par activité (à éditer à la main)
   assets/layout.js mise en page des tickets (sans navigateur, testée côté serveur)
 server/            API Node.js 24, AUCUNE dépendance npm
   app.cjs          fichier de démarrage (cPanel / Passenger)

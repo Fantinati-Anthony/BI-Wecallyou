@@ -35,6 +35,7 @@ const REWRITES = [
   [/^\/compte\/?$/, 'compte.html'],
   [/^\/pro\/?$/, 'pro.html'],
   [/^\/mentions\/?$/, 'mentions.html'],
+  [/^\/creer\/?$/, 'creer.html'],
   [/^\/ecran\/[A-Za-z2-7]{23}\/?$/i, 'ecran.html'],
   [/^\/[A-Za-z2-7]{26}\/?$/, 't.html'],
   [/^\/[A-Za-z2-7]{26}\/manifest\.webmanifest$/, 'manifest.webmanifest'],

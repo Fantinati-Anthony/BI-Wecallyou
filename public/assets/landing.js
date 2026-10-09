@@ -1,9 +1,11 @@
 // Accueil : un vrai ticket en vitrine (le même rendu que l'impression) et une démonstration du
 // chiffrement des coordonnées, calculée dans ce navigateur : rien n'est envoyé au serveur.
-import { h, t, LANG, qrSvg } from './common.js';
+import { h, t, LANG, qrSvg, translatePage } from './common.js';
 import { ticketSheets } from './sheets.js';
 import { sealForLot, b64u } from './crypto.js';
 import { comparison, minProPrice } from './plans.js';
+
+translatePage();
 
 /* Métiers qui utilisent WeCallYou : une ligne qui défile (deux copies pour boucler sans à-coup). */
 const track = document.querySelector('[data-i18n-list="uses_list"]');

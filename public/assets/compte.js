@@ -194,7 +194,7 @@ async function accountView() {
     h('h1', {}, t('acc_title')),
     h('p', { class: 'muted' }, t('acc_hello', { ident: s.ident })),
     status,
-    h('section', { class: 'card stack' }, h('h2', {}, t('acc_lots')), !multi && proLock(false, 'lots_pro_lock'), list.length ? h('ul', { class: 'waiting-list' }, list) : h('p', { class: 'muted' }, t('acc_lots_none')), h('a', { href: '/' }, t('m_new_lot'))),
+    h('section', { class: 'card stack' }, h('h2', {}, t('acc_lots')), !multi && proLock(false, 'lots_pro_lock'), list.length ? h('ul', { class: 'waiting-list' }, list) : h('p', { class: 'muted' }, t('acc_lots_none')), h('a', { href: '/creer' }, t('m_new_lot'))),
     h(
       'section',
       { class: 'card stack' },

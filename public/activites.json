@@ -1,0 +1,139 @@
+{
+  "_doc": "Modèles par activité, proposés à la création d'un lot et dans Réglages > Message et variables. Chaque modèle donne un message ({nom}, {numero}, {groupe} et ses listes), des listes déroulantes (variables choisies au moment de l'appel) et une durée de vie conseillée en heures (72 h et plus : offre Pro). Les options sont des phrases entières : le message reste correct même si rien n'est choisi.",
+  "activities": [
+    {
+      "id": "snack",
+      "icon": "hamburger",
+      "name": { "fr": "Snack, food truck", "en": "Snack bar, food truck" },
+      "ttl": 3,
+      "fr": {
+        "template": "{nom} : votre commande n°{numero} est prête ! {Retrait}",
+        "lists": [{ "name": "Retrait", "options": ["À récupérer au comptoir.", "À récupérer au guichet 1.", "À récupérer au guichet 2.", "On vous l’apporte en terrasse."] }]
+      },
+      "en": {
+        "template": "{name}: your order #{number} is ready! {Pickup}",
+        "lists": [{ "name": "Pickup", "options": ["Please collect it at the counter.", "Please collect it at window 1.", "Please collect it at window 2.", "We’ll bring it to your table outside."] }]
+      }
+    },
+    {
+      "id": "boulangerie",
+      "icon": "bread",
+      "name": { "fr": "Boulangerie, traiteur", "en": "Bakery, caterer" },
+      "ttl": 24,
+      "fr": {
+        "template": "{nom} : votre commande n°{numero} vous attend en boutique. {Info}",
+        "lists": [{ "name": "Info", "options": ["Merci de votre confiance !", "Pensez à votre bon de commande.", "Paiement sur place."] }]
+      },
+      "en": {
+        "template": "{name}: your order #{number} is waiting for you in store. {Info}",
+        "lists": [{ "name": "Info", "options": ["Thank you!", "Please bring your order slip.", "Payment on collection."] }]
+      }
+    },
+    {
+      "id": "pressing",
+      "icon": "t-shirt",
+      "name": { "fr": "Pressing, cordonnerie, retouches", "en": "Dry cleaning, shoe repair, alterations" },
+      "ttl": 168,
+      "fr": {
+        "template": "{nom} : votre dépôt n°{numero} est prêt. {Retrait}",
+        "lists": [{ "name": "Retrait", "options": ["À récupérer aux horaires d’ouverture.", "À récupérer dès demain matin.", "Merci de passer avant samedi."] }]
+      },
+      "en": {
+        "template": "{name}: your items #{number} are ready. {Pickup}",
+        "lists": [{ "name": "Pickup", "options": ["Collect them during opening hours.", "Ready to collect from tomorrow morning.", "Please collect them before Saturday."] }]
+      }
+    },
+    {
+      "id": "atelier",
+      "icon": "wrench",
+      "name": { "fr": "Atelier, réparation, SAV", "en": "Repair shop, after-sales" },
+      "ttl": 168,
+      "fr": {
+        "template": "{nom} : ticket n°{numero}, {État}",
+        "lists": [{ "name": "État", "options": ["votre appareil est réparé : venez le chercher.", "votre devis est prêt : merci de nous contacter.", "il manque une pièce : nous vous tenons au courant."] }]
+      },
+      "en": {
+        "template": "{name}: ticket #{number}, {Status}",
+        "lists": [{ "name": "Status", "options": ["your device is repaired and ready to collect.", "your quote is ready: please get in touch.", "we are waiting for a part and will keep you posted."] }]
+      }
+    },
+    {
+      "id": "club",
+      "icon": "soccer-ball",
+      "name": { "fr": "Club, tournoi", "en": "Club, tournament" },
+      "ttl": 12,
+      "fr": {
+        "template": "{groupe} : c’est à vous ! {Lieu}",
+        "lists": [{ "name": "Lieu", "options": ["Rendez-vous au terrain 1.", "Rendez-vous au terrain 2.", "Rendez-vous à la table de marque."] }]
+      },
+      "en": {
+        "template": "{group}: you’re up! {Where}",
+        "lists": [{ "name": "Where", "options": ["Please go to pitch 1.", "Please go to pitch 2.", "Please go to the scorers’ table."] }]
+      }
+    },
+    {
+      "id": "buvette",
+      "icon": "beer-stein",
+      "name": { "fr": "Buvette, festival, kermesse", "en": "Refreshment stand, festival, fair" },
+      "ttl": 6,
+      "fr": {
+        "template": "Ticket n°{numero} : c’est prêt ! {Stand}",
+        "lists": [{ "name": "Stand", "options": ["Au stand boissons.", "Au stand crêpes.", "Au barbecue."] }]
+      },
+      "en": {
+        "template": "Ticket #{number}: it’s ready! {Stand}",
+        "lists": [{ "name": "Stand", "options": ["At the drinks stand.", "At the crêpe stand.", "At the barbecue."] }]
+      }
+    },
+    {
+      "id": "guichet",
+      "icon": "bank",
+      "name": { "fr": "Accueil, mairie, guichet", "en": "Front desk, town hall, counter" },
+      "ttl": 3,
+      "fr": {
+        "template": "Ticket n°{numero} : c’est à vous. {Guichet}",
+        "lists": [{ "name": "Guichet", "options": ["Présentez-vous au guichet 1.", "Présentez-vous au guichet 2.", "Présentez-vous au bureau 3."] }]
+      },
+      "en": {
+        "template": "Ticket #{number}: it’s your turn. {Desk}",
+        "lists": [{ "name": "Desk", "options": ["Please go to desk 1.", "Please go to desk 2.", "Please go to office 3."] }]
+      }
+    },
+    {
+      "id": "cabinet",
+      "icon": "stethoscope",
+      "name": { "fr": "Cabinet, salle d’attente", "en": "Practice, waiting room" },
+      "ttl": 3,
+      "fr": {
+        "template": "{nom} : c’est votre tour (ticket n°{numero}). {Salle}",
+        "lists": [{ "name": "Salle", "options": ["Merci de vous présenter au cabinet 1.", "Merci de vous présenter au cabinet 2.", "Merci de revenir en salle d’attente."] }]
+      },
+      "en": {
+        "template": "{name}: it’s your turn (ticket #{number}). {Room}",
+        "lists": [{ "name": "Room", "options": ["Please come to room 1.", "Please come to room 2.", "Please come back to the waiting room."] }]
+      }
+    },
+    {
+      "id": "retrait",
+      "icon": "package",
+      "name": { "fr": "Click & collect, retrait", "en": "Click & collect" },
+      "ttl": 24,
+      "fr": {
+        "template": "{nom} : votre commande n°{numero} est prête. {Lieu}",
+        "lists": [{ "name": "Lieu", "options": ["Retrait au comptoir.", "Retrait au drive.", "Retrait à l’entrepôt (porte B)."] }]
+      },
+      "en": {
+        "template": "{name}: order #{number} is ready. {Where}",
+        "lists": [{ "name": "Where", "options": ["Collect at the counter.", "Collect at the drive-through.", "Collect at the warehouse (door B)."] }]
+      }
+    },
+    {
+      "id": "autre",
+      "icon": "chat-centered-text",
+      "name": { "fr": "Autre : message simple", "en": "Other: simple message" },
+      "ttl": 6,
+      "fr": { "template": "", "lists": [] },
+      "en": { "template": "", "lists": [] }
+    }
+  ]
+}

@@ -62,11 +62,19 @@ try {
   await shot(m, '01-accueil');
   // Sans compte Pro : le comparatif est là, les options Pro du générateur sont visibles mais grisées.
   await m.waitForSelector('.compare .plan.is-pro');
+  assert.ok((await m.locator('.how-step p').first().textContent()).length > 20); // l'accueil est bien traduit
+  assert.equal(await m.locator('.hero-cta svg').count(), 1); // et ses icônes posées
   assert.doesNotMatch(await m.locator('.compare').textContent(), /cmp_|plan_/); // aucune clé de traduction oubliée
+  // La création de lot a sa propre page, atteinte par l'appel à l'action de l'accueil.
+  await m.locator('.hero-cta a[href="/creer"]').click();
+  await m.waitForSelector('#create-form .activity');
+  assert.equal(await m.locator('.activity').count(), 10);
+  await m.click('.activity[data-id="autre"]'); // message par défaut, traduit pour chaque client
+  assert.match(await m.locator('#activity-sent').textContent(), /c’est à vous/);
   assert.equal(await m.locator('#c-wl').isDisabled(), true);
   assert.equal(await m.locator('#ttl option[value="720"]').isDisabled(), true);
   assert.equal(await m.locator('#pro-tools .pro-lock').isVisible(), true);
-  step('accueil : comparatif Gratuit / Pro, options Pro grisées sans compte Pro');
+  step('accueil : comparatif Gratuit / Pro ; page « Créer » : activités, options Pro grisées sans compte Pro');
   await m.fill('#name', 'Snack Tony');
   await m.fill('#count', '30');
   await m.fill('#password', 'motdepasse-tres-long');
@@ -343,8 +351,9 @@ try {
   step('statistiques Pro : 12 mois et export tableur');
 
   // Compte Pro : les options Pro du générateur s'ouvrent et s'appliquent au nouveau lot.
-  await p4.goto(BASE);
+  await p4.goto(`${BASE}/creer`);
   await p4.waitForSelector('#c-wl:not([disabled])');
+  await p4.click('.activity[data-id="pressing"]');
   await p4.fill('#name', 'Pressing Lumière');
   await p4.fill('#count', '20');
   await p4.selectOption('#ttl', '720');
@@ -359,6 +368,8 @@ try {
   assert.equal(await p4.locator('#st').inputValue(), '720');
   assert.equal(await p4.locator('#swl').isChecked(), true);
   assert.equal(await p4.locator('#th-screenNumber').inputValue(), '#2b7fff');
+  assert.match(await p4.locator('#stp').inputValue(), /votre dépôt n°{numero}/); // le modèle « pressing » est appliqué
+  assert.match(await p4.locator('#sli').inputValue(), /^Retrait :/);
   step('compte Pro : lot créé avec 30 jours, marque masquée et couleurs dès le générateur');
 
   // Mes lots : deux lots sur ce téléphone, on passe de l'un à l'autre depuis l'en-tête.

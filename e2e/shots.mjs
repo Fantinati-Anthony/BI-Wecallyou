@@ -136,7 +136,7 @@ try {
   {
     const ctx = await browser.newContext({ locale: 'fr-FR', viewport: { width: 900, height: 1200 }, deviceScaleFactor: 2, bypassCSP: true });
     const p = await ctx.newPage();
-    await p.goto(`${BASE}/`);
+    await p.goto(`${BASE}/creer`);
     await p.waitForSelector('#name');
     await p.evaluate(async () => {
       const { ticketSheets } = await import('/assets/sheets.js');

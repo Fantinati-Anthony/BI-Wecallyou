@@ -102,3 +102,28 @@ test('catalogue de papiers : identifiants uniques, liens https, chaque papier ti
     }
   }
 });
+
+test('modèles par activité : valides pour le serveur, dans les deux langues, sans virgule dans les options', async () => {
+  const { activities } = JSON.parse(readFileSync(new URL('../../public/activites.json', import.meta.url), 'utf8'));
+  const { LIFETIMES, PRO_LIFETIMES } = await import('../lib/store.js');
+  const icons = readFileSync(new URL('../../public/assets/icons.js', import.meta.url), 'utf8');
+  assert.ok(activities.length >= 6);
+  assert.equal(new Set(activities.map((a) => a.id)).size, activities.length);
+  for (const activity of activities) {
+    assert.ok(icons.includes(`'${activity.icon}':`), `${activity.id} : icône ${activity.icon}`);
+    assert.ok([...LIFETIMES, ...PRO_LIFETIMES].includes(activity.ttl), `${activity.id} : durée`);
+    for (const lang of ['fr', 'en']) {
+      const { template, lists } = activity[lang];
+      assert.ok(activity.name[lang], `${activity.id} : nom ${lang}`);
+      assert.ok(template.length <= 280);
+      assert.ok(lists.length <= 5);
+      for (const list of lists) {
+        assert.match(list.name, /^[\p{L}\p{N}][\p{L}\p{N} _-]*$/u, `${activity.id} : liste ${list.name}`);
+        assert.ok(template.includes(`{${list.name}}`), `${activity.id} : {${list.name}} absent du message ${lang}`);
+        for (const option of list.options) {
+          assert.ok(option.length <= 60 && !option.includes(',') && !option.includes('>'), `${activity.id} : option « ${option} »`);
+        }
+      }
+    }
+  }
+});
