@@ -416,3 +416,32 @@ test('numéros mélangés (« les deux », affiche seule) : tickets imprimés co
   const first = await call('POST', `/poster/${soloPoster}`, {});
   assert.match(first.label, /^\d{3}$/);
 });
+
+test('le commerçant fait entrer un ticket dans la file : numéro tapé ou QR client scanné', async () => {
+  const lot = await newLot();
+  const [one, two, three] = lot.res.tickets;
+  // Numéro tapé : le ticket s'active et entre dans la file d'arrivée, une seule fois.
+  const added = await call('POST', '/lot/arrive', { n: 2 }, lot.authToken);
+  assert.deepEqual([added.added, added.label], [true, '002']);
+  assert.equal((await call('POST', '/lot/arrive', { n: 2 }, lot.authToken)).added, false);
+  // QR client scanné (par le client ou le commerçant) : la page dit si ce scan l'a fait entrer.
+  assert.equal((await call('GET', `/t/${three.c}`)).activated, true);
+  assert.equal((await call('GET', `/t/${three.c}`)).activated, false);
+  assert.equal((await call('GET', `/t/${one.s}`)).activated, false); // une souche n'active rien
+  const { arrivals } = await call('GET', '/lot', undefined, lot.authToken);
+  assert.deepEqual(arrivals.map((a) => a.n), [two.n, three.n]);
+  // Déjà appelé : il ne revient pas dans la file.
+  await call('POST', '/call', { n: 2 }, lot.authToken);
+  assert.equal((await call('POST', '/lot/arrive', { n: 2 }, lot.authToken)).called, true);
+  // Seulement les tickets de cette file, et seulement pour son commerçant.
+  assert.equal((await call('POST', '/lot/arrive', { n: 21 }, lot.authToken)).error, 'not_issued');
+  assert.notEqual((await call('POST', '/lot/arrive', { n: 3 })).ok, true); // 401, ou 429 si trop d'essais
+
+  // Numéros mélangés : un numéro imprimé entre, un numéro jamais imprimé est refusé.
+  const mixed = await wc.createLot();
+  await call('POST', '/lots', { name: 'Snack mélangé', channels: ['sms'], from: 1, to: 10, numbering: 'random', ...mixed.request });
+  const printed = (await call('POST', '/lot/tickets', { from: 1, to: 10 }, mixed.authToken)).tickets.map((t) => t.n);
+  assert.equal((await call('POST', '/lot/arrive', { n: printed[7] }, mixed.authToken)).added, true);
+  const stranger = Array.from({ length: 999 }, (_, i) => i + 1).find((n) => !printed.includes(n));
+  assert.equal((await call('POST', '/lot/arrive', { n: stranger }, mixed.authToken)).error, 'not_issued');
+});

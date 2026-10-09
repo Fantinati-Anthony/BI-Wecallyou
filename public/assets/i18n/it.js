@@ -454,7 +454,7 @@ export default {
   pv_close: 'Chiudi',
   pv_sample: 'Esempio: i veri QR code vengono creati con la coda.',
   pv_impossible: 'Questi biglietti non stanno su questa carta con un QR code leggibile: riduca colonne o righe, oppure scelga una carta più grande.',
-  pv_qr_warn: 'QR code da {qr} mm: stampi in qualità normale o superiore.',
+  pv_qr_warn: 'Attenzione: QR code da {qr} mm, troppo piccoli. Una volta stampati potrebbero non leggersi più. Riduca le colonne o le righe, oppure stampi in alta qualità.',
   pv_roll: 'Un biglietto per pagina: la stampante taglia tra un biglietto e l’altro.',
   err_qr_small: 'Questi biglietti non stanno su questa carta: regoli l’impaginazione.',
   plan_key_first: 'Stampi prima la pagina chiave su una stampante normale: apre la sua area esercente.',
@@ -719,4 +719,19 @@ export default {
   k_range_random: '{count} biglietti · numeri casuali',
   k_range_poster: 'Numeri assegnati alla scansione della locandina, a caso',
   plan_random: 'Numeri casuali: «biglietti da 1 a 50» conta i biglietti in ordine di stampa, non i loro numeri. Un biglietto mantiene sempre il suo numero.',
+
+  // Ticket client scanné par le commerçant, ajout d'un numéro tapé à la file
+  desk_added: 'Aggiunto alla coda',
+  desk_already: 'Già in coda',
+  desk_place: '{pos} nella coda di arrivo, dalle {time}.',
+  desk_called: 'Questo biglietto è già stato chiamato.',
+  desk_hint: 'Il suo telefono è collegato a questa coda: il biglietto risulta arrivato, anche se il cliente non si iscrive.',
+  desk_client: 'È il mio biglietto: iscrivermi come cliente',
+  m_arrive_label: 'Numero del biglietto',
+  m_arrive_btn: 'Aggiungi alla coda',
+  m_arrive_hint: 'Un cliente senza smartphone? Scansioni il QR cliente del suo biglietto con la fotocamera del suo telefono, oppure digiti il numero stampato: entra in coda.',
+  m_arrive_added: 'Il {n} è stato aggiunto alla coda.',
+  m_arrive_already: 'Il {n} è già in coda.',
+  m_arrive_called: 'Il {n} è già stato chiamato.',
+  err_not_issued: 'Questo numero non appartiene a questa coda.',
 };

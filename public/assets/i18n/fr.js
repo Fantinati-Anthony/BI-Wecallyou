@@ -454,7 +454,7 @@ export default {
   pv_close: 'Fermer',
   pv_sample: 'Exemple : les vrais QR codes sont créés avec la file.',
   pv_impossible: 'Ces tickets ne tiennent pas sur ce papier avec un QR code lisible : réduisez les colonnes ou les lignes, ou choisissez un papier plus grand.',
-  pv_qr_warn: 'QR codes de {qr} mm : imprimez en qualité normale ou supérieure.',
+  pv_qr_warn: 'Attention : QR codes de {qr} mm, trop petits. Une fois imprimés, ils risquent de ne plus se lire. Réduisez les colonnes ou les lignes, ou imprimez en haute qualité.',
   pv_roll: 'Un ticket par page : l’imprimante coupe entre chaque ticket.',
   err_qr_small: 'Ces tickets ne tiennent pas sur ce papier : ajustez la mise en page.',
   plan_key_first: 'Imprimez d’abord la page clé sur une imprimante classique : elle ouvre votre espace commerçant.',
@@ -719,4 +719,19 @@ export default {
   k_range_random: 'File de {count} tickets · numéros tirés au hasard',
   k_range_poster: 'Numéros donnés au scan de l’affiche, tirés au hasard',
   plan_random: 'Numéros tirés au hasard : « tickets 1 à 50 » compte les tickets dans l’ordre d’impression, pas leurs numéros. Un même ticket garde toujours son numéro.',
+
+  // Ticket client scanné par le commerçant, ajout d'un numéro tapé à la file
+  desk_added: 'Ajouté à la file',
+  desk_already: 'Déjà dans la file',
+  desk_place: '{pos} dans la file d’arrivée, depuis {time}.',
+  desk_called: 'Ce ticket a déjà été appelé.',
+  desk_hint: 'Votre téléphone est connecté à cette file : le ticket compte comme arrivé, même si le client ne s’inscrit pas.',
+  desk_client: 'C’est mon ticket : m’inscrire comme client',
+  m_arrive_label: 'Numéro du ticket',
+  m_arrive_btn: 'Ajouter à la file',
+  m_arrive_hint: 'Un client sans smartphone ? Scannez le QR client de son ticket avec l’appareil photo de votre téléphone, ou tapez le numéro écrit dessus : il entre dans la file.',
+  m_arrive_added: 'Le {n} est ajouté à la file.',
+  m_arrive_already: 'Le {n} est déjà dans la file.',
+  m_arrive_called: 'Le {n} a déjà été appelé.',
+  err_not_issued: 'Ce numéro n’appartient pas à cette file.',
 };

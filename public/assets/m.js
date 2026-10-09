@@ -344,7 +344,31 @@ async function callTab(panel, { lot, access, reload }) {
 
   // File d'arrivée : tickets scannés (affiche ou tickets imprimés) pas encore appelés, dans l'ordre.
   // On appelle le suivant, tout le monde d'un coup, ou au cas par cas.
-  const arrivalsBox = h('section', { class: 'card stack', id: 'arrivals' });
+  // Client sans smartphone : le commerçant fait entrer son ticket en tapant le numéro (ou en scannant
+  // son QR client avec ce téléphone). Le champ reste en place quand la liste se redessine.
+  const arriveInput = h('input', { id: 'arrive-n', type: 'text', inputmode: 'numeric', autocomplete: 'off', maxlength: 7, placeholder: '042' });
+  const arriveStatus = h('p', { class: 'small', role: 'status' });
+  const arriveForm = h(
+    'form',
+    { class: 'arrive-form', id: 'arrive-form' },
+    h('div', { class: 'cap num' }, h('label', { for: 'arrive-n' }, t('m_arrive_label')), arriveInput),
+    h('button', { class: 'btn btn-soft', type: 'submit' }, icon('plus'), t('m_arrive_btn')),
+  );
+  arriveForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const n = Number(arriveInput.value.replace(/\D/g, ''));
+    if (!n) return arriveInput.focus();
+    const res = await api('/lot/arrive', { body: { n }, auth: access.auth });
+    arriveStatus.className = res.ok ? 'small ok' : 'small error';
+    arriveStatus.textContent = res.ok ? t(res.called ? 'm_arrive_called' : res.added ? 'm_arrive_added' : 'm_arrive_already', { n: res.label }) : errorText(res.error);
+    if (!res.ok) return arriveInput.focus();
+    arriveInput.value = '';
+    await refresh();
+    arriveInput.focus();
+  });
+  const arrivalsHead = h('div', { class: 'stack' });
+  const arrivalsBody = h('div', { class: 'stack' });
+  const arrivalsBox = h('section', { class: 'card stack', id: 'arrivals' }, arrivalsHead, h('p', { class: 'small muted' }, t('m_arrive_hint')), arriveForm, arriveStatus, arrivalsBody);
   const callAll = async () => {
     const numbers = (current.arrivals ?? []).map((a) => a.n);
     if (!numbers.length || !confirm(t('m_call_all_confirm', { count: numbers.length }))) return;
@@ -353,10 +377,9 @@ async function callTab(panel, { lot, access, reload }) {
   };
   const drawArrivals = () => {
     const arrived = current.arrivals ?? [];
+    render(arrivalsHead, h('div', { class: 'row' }, h('h2', { class: 'grow' }, t('m_arrivals')), h('span', { class: 'badge' }, String(arrived.length))), h('p', { class: 'small muted' }, t('m_arrivals_hint')));
     render(
-      arrivalsBox,
-      h('div', { class: 'row' }, h('h2', { class: 'grow' }, t('m_arrivals')), h('span', { class: 'badge' }, String(arrived.length))),
-      h('p', { class: 'small muted' }, t('m_arrivals_hint')),
+      arrivalsBody,
       arrived.length
         ? h(
             'div',

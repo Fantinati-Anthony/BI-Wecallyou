@@ -454,7 +454,7 @@ export default {
   pv_close: 'Schließen',
   pv_sample: 'Beispiel: Die echten QR-Codes werden mit der Warteschlange erstellt.',
   pv_impossible: 'Diese Tickets passen mit lesbarem QR-Code nicht auf dieses Papier: Verringern Sie die Spalten oder Zeilen oder wählen Sie ein größeres Papier.',
-  pv_qr_warn: 'QR-Codes mit {qr} mm: Drucken Sie in normaler oder höherer Qualität.',
+  pv_qr_warn: 'Achtung: QR-Codes mit {qr} mm sind zu klein. Gedruckt sind sie womöglich nicht mehr lesbar. Verringern Sie Spalten oder Zeilen oder drucken Sie in hoher Qualität.',
   pv_roll: 'Ein Ticket pro Seite: Der Drucker schneidet zwischen den Tickets.',
   err_qr_small: 'Diese Tickets passen nicht auf dieses Papier: Passen Sie das Layout an.',
   plan_key_first: 'Drucken Sie zuerst die Schlüsselseite auf einem normalen Drucker: Mit ihr öffnen Sie Ihren Händlerbereich.',
@@ -719,4 +719,19 @@ export default {
   k_range_random: '{count} Tickets · zufällige Nummern',
   k_range_poster: 'Nummern beim Scannen des Aushangs, zufällig vergeben',
   plan_random: 'Zufällige Nummern: „Tickets 1 bis 50“ zählt die Tickets in Druckreihenfolge, nicht ihre Nummern. Ein Ticket behält immer seine Nummer.',
+
+  // Ticket client scanné par le commerçant, ajout d'un numéro tapé à la file
+  desk_added: 'Zur Warteschlange hinzugefügt',
+  desk_already: 'Bereits in der Warteschlange',
+  desk_place: '{pos} in der Ankunftsliste, seit {time}.',
+  desk_called: 'Dieses Ticket wurde bereits aufgerufen.',
+  desk_hint: 'Ihr Telefon ist mit dieser Warteschlange verbunden: Das Ticket gilt als angekommen, auch wenn sich der Kunde nicht anmeldet.',
+  desk_client: 'Das ist mein Ticket: mich als Kunde anmelden',
+  m_arrive_label: 'Ticketnummer',
+  m_arrive_btn: 'Zur Warteschlange hinzufügen',
+  m_arrive_hint: 'Kunde ohne Smartphone? Scannen Sie den Kunden-QR-Code seines Tickets mit der Kamera Ihres Telefons oder geben Sie die aufgedruckte Nummer ein: Das Ticket kommt in die Warteschlange.',
+  m_arrive_added: 'Nr. {n} wurde zur Warteschlange hinzugefügt.',
+  m_arrive_already: 'Nr. {n} ist bereits in der Warteschlange.',
+  m_arrive_called: 'Nr. {n} wurde bereits aufgerufen.',
+  err_not_issued: 'Diese Nummer gehört nicht zu dieser Warteschlange.',
 };

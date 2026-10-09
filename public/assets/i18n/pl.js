@@ -454,7 +454,7 @@ export default {
   pv_close: 'Zamknij',
   pv_sample: 'Przykład: prawdziwe kody QR powstaną razem z kolejką.',
   pv_impossible: 'Te bilety nie zmieszczą się na tym papierze z czytelnym kodem QR: zmniejsz liczbę kolumn lub wierszy albo wybierz większy papier.',
-  pv_qr_warn: 'Kody QR {qr} mm: drukuj w jakości normalnej lub wyższej.',
+  pv_qr_warn: 'Uwaga: kody QR {qr} mm są za małe. Po wydruku mogą przestać się skanować. Zmniejsz liczbę kolumn lub wierszy albo drukuj w wysokiej jakości.',
   pv_roll: 'Jeden bilet na stronę: drukarka tnie między biletami.',
   err_qr_small: 'Te bilety nie mieszczą się na tym papierze: dostosuj układ.',
   plan_key_first: 'Najpierw wydrukuj stronę z kluczem na zwykłej drukarce: otwiera ona Twój panel sprzedawcy.',
@@ -719,4 +719,19 @@ export default {
   k_range_random: 'Bilety: {count} · numery losowe',
   k_range_poster: 'Numery nadawane przy skanowaniu plakatu, losowo',
   plan_random: 'Numery losowe: „bilety 1 do 50” liczy bilety w kolejności druku, a nie ich numery. Bilet zawsze zachowuje swój numer.',
+
+  // Ticket client scanné par le commerçant, ajout d'un numéro tapé à la file
+  desk_added: 'Dodano do kolejki',
+  desk_already: 'Już jest w kolejce',
+  desk_place: '{pos} w kolejce przybyć, od {time}.',
+  desk_called: 'Ten bilet został już wywołany.',
+  desk_hint: 'Twój telefon jest połączony z tą kolejką: bilet liczy się jako przybyły, nawet jeśli klient się nie zapisze.',
+  desk_client: 'To mój bilet: zapisz mnie jako klienta',
+  m_arrive_label: 'Numer biletu',
+  m_arrive_btn: 'Dodaj do kolejki',
+  m_arrive_hint: 'Klient bez smartfona? Zeskanuj kod QR klienta z jego biletu aparatem swojego telefonu albo wpisz wydrukowany na nim numer: bilet trafi do kolejki.',
+  m_arrive_added: 'Numer {n} dodano do kolejki.',
+  m_arrive_already: 'Numer {n} już jest w kolejce.',
+  m_arrive_called: 'Numer {n} został już wywołany.',
+  err_not_issued: 'Ten numer nie należy do tej kolejki.',
 };

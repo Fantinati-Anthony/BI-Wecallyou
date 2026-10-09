@@ -229,20 +229,24 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
    * 4 tours sur 2^(2·half) valeurs, ramené à [0, span) par « cycle-walking » : une vraie bijection.
    */
   const shuffled = (lot) => lot.numbering === 'random';
-  function numberAt(lot, rank) {
+  function shuffle(lot, value, backward) {
     const key = createHmac('sha256', config.statusKey).update(`order|${lot.id}`).digest();
     const half = Math.max(1, Math.ceil(Math.ceil(Math.log2(lot.span)) / 2));
     const mask = (1 << half) - 1;
     const round = (i, x) => createHmac('sha256', key).update(`${i}|${x}`).digest().readUInt32BE(0) & mask;
-    let x = rank - 1;
+    let x = value - 1;
     do {
       let left = x >>> half;
       let right = x & mask;
-      for (let i = 0; i < 4; i++) [left, right] = [right, left ^ round(i, right)];
+      if (backward) for (let i = 3; i >= 0; i--) [left, right] = [right ^ round(i, left), left];
+      else for (let i = 0; i < 4; i++) [left, right] = [right, left ^ round(i, right)];
       x = (left << half) | right;
     } while (x >= lot.span);
     return x + 1;
   }
+  const numberAt = (lot, rank) => shuffle(lot, rank, false);
+  /** Le rang d'un numéro mélangé (l'inverse de numberAt) : dit si ce numéro a été imprimé. */
+  const rankOf = (lot, n) => shuffle(lot, n, true);
   /** Étendue des numéros d'un lot mélangé : 3 chiffres tant que la place suffit (tickets imprimés, plus l'affiche). */
   const spanFor = (printed) => [999, 9999, 99999, MAX_NUMBER].find((span) => span >= 2 * printed + 100) ?? MAX_NUMBER;
 
@@ -576,6 +580,19 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
       return { ok: true, max, days: await store.lotStats(lot.id, Math.min(Math.max(Number.isInteger(asked) ? asked : 30, 1), max)) };
     }],
 
+    // Le commerçant fait entrer un ticket dans la file (numéro lu sur le ticket d'un client sans
+    // smartphone) : le ticket s'active comme au premier scan du client.
+    ['POST', /^\/lot\/arrive$/, async (req) => {
+      const lot = await lotOf(req);
+      const n = number((await readJson(req)).n);
+      if (await store.isActive(lot.id, n)) return { ok: true, added: false, called: (await store.callInfo(lot.id, n)) !== null, n, label: label(n) };
+      // Seul un ticket imprimé de cette file peut entrer ainsi (ceux de l'affiche sont actifs dès leur tirage).
+      const issued = shuffled(lot) ? n <= lot.span && rankOf(lot, n) <= lot.to : n >= (lot.from ?? 1) && n <= (lot.to ?? 0);
+      if (!issued) fail(404, 'not_issued');
+      await store.event(lot.id, n, 'scan', 'desk');
+      return { ok: true, added: true, called: false, n, label: label(n) };
+    }],
+
     // Le téléphone du commerçant signale qu'il a ouvert un SMS / WhatsApp / e-mail pour ce ticket.
     ['POST', /^\/lot\/event$/, async (req) => {
       const lot = await lotOf(req);
@@ -594,10 +611,13 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
       const callInfo = await store.callInfo(lot.id, ticket.n);
       const called = callInfo !== null;
       // Premier scan du client : le ticket s'active (et commence sa durée de vie).
-      if (ticket.role === Role.CLIENT && !(await store.isActive(lot.id, ticket.n))) await store.event(lot.id, ticket.n, 'scan');
+      const activated = ticket.role === Role.CLIENT && !(await store.isActive(lot.id, ticket.n));
+      if (activated) await store.event(lot.id, ticket.n, 'scan');
       return {
         ok: true,
         role: ticket.role === Role.STUB ? 'stub' : 'client',
+        // Ce scan vient de faire entrer le ticket dans la file (le téléphone du commerçant le dit).
+        activated,
         n: ticket.n,
         label: label(ticket.n),
         ...(await publicLot(lot)),

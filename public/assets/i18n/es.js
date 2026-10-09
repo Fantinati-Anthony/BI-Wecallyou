@@ -454,7 +454,7 @@ export default {
   pv_close: 'Cerrar',
   pv_sample: 'Ejemplo: los códigos QR reales se crean con la cola.',
   pv_impossible: 'Estos tickets no caben en este papel con un código QR legible: reduzca las columnas o las filas, o elija un papel más grande.',
-  pv_qr_warn: 'Códigos QR de {qr} mm: imprima en calidad normal o superior.',
+  pv_qr_warn: 'Atención: códigos QR de {qr} mm, demasiado pequeños. Una vez impresos, puede que ya no se lean. Reduzca las columnas o las filas, o imprima en alta calidad.',
   pv_roll: 'Un ticket por página: la impresora corta entre cada ticket.',
   err_qr_small: 'Estos tickets no caben en este papel: ajuste el diseño.',
   plan_key_first: 'Imprima primero la página de clave en una impresora normal: abre su panel de comercio.',
@@ -719,4 +719,19 @@ export default {
   k_range_random: '{count} tickets · números al azar',
   k_range_poster: 'Números dados al escanear el cartel, al azar',
   plan_random: 'Números al azar: «tickets 1 a 50» cuenta los tickets en orden de impresión, no sus números. Un ticket conserva siempre su número.',
+
+  // Ticket client scanné par le commerçant, ajout d'un numéro tapé à la file
+  desk_added: 'Añadido a la cola',
+  desk_already: 'Ya está en la cola',
+  desk_place: '{pos} en la cola de llegada, desde las {time}.',
+  desk_called: 'Este ticket ya ha sido llamado.',
+  desk_hint: 'Su teléfono está conectado a esta cola: el ticket cuenta como llegado, aunque el cliente no se inscriba.',
+  desk_client: 'Es mi ticket: inscribirme como cliente',
+  m_arrive_label: 'Número del ticket',
+  m_arrive_btn: 'Añadir a la cola',
+  m_arrive_hint: '¿Un cliente sin smartphone? Escanee el QR de cliente de su ticket con la cámara de su teléfono, o escriba el número impreso: entra en la cola.',
+  m_arrive_added: 'El {n} se ha añadido a la cola.',
+  m_arrive_already: 'El {n} ya está en la cola.',
+  m_arrive_called: 'El {n} ya ha sido llamado.',
+  err_not_issued: 'Este número no pertenece a esta cola.',
 };

@@ -1,6 +1,6 @@
 // Page d'un ticket. Ticket client : choisir comment être prévenu, voir sa place, être averti.
 // Souche : si ce téléphone est connecté au lot, l'appel part tout de suite.
-import { h, t, LANG, api, render, translatePage, errorText, local, isIOS, isStandalone, ordinal, setColors, inkOn, icon } from './common.js';
+import { h, t, LANG, api, render, translatePage, errorText, local, isIOS, isStandalone, ordinal, setColors, inkOn, icon, fmtTime } from './common.js';
 import { sealForLot, b64u } from './crypto.js';
 import { unlock, callTickets } from './call.js';
 import { composer, needsComposer, groupOf } from './message.js';
@@ -18,6 +18,7 @@ const fromPoster = new URLSearchParams(location.search).has('affiche');
 document.head.append(h('link', { rel: 'manifest', href: `/${token}/manifest.webmanifest` }));
 
 let data;
+let desking = false; // fiche du commerçant : sans la place ni l'offre destinées au client
 let audio = null;
 let watching = false;
 let refreshTimer = null;
@@ -52,9 +53,9 @@ function ring() {
 
 function header() {
   const box = h('div', { class: 'ticket-head' }, h('div', { class: 'merchant' }, data.name), h('div', { class: 'number' }, data.label));
-  if (fromPoster && data.role === 'client') box.append(h('p', { class: 'poster-hint' }, icon('storefront'), t('poster_show')));
+  if (fromPoster && data.role === 'client' && !desking) box.append(h('p', { class: 'poster-hint' }, icon('storefront'), t('poster_show')));
   const q = data.queue;
-  if (q && data.role === 'client') {
+  if (q && data.role === 'client' && !desking) {
     const place = q.position === 1 ? t('queue_next') : t('queue_pos', { pos: ordinal(q.position) });
     box.append(
       h('div', { class: 'queue-line' }, h('span', { class: 'badge' }, place), q.waitMin && h('span', { class: 'badge' }, t('queue_wait', { min: q.waitMin }))),
@@ -66,7 +67,7 @@ function header() {
 
 /** La ligne du créateur du lot (partenaire, réseaux sociaux), s'il en a mis une. */
 function promo() {
-  if (data.role !== 'client' || (!data.promo && !data.link)) return null;
+  if (data.role !== 'client' || desking || (!data.promo && !data.link)) return null;
   return h(
     'div',
     { class: 'promo-card small' },
@@ -330,20 +331,62 @@ async function stub() {
   const [lot, info] = await Promise.all([api('/lot', { auth: login.auth }), api('/info')]);
   if (!lot.ok) return errorView(lot.error);
   const access = await unlock(data.lot, lot.wrapped);
-  const dashboard = h('a', { class: 'btn btn-ghost btn-block', href: '/m' }, t('to_dashboard'));
+  // Sans modèle ni listes : l'appel part dès le scan. Sinon : choix des variables, retouche, puis appel.
+  callFlow(lot, access, info, { t: token });
+}
+
+const dashboardLink = () => h('a', { class: 'btn btn-ghost btn-block', href: '/m' }, t('to_dashboard'));
+
+/** Appel de ce ticket depuis le téléphone du commerçant : tout de suite, ou après le choix des variables du message. */
+function callFlow(lot, access, info, target) {
   const run = async (message = '', tag = '') => {
     view(h('p', { class: 'lead center' }, t('calling', { n: data.label })));
-    const result = await callTickets({ lot, access, target: { t: token }, brand: info.brand, contact: info.contact, message, tag });
+    const result = await callTickets({ lot, access, target, brand: info.brand, contact: info.contact, message, tag });
     if (!result.ok) return errorView(result.error);
-    view(result.element, dashboard);
+    view(result.element, dashboardLink());
   };
-  // Sans modèle ni listes : l'appel part dès le scan. Sinon : choix des variables, retouche, puis appel.
   if (!needsComposer(lot)) return run();
   const group = groupOf(lot, data.n);
   const box = composer(lot, { label: data.label, group });
   const go = h('button', { type: 'button', class: 'btn btn-big btn-block' }, icon('megaphone'), t('call_this', { n: data.label }));
   go.addEventListener('click', () => run(box.message(), box.tag(group)));
-  view(h('div', { class: 'card stack' }, h('p', { class: 'small muted' }, t('stub_compose')), box.element, go), dashboard);
+  view(h('div', { class: 'card stack' }, h('p', { class: 'small muted' }, t('stub_compose')), box.element, go), dashboardLink());
+}
+
+/* ----------------------------------------------- ticket client scanné par le commerçant */
+
+/**
+ * Ticket client ouvert sur le téléphone du commerçant (connecté à cette file) : le scan l'a fait
+ * entrer dans la file d'arrivée, pour un client sans smartphone. On le dit, avec sa place, et on
+ * propose de l'appeler. « C'est mon ticket » : la page redevient celle du client.
+ */
+async function desk(login) {
+  desking = true;
+  view(h('p', { class: 'lead center' }, t('loading')));
+  const [lot, info] = await Promise.all([api('/lot', { auth: login.auth }), api('/info')]);
+  if (!lot.ok) return clientFlow();
+  const access = await unlock(data.lot, lot.wrapped);
+  const arrived = lot.arrivals ?? [];
+  const rank = arrived.findIndex((a) => a.n === data.n);
+  const go = h('button', { type: 'button', class: 'btn btn-big btn-block', id: 'desk-call' }, icon('megaphone'), t('call_this', { n: data.label }));
+  go.addEventListener('click', () => callFlow(lot, access, info, { n: data.n }));
+  view(
+    data.called ? h('p', { class: 'notice center' }, t('desk_called')) : h('div', { class: 'banner-ok center', id: 'desk-status' }, icon('check-circle'), t(data.activated ? 'desk_added' : 'desk_already')),
+    rank >= 0 && h('p', { class: 'lead center' }, t('desk_place', { pos: ordinal(rank + 1), time: fmtTime(arrived[rank].at) })),
+    h('p', { class: 'small muted center' }, t('desk_hint')),
+    go,
+    dashboardLink(),
+    h('div', { class: 'center' }, h('button', { type: 'button', class: 'linklike', onclick: clientFlow }, t('desk_client'))),
+  );
+}
+
+/** La page du client : prévenu par quel moyen, ou déjà inscrit, ou déjà appelé. */
+function clientFlow() {
+  desking = false;
+  if (data.channels.includes('push') && 'serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+  if (data.called) ready();
+  else if (local.get(storageKey)) registered();
+  else choose();
 }
 
 /* ------------------------------------------------------------------ départ */
@@ -365,9 +408,9 @@ if (!data.ok) {
   }
   if (data.role === 'stub') await stub();
   else {
-    if (data.channels.includes('push') && 'serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
-    if (data.called) ready();
-    else if (local.get(storageKey)) registered();
-    else choose();
+    // Téléphone du commerçant (connecté à cette file, pas inscrit comme client de ce ticket) : fiche du ticket.
+    const login = local.get(storageKey) ? null : await unlock(data.lot);
+    if (login) await desk(login);
+    else clientFlow();
   }
 }

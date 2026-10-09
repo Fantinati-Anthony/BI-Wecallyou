@@ -454,7 +454,7 @@ export default {
   pv_close: 'Sluiten',
   pv_sample: 'Voorbeeld: de echte QR-codes worden met de wachtrij aangemaakt.',
   pv_impossible: 'Deze tickets passen niet op dit papier met een leesbare QR-code: verminder het aantal kolommen of rijen, of kies groter papier.',
-  pv_qr_warn: 'QR-codes van {qr} mm: print in normale of hogere kwaliteit.',
+  pv_qr_warn: 'Let op: QR-codes van {qr} mm zijn te klein. Geprint zijn ze mogelijk niet meer leesbaar. Verminder de kolommen of rijen, of print in hoge kwaliteit.',
   pv_roll: 'Eén ticket per pagina: de printer snijdt na elk ticket.',
   err_qr_small: 'Deze tickets passen niet op dit papier: pas de opmaak aan.',
   plan_key_first: 'Print eerst de sleutelpagina op een gewone printer: daarmee opent u uw beheeromgeving.',
@@ -719,4 +719,19 @@ export default {
   k_range_random: '{count} tickets · willekeurige nummers',
   k_range_poster: 'Nummers bij het scannen van de poster, willekeurig',
   plan_random: 'Willekeurige nummers: “tickets 1 tot 50” telt de tickets in printvolgorde, niet hun nummers. Een ticket houdt altijd zijn nummer.',
+
+  // Ticket client scanné par le commerçant, ajout d'un numéro tapé à la file
+  desk_added: 'Toegevoegd aan de wachtrij',
+  desk_already: 'Al in de wachtrij',
+  desk_place: '{pos} in de aankomstrij, sinds {time}.',
+  desk_called: 'Dit ticket is al opgeroepen.',
+  desk_hint: 'Uw telefoon is gekoppeld aan deze wachtrij: het ticket telt als aangekomen, ook als de klant zich niet aanmeldt.',
+  desk_client: 'Dit is mijn ticket: mij aanmelden als klant',
+  m_arrive_label: 'Ticketnummer',
+  m_arrive_btn: 'Aan de wachtrij toevoegen',
+  m_arrive_hint: 'Een klant zonder smartphone? Scan de klant-QR-code op zijn ticket met de camera van uw telefoon, of typ het nummer dat erop staat: het ticket komt in de wachtrij.',
+  m_arrive_added: '{n} is aan de wachtrij toegevoegd.',
+  m_arrive_already: '{n} staat al in de wachtrij.',
+  m_arrive_called: '{n} is al opgeroepen.',
+  err_not_issued: 'Dit nummer hoort niet bij deze wachtrij.',
 };

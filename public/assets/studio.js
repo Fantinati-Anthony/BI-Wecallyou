@@ -82,7 +82,10 @@ export function designControls(initial, onChange, contentFor, { pro = false } = 
     const d = view();
     const content = contentFor(d);
     const geometry = [d.paper, d.orientation, d.pw, d.ph, d.margins, d.gapX, d.gapY, d.stub, d.mono, contentKey(content)];
-    return { limits: cached(JSON.stringify(['limits', d.cols, d.rows, ...geometry]), () => gridLimits(d, content)) };
+    return {
+      limits: cached(JSON.stringify(['limits', d.cols, d.rows, ...geometry]), () => gridLimits(d, content)),
+      fitted: cached(JSON.stringify(['fit', d.cols, d.rows, d.stubs, d.align, ...geometry]), () => fitDesign(d, content)),
+    };
   };
 
   function set(patch, { fromProduct = false } = {}) {
@@ -229,9 +232,15 @@ export function designControls(initial, onChange, contentFor, { pro = false } = 
   const lock = proLock(false, 'd_pro_lock');
   const proBox = h('fieldset', { class: 'pro-only stack' }, lock, colorFields, h('label', { for: 'd-logo' }, t('create_logo')), logo, removeLogo);
 
+  // QR trop petit pour ce papier et cette grille : prévenu ici aussi, sous les colonnes et les lignes.
+  const qrWarn = h('p', { class: 'banner-warn pv-alert', role: 'status', id: 'd-qr-warn' });
+
   /** Remet les champs en accord avec les réglages (force : y compris le champ en cours de saisie). */
   function refresh(force = false) {
-    const { limits } = analysis();
+    const { limits, fitted } = analysis();
+    const tiny = fitted.ok && fitted.qr < QR_WARN_MM;
+    render(qrWarn, tiny && [icon('warning'), h('span', {}, t('pv_qr_warn', { qr: Math.floor(fitted.qr) }))]);
+    qrWarn.hidden = !tiny;
     const roll = Boolean(PAPERS[design.paper].roll);
     const keep = (field) => !force && document.activeElement === field.input;
     const show = (field, value) => {
@@ -312,6 +321,7 @@ export function designControls(initial, onChange, contentFor, { pro = false } = 
       size,
       orientationBox,
       h('div', { class: 'inline-fields' }, cols.element, rows.element),
+      qrWarn,
       h('label', {}, t('d_stubs')),
       h('div', { class: 'stub-row' }, stubCount, stubNone),
       stubPlace,
@@ -560,7 +570,7 @@ const PV_ICONS = { tickets: 'ticket', back: 'arrows-clockwise', key: 'key', post
 export function livePreview() {
   const frame = h('div', { class: 'pv-frame' });
   const info = h('ul', { class: 'pv-info' });
-  const alert = h('p', { class: 'small', role: 'status' });
+  const alert = h('div', { class: 'pv-alerts', role: 'status' });
   let tab = 'tickets';
   let last = null;
   let timer = 0;
@@ -596,7 +606,7 @@ export function livePreview() {
     'aside',
     { class: 'studio-preview card', 'aria-label': t('pv_title') },
     h('div', { class: 'pv-bar' }, tabs, cuts, close),
-    h('div', { class: 'pv-body' }, alert, frame, info, h('p', { class: 'small muted' }, t('pv_sample'))),
+    h('div', { class: 'pv-body' }, alert, frame, info),
   );
   const fab = h('button', { type: 'button', class: 'btn pv-fab' }, icon('eye'), t('pv_open'));
   fab.addEventListener('click', () => panel.classList.add('open'));
@@ -614,11 +624,64 @@ export function livePreview() {
     frame.style.height = '';
     if (!page) frame.style.height = '0';
     else if (page.classList.contains('sheet')) scaleInto(frame, page, Math.max(260, window.innerHeight * 0.6));
-    for (const view of frame.querySelectorAll('.pv-tile-view')) {
-      const sheet = view.firstElementChild;
-      if (sheet?.classList.contains('sheet')) scaleInto(view, sheet, 320);
-    }
+    else if (page.classList.contains('pv-all')) justify(page);
   };
+
+  /**
+   * « Tout » en maçonnerie justifiée : dans une rangée, toutes les vignettes ont la même hauteur et
+   * leur largeur suit leurs proportions, pour remplir exactement la largeur disponible. Les coupures
+   * entre rangées (dans l'ordre des vues) sont celles qui restent le plus près d'une hauteur cible.
+   */
+  function justify(box) {
+    const tiles = [...box.querySelectorAll('.pv-tile')];
+    const width = box.clientWidth;
+    if (!tiles.length || !width || Number(box.dataset.width) === width) return;
+    box.dataset.width = String(width);
+    const gap = parseFloat(getComputedStyle(box).rowGap) || 0;
+    // Chaque visuel : largeur = a × hauteur + e ; « chrome » : marges intérieures et bord de la vignette.
+    const items = tiles.map((tile) => {
+      const view = tile.querySelector('.pv-tile-view');
+      const content = view.firstElementChild;
+      const style = getComputedStyle(tile);
+      const chrome = ['paddingLeft', 'paddingRight', 'borderLeftWidth', 'borderRightWidth'].reduce((sum, key) => sum + parseFloat(style[key]), 0);
+      if (content.classList.contains('sheet')) return { tile, view, content, chrome, a: content.offsetWidth / content.offsetHeight, e: 0, sheet: true };
+      // Écran et téléphones suivent leur largeur : deux mesures donnent le lien entre largeur et hauteur.
+      view.style.height = '';
+      view.style.width = '400px';
+      const tall = content.offsetHeight;
+      view.style.width = '200px';
+      const k = Math.max(0.05, (tall - content.offsetHeight) / 200); // hauteur gagnée par pixel de largeur
+      return { tile, view, content, chrome, a: 1 / k, e: (k * 400 - tall) / k, sheet: false };
+    });
+    const target = Math.min(280, Math.max(140, width * 0.32));
+    const heightOf = (row) => (width - row.reduce((sum, it) => sum + it.chrome + it.e, 0) - gap * (row.length - 1)) / row.reduce((sum, it) => sum + it.a, 0);
+    let best = null;
+    for (let cuts = 0; cuts < 1 << (items.length - 1); cuts++) {
+      const rows = [[items[0]]];
+      items.slice(1).forEach((it, i) => (cuts & (1 << i) ? rows.push([it]) : rows.at(-1).push(it)));
+      const heights = rows.map(heightOf);
+      if (heights.some((x) => !(x > 0))) continue;
+      const cost = heights.reduce((sum, x) => sum + Math.log(x / target) ** 2, 0);
+      if (!best || cost < best.cost) best = { cost, rows, heights };
+    }
+    if (!best) return;
+    box.replaceChildren(
+      ...best.rows.map((row, r) => {
+        const height = Math.floor(best.heights[r] * 100) / 100;
+        for (const it of row) {
+          const w = it.a * height + it.e;
+          it.view.style.width = `${w}px`;
+          it.view.style.height = `${height}px`;
+          it.tile.style.width = `${w + it.chrome}px`;
+          if (it.sheet) {
+            it.content.style.transform = `scale(${height / it.content.offsetHeight})`;
+            it.content.style.marginLeft = '0';
+          }
+        }
+        return h('div', { class: 'pv-row' }, row.map((it) => it.tile));
+      }),
+    );
+  }
   new ResizeObserver(fit).observe(frame);
 
   /**
@@ -638,10 +701,12 @@ export function livePreview() {
     const nth = (i) => (ctx.random ? ((i * 389 + 117) % lastNumber) + 1 : from + i);
     const layout = fitDesign(design, contentOf(design, { ...ctx, last: lastNumber }));
     const page = pageOf(design);
+    // « Exemple » en tête des repères : les vrais QR codes naissent avec la file.
+    const sample = h('li', { class: 'pv-sample' }, t('pv_sample'));
+    const warn = (text) => h('p', { class: 'banner-warn pv-alert' }, icon('warning'), h('span', {}, text));
     if (!layout.ok) {
-      render(info, h('li', {}, t('pv_size', { w: mmText(page.w), h: mmText(page.h) })));
-      alert.className = 'small error';
-      alert.textContent = t('pv_impossible');
+      render(info, sample, h('li', {}, t('pv_size', { w: mmText(page.w), h: mmText(page.h) })));
+      render(alert, warn(t('pv_impossible')));
       clearTimeout(timer);
       render(frame);
       fit();
@@ -649,14 +714,14 @@ export function livePreview() {
     }
     render(
       info,
+      sample,
       h('li', {}, t('pv_per', { n: layout.perPage })),
       h('li', {}, t('pv_pages', { n: (pagesFor(Math.max(1, ctx.count || layout.perPage), layout.perPage) * (design.verso ? 2 : 1)).toLocaleString(LANG) })),
       h('li', {}, t('pv_size', { w: mmText(page.w), h: mmText(page.h) })),
       h('li', {}, t('pv_qr', { qr: Math.floor(layout.qr) })),
     );
-    const small = layout.qr < QR_WARN_MM;
-    alert.className = `small ${small ? 'warn' : 'muted'}`;
-    alert.textContent = [small && t('pv_qr_warn', { qr: Math.floor(layout.qr) }), PAPERS[design.paper].roll && t('pv_roll')].filter(Boolean).join(' ');
+    // QR trop petit : il risque de ne plus se lire une fois imprimé. On le dit en grand.
+    render(alert, layout.qr < QR_WARN_MM && warn(t('pv_qr_warn', { qr: Math.floor(layout.qr) })), PAPERS[design.paper].roll && h('p', { class: 'small muted' }, t('pv_roll')));
     // Les QR codes de toute une page prennent un instant : on attend la fin de la saisie.
     clearTimeout(timer);
     timer = setTimeout(() => {
@@ -685,18 +750,9 @@ export function livePreview() {
         }
       };
       if (tab === 'all') {
-        // Les pages imprimées en vignettes, puis l'écran et le téléphone du client à parts égales.
+        // Chaque vue en vignette ; justify() les range ensuite en rangées de même hauteur.
         const tile = (name) => h('button', { type: 'button', class: `pv-tile pv-tile-${name}`, onclick: () => setTab(name) }, h('span', { class: 'pv-tile-label' }, icon(PV_ICONS[name]), t(`pv_${name}`)), h('div', { class: 'pv-tile-view' }, build(name)));
-        const present = (names) => names.filter((name) => shown[name]);
-        render(
-          frame,
-          h(
-            'div',
-            { class: 'pv-all' },
-            h('div', { class: 'pv-all-sheets' }, present(['tickets', 'back', 'key', 'poster']).map(tile)),
-            h('div', { class: 'pv-all-live' }, present(['screen', 'client']).map(tile)),
-          ),
-        );
+        render(frame, h('div', { class: 'pv-all' }, Object.keys(PV_ICONS).filter((name) => name !== 'all' && shown[name]).map(tile)));
       } else render(frame, build(tab));
       requestAnimationFrame(fit);
     }, 60);

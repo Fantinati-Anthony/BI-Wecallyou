@@ -454,7 +454,7 @@ export default {
   pv_close: 'Close',
   pv_sample: 'Sample: the real QR codes are created with the queue.',
   pv_impossible: 'These tickets don’t fit on this paper with a readable QR code: reduce columns or rows, or choose a larger paper.',
-  pv_qr_warn: '{qr} mm QR codes: print in normal quality or better.',
+  pv_qr_warn: 'Warning: {qr} mm QR codes are too small. Once printed, they may no longer scan. Reduce columns or rows, or print in high quality.',
   pv_roll: 'One ticket per page: the printer cuts between tickets.',
   err_qr_small: 'These tickets don’t fit on this paper: adjust the layout.',
   plan_key_first: 'First print the key page on a regular printer: it opens your merchant space.',
@@ -719,4 +719,19 @@ export default {
   k_range_random: '{count} tickets · random numbers',
   k_range_poster: 'Numbers given when the poster is scanned, at random',
   plan_random: 'Random numbers: “tickets 1 to 50” counts tickets in print order, not their numbers. A ticket always keeps its number.',
+
+  // Ticket client scanné par le commerçant, ajout d'un numéro tapé à la file
+  desk_added: 'Added to the queue',
+  desk_already: 'Already in the queue',
+  desk_place: '{pos} in the arrival queue, since {time}.',
+  desk_called: 'This ticket has already been called.',
+  desk_hint: 'Your phone is connected to this queue: the ticket counts as arrived, even if the customer doesn’t sign up.',
+  desk_client: 'It’s my ticket: sign me up as a customer',
+  m_arrive_label: 'Ticket number',
+  m_arrive_btn: 'Add to the queue',
+  m_arrive_hint: 'Customer without a smartphone? Scan the customer QR code on their ticket with your phone’s camera, or type the number printed on it: it joins the queue.',
+  m_arrive_added: '{n} has been added to the queue.',
+  m_arrive_already: '{n} is already in the queue.',
+  m_arrive_called: '{n} has already been called.',
+  err_not_issued: 'This number doesn’t belong to this queue.',
 };

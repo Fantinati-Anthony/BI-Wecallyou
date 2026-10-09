@@ -454,7 +454,7 @@ export default {
   pv_close: 'Închideți',
   pv_sample: 'Exemplu: codurile QR reale sunt create odată cu coada.',
   pv_impossible: 'Aceste tichete nu încap pe această hârtie cu un cod QR lizibil: reduceți numărul de coloane sau de rânduri ori alegeți o hârtie mai mare.',
-  pv_qr_warn: 'Coduri QR de {qr} mm: imprimați la calitate normală sau superioară.',
+  pv_qr_warn: 'Atenție: coduri QR de {qr} mm, prea mici. După imprimare s-ar putea să nu mai poată fi citite. Reduceți coloanele sau rândurile ori imprimați la calitate înaltă.',
   pv_roll: 'Un tichet pe pagină: imprimanta taie între tichete.',
   err_qr_small: 'Aceste tichete nu încap pe această hârtie: ajustați aranjarea în pagină.',
   plan_key_first: 'Imprimați mai întâi pagina-cheie la o imprimantă obișnuită: ea deschide spațiul dumneavoastră de comerciant.',
@@ -719,4 +719,19 @@ export default {
   k_range_random: 'Tichete: {count} · numere aleatorii',
   k_range_poster: 'Numere date la scanarea afișului, aleatoriu',
   plan_random: 'Numere aleatorii: „tichetele de la 1 la 50” numără tichetele în ordinea imprimării, nu numerele lor. Un tichet își păstrează mereu numărul.',
+
+  // Ticket client scanné par le commerçant, ajout d'un numéro tapé à la file
+  desk_added: 'Adăugat la coadă',
+  desk_already: 'Deja la coadă',
+  desk_place: '{pos} în lista sosirilor, de la {time}.',
+  desk_called: 'Acest tichet a fost deja chemat.',
+  desk_hint: 'Telefonul dumneavoastră este conectat la această coadă: tichetul contează ca sosit, chiar dacă clientul nu se înscrie.',
+  desk_client: 'Este tichetul meu: înscrieți-mă ca client',
+  m_arrive_label: 'Numărul tichetului',
+  m_arrive_btn: 'Adăugați la coadă',
+  m_arrive_hint: 'Un client fără smartphone? Scanați codul QR de client de pe tichet cu camera telefonului dumneavoastră sau introduceți numărul tipărit pe el: intră la coadă.',
+  m_arrive_added: 'Numărul {n} a fost adăugat la coadă.',
+  m_arrive_already: 'Numărul {n} este deja la coadă.',
+  m_arrive_called: 'Numărul {n} a fost deja chemat.',
+  err_not_issued: 'Acest număr nu aparține acestei cozi.',
 };

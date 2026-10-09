@@ -203,6 +203,30 @@ try {
     await m.waitForSelector('.result .call-title');
   }
 
+  // Client sans smartphone : le téléphone du commerçant scanne son QR client (fiche du ticket, pas le
+  // formulaire du client), ou le commerçant tape le numéro écrit dessus. Le ticket entre dans la file.
+  {
+    const desk = await merchant.newPage();
+    desk.on('pageerror', (err) => errors.push(err.message));
+    await desk.goto(`${BASE}/${tickets[19].c}`);
+    await waitText(desk.locator('#desk-status'), 'Ajouté à la file');
+    assert.equal(await desk.locator('.choice').count(), 0);
+    assert.equal(await desk.locator('#desk-call').isVisible(), true);
+    await shot(desk, '08b-fiche-commercant');
+    await desk.reload(); // second scan : déjà dans la file
+    await waitText(desk.locator('#desk-status'), 'Déjà dans la file');
+    await desk.close();
+    await m.fill('#arrive-n', '21');
+    await m.click('#arrive-form button[type=submit]');
+    await m.waitForSelector('#arrivals li:has-text("021")');
+    await m.waitForSelector('#arrivals li:has-text("020")');
+    assert.match(await m.locator('#arrive-form + [role=status]').textContent(), /021/);
+    await m.fill('#arrive-n', '500');
+    await m.click('#arrive-form button[type=submit]');
+    await waitText(m.locator('#arrive-form + [role=status]'), 'Ce numéro n’appartient pas à cette file.');
+  }
+  step('client sans smartphone : QR client scanné par le commerçant (fiche) ou numéro tapé, le ticket entre dans la file');
+
   /* ----------------------------------------------- appel par la souche */
   await m.goto(`${BASE}/${five.s}`);
   const smsButton = m.locator('a.btn-sms');
@@ -699,6 +723,16 @@ try {
     await p.locator('.studio-preview [data-tab="all"]').click();
     await p.waitForSelector('.pv-frame .pv-all .pv-tile-client .pvp-ready', { state: 'attached' });
     assert.ok((await p.locator('.pv-frame .pv-all .pv-tile').count()) >= 4);
+    // Maçonnerie : dans chaque rangée, des vignettes de même hauteur qui remplissent toute la largeur.
+    await p.waitForSelector('.pv-frame .pv-all .pv-row', { state: 'attached' });
+    const rows = await p.locator('.pv-frame .pv-all').evaluate((box) => [...box.querySelectorAll('.pv-row')].map((row) => {
+      const tiles = [...row.children].map((tile) => tile.getBoundingClientRect());
+      return { heights: tiles.map((r) => r.height), used: tiles.at(-1).right - tiles[0].left, width: box.clientWidth };
+    }));
+    for (const row of rows) {
+      assert.ok(Math.max(...row.heights) - Math.min(...row.heights) < 1.5, JSON.stringify(row));
+      assert.ok(Math.abs(row.used - row.width) < 2, JSON.stringify(row));
+    }
     await ctx.close();
   }
   step('« les deux » : numéros des tickets mélangés dans l’aperçu, pas de premier numéro ; vues Client et Tout sans promo');

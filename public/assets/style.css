@@ -317,6 +317,10 @@ details[open] > summary { margin-bottom: 14px; }
 .cap[hidden] { display: none; }
 .inline-fields > .cap, .stack > .cap { margin-bottom: 0; }
 .cap:has(> :is(input, select):disabled) { background: var(--surface-2); }
+/* Faire entrer un ticket dans la file : numéro tapé, puis bouton */
+.arrive-form { display: flex; flex-wrap: wrap; gap: 8px; }
+.arrive-form .cap { flex: 1 1 210px; margin: 0; }
+.arrive-form .btn { flex: none; }
 
 /* ------------------------------------------------------------ messages */
 
@@ -798,6 +802,7 @@ dialog.act-dialog::backdrop { background: rgb(14 16 19 / 0.55); }
 .pv-tabs [role=tab][hidden] { display: none; }
 /* Écran public en aperçu (mêmes éléments que la démonstration de l'accueil) */
 .pv-screen { margin: 14px; padding-bottom: 0; }
+.pv-screen .lq-tv { margin-bottom: 0; } /* pas de téléphone posé devant, comme sur l’accueil */
 .pv-tv-foot { display: flex; justify-content: space-between; gap: 2cqw; }
 .pv-tv-promo { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* Téléphone du client : la page du ticket après son scan, puis « C'est à vous ! » */
@@ -822,12 +827,13 @@ dialog.act-dialog::backdrop { background: rgb(14 16 19 / 0.55); }
 .pvp-message { margin: 0; padding: 3.4cqw; border-radius: 3.4cqw; background: rgb(255 255 255 / 0.16); font-size: 4.3cqw; line-height: 1.35; }
 .pvp-ready .pvp-promo { margin-top: 0; background: rgb(255 255 255 / 0.16); color: inherit; text-align: left; }
 /* « Tout » : chaque vue en vignette, un appui l'ouvre */
-.pv-all { display: grid; gap: 14px; margin: 14px; }
-.pv-all-sheets { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
-/* Écran et téléphone du client à parts égales : l'écran grandit, les téléphones rétrécissent. */
-.pv-all-live { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; align-items: start; }
-.pv-all-live:empty { display: none; }
-.pv-all-live .pv-phones { gap: 10px; }
+/* Maçonnerie justifiée (calculée par justify()) : rangées de même hauteur qui remplissent la largeur. */
+.pv-all { display: grid; gap: 12px; margin: 12px; }
+.pv-row { display: flex; gap: 12px; align-items: flex-start; }
+.pv-row > .pv-tile { flex: none; }
+.pv-all .pv-phones { gap: 8px; }
+.pv-all .pv-phone { max-width: none; }
+.pv-all .pv-phones figcaption { display: none; } /* la vignette porte déjà son nom */
 .pv-tile { display: grid; gap: 8px; align-content: start; padding: 10px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); color: var(--text); font: inherit; text-align: left; cursor: pointer; }
 .pv-tile:hover, .pv-tile:focus-visible { border-color: var(--brand); }
 .pv-tile-label { display: flex; align-items: center; gap: 6px; font-size: 0.88rem; font-weight: 650; }
@@ -839,6 +845,12 @@ dialog.act-dialog::backdrop { background: rgb(14 16 19 / 0.55); }
 .pv-info { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 12px 0 6px; padding: 0; list-style: none; }
 .pv-info li { padding: 3px 10px; border-radius: var(--r-pill); background: var(--surface-2); font-size: 0.82rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 .pv-info b { color: var(--text); font-weight: 600; }
+.pv-info .pv-sample { background: var(--brand-soft); color: var(--brand-text); font-weight: 600; }
+/* QR trop petit, papier trop petit : une alerte qu'on ne peut pas rater */
+.pv-alerts:not(:empty) { display: grid; gap: 8px; margin-bottom: 12px; }
+.pv-alerts > p { margin: 0; }
+.pv-alert { margin: 0; padding: 10px 12px; font-size: 0.9rem; line-height: 1.4; }
+.pv-alert .i { flex: none; width: 20px; height: 20px; margin-top: 1px; }
 .pv-close, .pv-fab { display: none; }
 .pv-bar .pv-cuts, .pv-bar .pv-close { flex: none; min-height: 44px; padding: 8px 12px; border-color: transparent; background: transparent; color: var(--muted); }
 .pv-bar .pv-cuts:hover { color: var(--text); }
