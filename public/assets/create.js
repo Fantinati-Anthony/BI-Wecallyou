@@ -1,7 +1,7 @@
 // Page d'accueil : création d'un lot de tickets, entièrement dans le navigateur.
 // À gauche les réglages, à droite l'aperçu A4 en direct (studio d'impression).
 // Les options Pro sont visibles par tous, grisées tant que le compte connecté n'est pas Pro.
-import { h, t, LANG, api, render, translatePage, errorText, lots, local, icon } from './common.js';
+import { h, t, LANG, api, render, translatePage, errorText, lots, local, icon, isPhone } from './common.js';
 import { createLot, secretToText, b64u, randomBytes } from './crypto.js';
 import { printPlan, printOptions } from './print.js';
 import { contentOf, keySheet, posterSheet, fillPrintRoot, keyPage, setPrintPage } from './sheets.js';
@@ -21,6 +21,9 @@ const SAMPLE_POSTER = 'A'.repeat(23); // aperçu : la vraie affiche reçoit son 
 const SAMPLE_SCREEN = 'B'.repeat(23); // aperçu de la page clé : le vrai écran public a son lien à la création
 
 translatePage();
+
+// Moyens proposés : gratuits ; SMS et WhatsApp partent du téléphone du commerçant (précisé sur ordinateur).
+document.getElementById('channels-hint').textContent = isPhone() ? t('channels_hint') : `${t('channels_hint')} ${t('channels_hint_pc')}`;
 
 /* Réglages en trois onglets : Informations, Message, Apparence (clavier : flèches, Début, Fin). */
 const tabs = [...document.querySelectorAll('#create-form [role=tab]')];

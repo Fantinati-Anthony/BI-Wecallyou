@@ -1,7 +1,7 @@
 // Accueil : des démonstrations jouées dans ce navigateur, sans serveur : un vrai ticket (le même rendu
 // que l'impression), le téléphone d'un client, l'écran public animé et le chiffrement des coordonnées.
 // Elles suivent l'activité touchée dans la liste ; sinon elles en changent seules, à chaque cycle complet.
-import { h, t, LANG, qrSvg, translatePage, icon, ordinal, fmtTime, render, local } from './common.js';
+import { h, t, LANG, qrSvg, translatePage, icon, ordinal, fmtTime, render, local, isPhone } from './common.js';
 import { ticketSheets } from './sheets.js';
 import { sealForLot, b64u } from './crypto.js';
 import { comparison, minProPrice } from './plans.js';
@@ -24,6 +24,10 @@ const replay = (el, cls) => {
 };
 /** Ce que reçoit le client de la démonstration, pour cette activité (null : message par défaut). */
 const messageFor = (activity, label) => messageExample(presetOf(activity), demoOf(activity), label);
+
+/* Moyens de prévenir : ce qui part d'où, selon l'appareil du visiteur (un ordinateur n'envoie pas de SMS). */
+const deviceNote = document.getElementById('device-note');
+if (deviceNote) render(deviceNote, icon(isPhone() ? 'device-mobile' : 'monitor-play'), h('span', {}, t(isPhone() ? 'dev_phone' : 'dev_pc')));
 
 /* Comparatif Gratuit / Pro, au prix le plus bas de l'offre. */
 const compare = document.getElementById('compare');

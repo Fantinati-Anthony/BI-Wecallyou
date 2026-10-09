@@ -152,12 +152,53 @@ async function ready() {
 /* ------------------------------------------------------------ inscription */
 
 async function register(kind, value) {
+  const previous = local.get(storageKey);
   const blob = await sealForLot(data.pubEcdh, { c: kind, v: value, l: LANG });
   const res = await api('/sub', { body: { t: token, blob, kind } });
   if (!res.ok) return res.error;
-  local.set(storageKey, { rid: res.rid, kind });
-  registered();
+  // L'adresse d'abonnement (notification) est gardée ici pour vérifier, aux visites suivantes, qu'elle vit toujours.
+  local.set(storageKey, { rid: res.rid, kind, endpoint: kind === 'push' ? value.endpoint : undefined });
+  // Réactivation : l'ancienne inscription, devenue inutile, s'efface.
+  if (previous?.rid && previous.rid !== res.rid) api('/unsub', { body: { t: token, rid: previous.rid } });
+  registered(kind === 'push');
   return null;
+}
+
+/* ------------------------------------------------- notifications : preuve et contrôle */
+
+/** Une vraie notification, tout de suite, affichée par ce téléphone : la preuve qu'elles s'afficheront. */
+async function testNotification() {
+  try {
+    const registration = await navigator.serviceWorker.ready;
+    await registration.showNotification(t('push_test_title'), {
+      body: t('push_test_body', { m: data.name }),
+      tag: 'wcy-test',
+      icon: '/assets/icon-192.png',
+      badge: '/assets/icon-192.png',
+      data: { url: location.pathname },
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * État des notifications de ce téléphone pour ce ticket : 'ok', 'off' (bloquées), 'lost' (abonnement
+ * disparu ou remplacé), 'ios-app' (iPhone : elles arrivent dans l'appli de l'écran d'accueil, pas dans Safari).
+ */
+async function pushHealth(saved) {
+  if (isIOS() && !isStandalone()) return 'ios-app';
+  if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) return 'off';
+  if (Notification.permission !== 'granted') return 'off';
+  const registration = await Promise.race([navigator.serviceWorker.ready, new Promise((resolve) => setTimeout(resolve, 4000, null))]);
+  if (!registration) return 'ok'; // service worker lent à démarrer : pas de fausse alerte
+  try {
+    const subscription = await registration.pushManager.getSubscription();
+    return !subscription || (saved.endpoint && subscription.endpoint !== saved.endpoint) ? 'lost' : 'ok';
+  } catch {
+    return 'lost';
+  }
 }
 
 function choose() {
@@ -238,20 +279,34 @@ function iosGuide() {
   );
 }
 
-function registered() {
+function registered(justActivated = false) {
   const saved = local.get(storageKey);
-  const cancel = h('button', { type: 'button', class: 'linklike small' }, t('cancel'));
-  cancel.addEventListener('click', async () => {
+  const leave = async () => {
     await api('/unsub', { body: { t: token, rid: saved.rid } });
     local.remove(storageKey);
     choose();
-  });
+  };
+  const push = saved.kind === 'push';
+  // Notification : preuve à l'activation, bouton d'essai, et contrôle à chaque visite.
+  const health = h('div');
+  const test = push && h('button', { type: 'button', class: 'btn btn-soft btn-block', id: 'push-test', onclick: testNotification }, icon('bell-ringing'), t('push_test_btn'));
   view(
     h('div', { class: 'banner-ok center' }, icon('check-circle'), t('registered_title')),
     h('p', { class: 'lead center' }, icon(ICON[saved.kind]), ' ', t(`registered_${saved.kind}`)),
+    health,
+    justActivated && push && h('p', { class: 'notice small' }, t('push_check')),
+    test,
     h('p', { class: 'muted center' }, t('keep_open')),
-    h('div', { class: 'center' }, cancel),
+    h('div', { class: 'center row-center' }, h('button', { type: 'button', class: 'linklike small', onclick: leave }, t('other_channel')), h('button', { type: 'button', class: 'linklike small', onclick: leave }, t('cancel'))),
   );
+  if (push) {
+    if (justActivated) testNotification();
+    pushHealth(saved).then((state) => {
+      if (state === 'off' || state === 'lost') {
+        render(health, h('div', { class: 'banner-warn stack', id: 'push-warn' }, h('p', {}, t(state === 'off' ? 'push_off' : 'push_gone')), h('button', { type: 'button', class: 'btn btn-block', onclick: pushFlow }, icon('bell-ringing'), t('push_fix'))));
+      } else if (state === 'ios-app') render(health, h('p', { class: 'notice small' }, t('push_ios_app')));
+    });
+  }
   watch();
 }
 

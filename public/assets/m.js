@@ -1,6 +1,6 @@
 // Espace commerçant : connexion par la page 1 du PDF (et le mot de passe du lot s'il y en a un),
 // appels, suivi des tickets, statistiques, impression, réglages et écran d'affichage.
-import { h, t, LANG, api, render, translatePage, errorText, lots, local, fmtTime, qrSvg, icon, oneOpen, helpTip } from './common.js';
+import { h, t, LANG, api, render, translatePage, errorText, lots, local, fmtTime, qrSvg, icon, oneOpen, helpTip, isPhone } from './common.js';
 import { textToSecret, secretToText, lotMaterial, authTokenOf, openLot, b64u, openFromClient } from './crypto.js';
 import { unlock, callTickets } from './call.js';
 import { composer, needsComposer, groupOf, parseNumbers } from './message.js';
@@ -387,9 +387,12 @@ async function callTab(panel, { lot, access, reload }) {
     await drawList();
   };
 
+  // Sur ordinateur : les SMS (et WhatsApp non relié) partent du téléphone du commerçant.
+  const fromPc = !isPhone() && lot.channels.some((c) => c === 'sms' || c === 'wa');
   render(
     panel,
     stats,
+    fromPc && h('p', { class: 'notice small device-note', id: 'pc-note' }, icon('device-mobile'), h('span', {}, t('m_pc_banner'))),
     screenCard(lot, access),
     h('section', { class: 'card stack' }, h('h2', {}, t('m_call_title')), h('p', { class: 'small muted' }, t('m_call_hint')), box?.element, form),
     arrivalsBox,

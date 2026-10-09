@@ -290,6 +290,12 @@ details[open] > summary { margin-bottom: 14px; }
 /* ------------------------------------------------------------ messages */
 
 .notice { background: var(--surface-2); border-radius: var(--r-ctl); padding: 12px 14px; }
+.banner-warn.stack { flex-direction: column; align-items: stretch; } /* texte puis bouton, l'un sous l'autre */
+.banner-warn.stack > p { margin: 0; }
+.row-center { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 20px; }
+/* Ordinateur ou téléphone : ce qui part d'où (SMS : téléphone seulement) */
+.device-note { display: flex; gap: 10px; align-items: flex-start; }
+.device-note .i { flex: none; margin-top: 2px; color: var(--brand-text); }
 .error { color: var(--warn); font-weight: 600; }
 .ok { color: var(--ok); font-weight: 600; }
 .banner-warn, .banner-ok { display: flex; gap: 10px; align-items: flex-start; border-radius: var(--r-ctl); padding: 14px 16px; font-weight: 600; }
@@ -453,6 +459,21 @@ details[open] > summary { margin-bottom: 14px; }
 .cipher code { font: 500 0.92rem/1.5 var(--mono); padding: 12px 14px; border-radius: var(--r-ctl); background: rgb(255 255 255 / 0.06); border: 1px solid rgb(255 255 255 / 0.08); overflow-wrap: anywhere; }
 .cipher .plain { color: var(--ink-cell-text); font-size: 1.05rem; }
 .cipher .sealed { color: #ff9a76; max-height: 7.5em; overflow: hidden; }
+
+/* Moyens de prévenir : 4 cartes (gratuit, depuis quel appareil) et une remarque selon l'appareil */
+.channels { padding: 24px 0 72px; }
+.ch-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 16px; }
+.ch-card { display: flex; flex-direction: column; gap: 10px; padding: 20px; border: 1px solid var(--line); border-radius: var(--r-box); background: var(--surface); }
+.ch-head { display: flex; align-items: center; gap: 10px; }
+.ch-head h3 { margin: 0; font: 650 1.15rem/1.15 var(--font-display); letter-spacing: -0.02em; }
+.ch-icon { display: grid; place-items: center; width: 38px; height: 38px; flex: none; border-radius: var(--r-ctl); background: var(--brand-soft); color: var(--brand-text); }
+.ch-icon .i { width: 20px; height: 20px; }
+.ch-free { margin-left: auto; background: var(--ok-soft); color: var(--ok); }
+.ch-card > p { margin: 0; color: var(--muted); font-size: 0.93rem; line-height: 1.5; }
+.ch-card .ch-where { display: flex; gap: 6px; align-items: flex-start; margin-top: auto; padding-top: 10px; border-top: 1px solid var(--line); color: var(--text); font-size: 0.86rem; font-weight: 600; }
+.ch-where .i { width: 16px; height: 16px; flex: none; margin-top: 2px; color: var(--brand-text); }
+@media (max-width: 1000px) { .ch-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .ch-grid { grid-template-columns: 1fr; } .channels { padding-bottom: 48px; } }
 
 .closing { text-align: center; padding: 72px 24px; border-radius: var(--r-box); background: var(--surface-2); margin-bottom: 24px; }
 .closing h2 { font-size: clamp(1.8rem, 3.6vw, 2.6rem); }

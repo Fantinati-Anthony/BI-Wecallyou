@@ -53,7 +53,8 @@ const noPrint = () => {
 
 try {
   /* ------------------------------------------------ commerçant : création */
-  const merchant = await browser.newContext({ locale: 'fr-FR', viewport: { width: 420, height: 900 } });
+  // Le commerçant appelle depuis son téléphone (Android) : les SMS partent de son forfait.
+  const merchant = await browser.newContext({ locale: 'fr-FR', viewport: { width: 420, height: 900 }, userAgent: 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Mobile Safari/537.36' });
   await merchant.addInitScript(noPrint);
   const m = await merchant.newPage();
   const errors = [];
@@ -67,6 +68,9 @@ try {
   assert.doesNotMatch(await m.locator('.compare').textContent(), /cmp_|plan_/); // aucune clé de traduction oubliée
   // « Créer mes tickets » aussi dans le menu, et rien ne déborde sur un téléphone.
   assert.equal(await m.locator('.topnav .nav-cta[href="/creer"] svg').count(), 1);
+  // Les 4 moyens de prévenir, gratuits, et ce qui part d'où selon l'appareil (ici un ordinateur : SMS depuis le téléphone).
+  assert.equal(await m.locator('.ch-card').count(), 4);
+  assert.match(await m.locator('#device-note').textContent(), /téléphone : tous les moyens/);
   assert.equal(await m.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   // Activités : un appui adapte les démonstrations (ticket, téléphone du client, écran public).
   assert.equal(await m.locator('#home-acts .act-chip').count(), 10);
@@ -186,6 +190,7 @@ try {
   assert.equal(await m.locator('.waiting-list li .num').first().textContent(), '005');
   assert.match(await m.locator('.waiting-list li .kinds').first().getAttribute('aria-label'), /SMS/);
   await shot(m, '07-espace-commercant');
+  assert.equal(await m.locator('#pc-note').count(), 0); // sur téléphone : rien à signaler
   step('le commerçant voit le 005 inscrit par SMS, sans numéro affiché');
 
   // Quelques appels pour donner un rythme à la file d'attente.
@@ -497,6 +502,7 @@ try {
   assert.equal(await p4.locator('#created .banner-warn:has-text("options Pro")').count(), 0);
   await p4.goto(`${BASE}/m`);
   await p4.waitForSelector('h1:has-text("Pressing Lumière")');
+  assert.match(await p4.locator('#pc-note').textContent(), /partent de votre téléphone/); // sur ordinateur : les SMS partent du téléphone
   await p4.getByRole('button', { name: 'Réglages' }).click();
   assert.equal(await p4.locator('#st').inputValue(), '720');
   assert.equal(await p4.locator('#swl').isChecked(), true);
@@ -689,6 +695,26 @@ try {
     await ctx.close();
   }
   step('barre du haut : logo et menu sans chevauchement sur 7 pages × 5 largeurs');
+
+  // Notifications : à chaque visite, la page du client vérifie qu'elles sont toujours autorisées et abonnées.
+  {
+    const code = tickets[25].c;
+    for (const [granted, expected] of [[false, /bloquées/], [true, /plus abonné/]]) {
+      const ctx = await browser.newContext({ locale: 'fr-FR', viewport: { width: 390, height: 844 } });
+      // Navigateur sans tête : les notifications y restent refusées ; on simule « autorisées » (sans abonnement).
+      if (granted) await ctx.addInitScript(() => Object.defineProperty(Notification, 'permission', { get: () => 'granted' }));
+      await ctx.addInitScript(([key]) => localStorage.setItem(key, JSON.stringify({ rid: 'r-test', kind: 'push', endpoint: 'https://push.example/ancien' })), [`wcy:t:${code.toUpperCase()}`]);
+      const p = await ctx.newPage();
+      p.on('pageerror', (err) => errors.push(err.message));
+      await p.goto(`${BASE}/${code}`);
+      await p.waitForSelector('#push-warn', { timeout: 10_000 });
+      assert.match(await p.locator('#push-warn').textContent(), expected);
+      assert.equal(await p.locator('#push-test').count(), 1); // bouton « notification de test »
+      if (granted) await shot(p, '29-notification-perdue');
+      await ctx.close();
+    }
+  }
+  step('notifications : alerte si bloquées ou abonnement perdu, boutons de réactivation et d’essai');
 
   assert.deepEqual(errors, []);
   step('aucune erreur JavaScript');

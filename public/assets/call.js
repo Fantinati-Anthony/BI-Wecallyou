@@ -1,7 +1,7 @@
 // Appel d'un ticket ou d'un groupe depuis le téléphone du commerçant (scan de la souche ou numéro) :
 // le serveur rend des blocs chiffrés, ce téléphone les déchiffre, envoie les notifications
 // via le relais aveugle et propose un bouton pour chaque SMS, WhatsApp ou e-mail.
-import { h, t, tl, api, isIOS, fmtTime, lots, icon, LANGS, loadLang } from './common.js';
+import { h, t, tl, api, isIOS, isPhone, fmtTime, lots, icon, LANGS, loadLang } from './common.js';
 import { b64u, authTokenOf, openLot, openFromClient, buildPush } from './crypto.js';
 import { fill, builtins, groupOf } from './message.js';
 
@@ -100,6 +100,8 @@ async function sendPushes({ lot, access, contact, message }, call, pushes) {
 function manualButton({ lot, access, message, showLabel }, { data, lang, call }) {
   const body = textFor(lot, call.label, lang, message);
   const to = String(data.v);
+  // Un ordinateur n'envoie pas de SMS : la marche à suivre plutôt qu'un bouton sans effet.
+  if (data.c === 'sms' && !isPhone()) return h('p', { class: 'notice small device-note' }, icon('device-mobile'), h('span', {}, showLabel ? `${call.label} · ` : '', t('sms_on_phone', { to: masked(to) })));
   const [href, cls, text, glyph] = data.c === 'sms' ? [smsHref(to, body), 'btn-sms', t('send_sms'), 'chat-circle-text'] : [waHref(to, body), 'btn-wa', t('send_wa'), 'whatsapp-logo'];
   const btn = h('a', { class: `btn btn-block btn-big ${cls}`, href, target: data.c === 'wa' ? '_blank' : false, rel: 'noopener' }, icon(glyph), showLabel ? `${call.label} · ` : '', `${text} ${masked(to)}`);
   btn.addEventListener('click', () => {

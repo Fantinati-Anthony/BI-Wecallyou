@@ -250,6 +250,8 @@ export const lots = {
 /* ------------------------------------------------------------ plateformes */
 
 export const isIOS = () => /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+/** Téléphone (et non tablette ni ordinateur) : seul appareil qui envoie des SMS avec son forfait. */
+export const isPhone = () => /iPhone|iPod|Windows Phone|Android.+Mobile|Mobi/i.test(navigator.userAgent);
 export const isStandalone = () => navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
 export const fmtTime = (ms) => new Date(ms).toLocaleTimeString(LANG, { hour: '2-digit', minute: '2-digit' });
 
