@@ -257,7 +257,7 @@ form.addEventListener('submit', async (event) => {
   if (msg.lists.length > 5 || msg.lists.some((l) => l.name.length > 24 || !/^[\p{L}\p{N}][\p{L}\p{N} _-]*$/u.test(l.name))) return showError('lists');
   if (msg.groups.length > 100 || msg.groups.some((g) => !g.name || !parseNumbers(g.numbers))) return showError('groups');
 
-  const button = form.querySelector('button[type=submit]');
+  const button = document.getElementById('create-btn'); // sous l'aperçu, hors du formulaire
   button.disabled = true;
   button.textContent = t('creating');
   try {

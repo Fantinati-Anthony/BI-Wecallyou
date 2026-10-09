@@ -7,7 +7,7 @@
   <meta name="description" content="Des tickets papier qui préviennent vos clients quand c'est leur tour. Gratuit, sans compte, sans pub, open source, et les coordonnées sont illisibles pour le serveur.">
   <meta name="theme-color" content="#f2f3f5" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#0e1013" media="(prefers-color-scheme: dark)">
-  <title>Créer mes tickets · WeCall.You</title>
+  <title>Créer ma file · WeCall.You</title>
   <link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
   <link rel="preload" href="/assets/fonts/bricolage-grotesque.woff2" as="font" type="font/woff2" crossorigin>
@@ -28,13 +28,11 @@
 
   <main class="wrap wrap-studio">
     <section id="creer">
-      <div class="section-head">
-        <div class="label-row title-row"><h1 data-i18n="create_title">Créer mes tickets</h1><span data-tip="studio_lede"></span></div>
-      </div>
+      <h1 class="sr-only" data-i18n="create_title">Créer ma file</h1>
       <div class="studio">
         <form id="create-form" class="studio-form" novalidate>
           <div class="card studio-tabs">
-            <div class="tabbar" role="tablist" aria-label="Créer mes tickets">
+            <div class="tabbar" role="tablist" aria-label="Créer ma file">
               <button type="button" role="tab" id="tab-info" aria-controls="panel-info" aria-selected="true"><span data-icon="ticket"></span><span data-i18n="tab_info">Informations</span></button>
               <button type="button" role="tab" id="tab-message" aria-controls="panel-message" aria-selected="false" tabindex="-1"><span data-icon="chat-centered-text"></span><span data-i18n="tab_message">Message</span></button>
               <button type="button" role="tab" id="tab-look" aria-controls="panel-look" aria-selected="false" tabindex="-1"><span data-icon="palette"></span><span data-i18n="tab_look">Apparence</span></button>
@@ -77,7 +75,7 @@
                 <select id="ttl" name="ttl" class="select"></select>
               </div>
               <div class="field cap">
-                <div class="label-row"><label for="password" data-i18n="create_password">Mot de passe du lot (conseillé)</label><span data-tip="create_password_hint"></span></div>
+                <div class="label-row"><label for="password" data-i18n="create_password">Mot de passe de la file (conseillé)</label><span data-tip="create_password_hint"></span></div>
                 <input id="password" name="password" type="password" autocomplete="new-password" minlength="8">
               </div>
               <div class="field cap" id="password2-field" hidden>
@@ -111,11 +109,14 @@
               </section>
             </section>
           </div>
-          <p class="error" id="create-error" role="alert" hidden></p>
-          <button class="btn btn-big btn-block" type="submit" data-i18n="create_btn">Créer mes tickets</button>
-          <p class="small muted center" data-i18n="service_note"></p>
         </form>
-        <div id="preview-slot"></div>
+        <!-- À droite : l'aperçu, puis le bouton de création (il envoie le formulaire de gauche). -->
+        <div class="studio-side">
+          <div id="preview-slot"></div>
+          <p class="error" id="create-error" role="alert" hidden></p>
+          <button class="btn btn-big btn-block" id="create-btn" type="submit" form="create-form" data-i18n="create_btn">Créer ma file</button>
+          <p class="small muted center" data-i18n="service_note"></p>
+        </div>
       </div>
     </section>
 

@@ -16,8 +16,8 @@
     <a class="brand" href="/"><img src="/assets/icon.svg" alt="" width="30" height="30"><span>WeCall<span class="brand-dot">.</span>You</span></a>
     <nav class="topnav">
       <a class="btn btn-ghost" href="/pro"><span data-icon="star"></span><span class="label" data-i18n="nav_pro">Offre Pro</span></a>
-      <a class="btn btn-ghost" href="/creer"><span data-icon="ticket"></span><span class="label" data-i18n="create_title">Créer mes tickets</span></a>
-      <a class="btn nav-cta" href="/creer"><span data-icon="plus"></span><span class="label" data-i18n="create_title">Créer mes tickets</span></a>
+      <a class="btn btn-ghost" href="/creer"><span data-icon="ticket"></span><span class="label" data-i18n="create_title">Créer ma file</span></a>
+      <a class="btn nav-cta" href="/creer"><span data-icon="plus"></span><span class="label" data-i18n="create_title">Créer ma file</span></a>
     </nav>
   </header>
   <main class="wrap">
@@ -26,14 +26,14 @@
       <p class="lead">En bref : nous ne pouvons pas lire vos coordonnées, nous ne gardons que le strict nécessaire, et tout s’efface tout seul.</p>
 
       <h2>Ce que le serveur ne voit jamais</h2>
-      <p>Quand vous demandez à être prévenu, votre numéro, votre adresse e-mail ou votre abonnement aux notifications sont <strong>chiffrés sur votre téléphone</strong>, avant l’envoi, avec la clé publique du commerçant. Seul le commerçant, avec la clé de son lot (et son mot de passe s’il en a mis un), peut les déchiffrer, au moment de vous prévenir. Notre serveur ne stocke que des blocs illisibles. Le code est open source : chacun peut le vérifier.</p>
+      <p>Quand vous demandez à être prévenu, votre numéro, votre adresse e-mail ou votre abonnement aux notifications sont <strong>chiffrés sur votre téléphone</strong>, avant l’envoi, avec la clé publique du commerçant. Seul le commerçant, avec la clé de sa file (et son mot de passe s’il en a mis un), peut les déchiffrer, au moment de vous prévenir. Notre serveur ne stocke que des blocs illisibles. Le code est open source : chacun peut le vérifier.</p>
 
       <h2>Ce qui est conservé, et combien de temps</h2>
       <ul>
         <li><strong>Tant que personne ne scanne un ticket</strong> : rien. Un ticket imprimé n’existe pas sur le serveur.</li>
         <li><strong>Vos coordonnées chiffrées</strong> : effacées 30 minutes après l’appel de votre ticket, et au plus tard à la fin de sa durée de vie (6 h par défaut, 48 h au maximum ; jusqu’à 30 jours si le commerçant a choisi une durée longue, par exemple pour un pressing ou une réparation).</li>
         <li><strong>Le journal du ticket</strong> (scanné, inscrit, appelé, notification remise, vu) : sans aucune donnée personnelle, effacé à la fin de la durée de vie du ticket.</li>
-        <li><strong>Des statistiques</strong> : uniquement des compteurs par jour et par lot (nombre de scans, d’appels…), gardés 90 jours.</li>
+        <li><strong>Des statistiques</strong> : uniquement des compteurs par jour et par file (nombre de scans, d’appels…), gardés 90 jours.</li>
         <li><strong>Votre adresse IP</strong> : jamais enregistrée. Elle sert seulement, en mémoire et quelques minutes, à freiner les abus.</li>
       </ul>
 
@@ -43,11 +43,11 @@
         <li><strong>Google, Apple ou Mozilla</strong> acheminent les notifications, sans pouvoir en lire le contenu (chiffré de bout en bout).</li>
         <li><strong>Votre opérateur, WhatsApp (Meta) ou votre messagerie</strong> transportent le SMS, le message ou l’e-mail envoyé par le commerçant, selon le moyen que vous avez choisi.</li>
         <li><strong>Stripe</strong> traite les dons et les abonnements Pro, pour son propre compte ; notre serveur ne voit ni carte ni identité.</li>
-        <li><strong>Comptes (facultatifs)</strong> : nous ne gardons qu’une empreinte de l’identifiant et un coffre chiffré dans votre navigateur ; ni l’identifiant, ni le mot de passe, ni vos lots ne nous sont lisibles. Un compte inutilisé pendant 400 jours est supprimé.</li>
+        <li><strong>Comptes (facultatifs)</strong> : nous ne gardons qu’une empreinte de l’identifiant et un coffre chiffré dans votre navigateur ; ni l’identifiant, ni le mot de passe, ni vos files ne nous sont lisibles. Un compte inutilisé pendant 400 jours est supprimé.</li>
       </ul>
 
       <h2>Cookies et traceurs</h2>
-      <p>Aucun. Ni publicité, ni mesure d’audience, ni script tiers. Le site garde seulement, dans votre navigateur, ce qui lui sert à fonctionner (par exemple la clé de votre lot sur le téléphone du commerçant).</p>
+      <p>Aucun. Ni publicité, ni mesure d’audience, ni script tiers. Le site garde seulement, dans votre navigateur, ce qui lui sert à fonctionner (par exemple la clé de votre file sur le téléphone du commerçant).</p>
 
       <h2>Vos droits</h2>
       <p>Vous pouvez annuler votre inscription à tout moment depuis la page de votre ticket : elle est effacée immédiatement. Le commerçant qui vous a remis le ticket est responsable de son usage ; WeCall.You agit comme prestataire technique (sous-traitant). Pour toute question : <span class="muted">[adresse de contact à compléter]</span>.</p>
@@ -59,14 +59,14 @@
       <p class="lead">In short: we cannot read your contact details, we keep only what is strictly needed, and everything deletes itself.</p>
 
       <h2>What the server never sees</h2>
-      <p>When you ask to be notified, your phone number, email address or notification subscription are <strong>encrypted on your phone</strong>, before being sent, with the merchant’s public key. Only the merchant, with their batch key (and password, if set), can decrypt them, at the moment of notifying you. Our server stores only unreadable blocks. The code is open source: anyone can check it.</p>
+      <p>When you ask to be notified, your phone number, email address or notification subscription are <strong>encrypted on your phone</strong>, before being sent, with the merchant’s public key. Only the merchant, with their queue key (and password, if set), can decrypt them, at the moment of notifying you. Our server stores only unreadable blocks. The code is open source: anyone can check it.</p>
 
       <h2>What is kept, and for how long</h2>
       <ul>
         <li><strong>Until someone scans a ticket</strong>: nothing. A printed ticket does not exist on the server.</li>
         <li><strong>Your encrypted contact details</strong>: deleted 30 minutes after your ticket is called, and at the latest when the ticket’s lifetime ends (6 h by default, 48 h maximum; up to 30 days if the merchant chose a long lifetime, e.g. for dry cleaning or repairs).</li>
         <li><strong>The ticket log</strong> (scanned, signed up, called, notification delivered, seen): no personal data, deleted when the ticket’s lifetime ends.</li>
-        <li><strong>Statistics</strong>: daily counters per batch only (number of scans, calls…), kept for 90 days.</li>
+        <li><strong>Statistics</strong>: daily counters per queue only (number of scans, calls…), kept for 90 days.</li>
         <li><strong>Your IP address</strong>: never recorded. It is used only, in memory and for a few minutes, to slow down abuse.</li>
       </ul>
 
@@ -76,11 +76,11 @@
         <li><strong>Google, Apple or Mozilla</strong> carry notifications without being able to read them (end-to-end encrypted).</li>
         <li><strong>Your carrier, WhatsApp (Meta) or your mail provider</strong> carry the text, message or email sent by the merchant, depending on what you chose.</li>
         <li><strong>Stripe</strong> processes donations and Pro subscriptions on its own behalf; our server sees neither card nor identity.</li>
-        <li><strong>Accounts (optional)</strong>: we keep only a fingerprint of the username and a vault encrypted in your browser; neither the username, the password nor your batches are readable to us. An account unused for 400 days is deleted.</li>
+        <li><strong>Accounts (optional)</strong>: we keep only a fingerprint of the username and a vault encrypted in your browser; neither the username, the password nor your queues are readable to us. An account unused for 400 days is deleted.</li>
       </ul>
 
       <h2>Cookies and trackers</h2>
-      <p>None. No ads, no analytics, no third-party scripts. The site keeps in your browser only what it needs to work (for example the batch key on the merchant’s phone).</p>
+      <p>None. No ads, no analytics, no third-party scripts. The site keeps in your browser only what it needs to work (for example the queue key on the merchant’s phone).</p>
 
       <h2>Your rights</h2>
       <p>You can cancel your sign-up at any time from your ticket page: it is deleted immediately. The merchant who gave you the ticket is responsible for its use; WeCall.You acts as a technical provider (processor). Questions: <span class="muted">[contact address to be completed]</span>.</p>

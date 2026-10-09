@@ -583,7 +583,7 @@ export function livePreview() {
     mark(name);
     if (last) update(last);
   }
-  const close = h('button', { type: 'button', class: 'btn btn-ghost pv-close' }, icon('x'), t('pv_close'));
+  const close = h('button', { type: 'button', class: 'btn btn-ghost pv-close', 'aria-label': t('pv_close') }, icon('x'), h('span', { class: 'pv-close-text' }, t('pv_close')));
   // Zones de découpe : traits et marges mis en évidence à l'écran (jamais imprimés).
   const cuts = h('button', { type: 'button', class: 'btn btn-ghost pv-cuts', id: 'pv-cuts', 'aria-pressed': 'false', title: t('pv_cuts'), 'aria-label': t('pv_cuts') }, icon('scissors'));
   cuts.addEventListener('click', () => {
@@ -591,8 +591,13 @@ export function livePreview() {
     frame.classList.toggle('show-cuts', on);
     cuts.setAttribute('aria-pressed', String(on));
   });
-  // Onglets et découpes au-dessus de la page ; les repères (tickets par page, QR…) en dessous.
-  const panel = h('aside', { class: 'studio-preview card', 'aria-label': t('pv_title') }, h('div', { class: 'pv-bar' }, tabs, cuts, close), alert, frame, info, h('p', { class: 'small muted' }, t('pv_sample')));
+  // En-tête : onglets et découpes, comme celui des réglages ; dessous, la page puis ses repères (tickets par page, QR…).
+  const panel = h(
+    'aside',
+    { class: 'studio-preview card', 'aria-label': t('pv_title') },
+    h('div', { class: 'pv-bar' }, tabs, cuts, close),
+    h('div', { class: 'pv-body' }, alert, frame, info, h('p', { class: 'small muted' }, t('pv_sample'))),
+  );
   const fab = h('button', { type: 'button', class: 'btn pv-fab' }, icon('eye'), t('pv_open'));
   fab.addEventListener('click', () => panel.classList.add('open'));
   close.addEventListener('click', () => panel.classList.remove('open'));
@@ -608,7 +613,7 @@ export function livePreview() {
     const page = frame.firstElementChild;
     frame.style.height = '';
     if (!page) frame.style.height = '0';
-    else if (page.classList.contains('sheet')) scaleInto(frame, page, Math.max(260, window.innerHeight * 0.72));
+    else if (page.classList.contains('sheet')) scaleInto(frame, page, Math.max(260, window.innerHeight * 0.6));
     for (const view of frame.querySelectorAll('.pv-tile-view')) {
       const sheet = view.firstElementChild;
       if (sheet?.classList.contains('sheet')) scaleInto(view, sheet, 320);
@@ -680,13 +685,16 @@ export function livePreview() {
         }
       };
       if (tab === 'all') {
-        const tiles = Object.keys(PV_ICONS).filter((name) => name !== 'all' && shown[name]);
+        // Les pages imprimées en vignettes, puis l'écran et le téléphone du client à parts égales.
+        const tile = (name) => h('button', { type: 'button', class: `pv-tile pv-tile-${name}`, onclick: () => setTab(name) }, h('span', { class: 'pv-tile-label' }, icon(PV_ICONS[name]), t(`pv_${name}`)), h('div', { class: 'pv-tile-view' }, build(name)));
+        const present = (names) => names.filter((name) => shown[name]);
         render(
           frame,
           h(
             'div',
             { class: 'pv-all' },
-            tiles.map((name) => h('button', { type: 'button', class: `pv-tile pv-tile-${name}`, onclick: () => setTab(name) }, h('span', { class: 'pv-tile-label' }, icon(PV_ICONS[name]), t(`pv_${name}`)), h('div', { class: 'pv-tile-view' }, build(name)))),
+            h('div', { class: 'pv-all-sheets' }, present(['tickets', 'back', 'key', 'poster']).map(tile)),
+            h('div', { class: 'pv-all-live' }, present(['screen', 'client']).map(tile)),
           ),
         );
       } else render(frame, build(tab));

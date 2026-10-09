@@ -308,7 +308,8 @@ details[open] > summary { margin-bottom: 14px; }
 .cap > :is(input, select.select, .cap-ctl) { min-width: 0; min-height: 48px; margin: 0; border: 0; border-left: 1px solid var(--line); border-radius: 0 calc(var(--r-ctl) - 1px) calc(var(--r-ctl) - 1px) 0; background-color: transparent; box-shadow: none; }
 .cap > :is(input, select.select):focus-visible { box-shadow: none; }
 .cap > input { padding-inline: 12px; }
-.cap.num > input { padding-inline: 10px; text-align: right; font-variant-numeric: tabular-nums; }
+.cap.num > input { padding-inline: 8px; text-align: right; font-variant-numeric: tabular-nums; appearance: textfield; -moz-appearance: textfield; }
+.cap.num > input::-webkit-inner-spin-button, .cap.num > input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; } /* pas de flèches : la place va au nombre */
 .cap > .cap-ctl { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 6px 8px; }
 .cap > .cap-ctl .color { width: 42px; height: 34px; }
 .cap > .cap-ctl .btn { min-width: 0; max-width: 100%; white-space: normal; }
@@ -767,7 +768,7 @@ dialog.act-dialog::backdrop { background: rgb(14 16 19 / 0.55); }
 .studio-form > details { margin-bottom: 12px; }
 .studio-form > details > summary { font: 650 1.12rem/1.2 var(--font-display); letter-spacing: -0.015em; }
 /* Générateur : un bloc, trois onglets (Informations, Message, Apparence) */
-.title-row h1 { margin: 0; }
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 .studio-tabs { margin-bottom: 12px; padding: 0; overflow: visible; }
 .tabbar { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 6px; border-bottom: 1px solid var(--line); background: var(--surface-2); border-radius: var(--r-box) var(--r-box) 0 0; }
 .tabbar [role=tab] {
@@ -781,14 +782,19 @@ dialog.act-dialog::backdrop { background: rgb(14 16 19 / 0.55); }
 .tab-panel { padding: 20px; }
 .panel-sec + .panel-sec { margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--line); }
 .panel-sec > h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 14px; font: 650 1.08rem/1.2 var(--font-display); letter-spacing: -0.015em; }
-@media (max-width: 460px) { .tabbar [role=tab] { flex-direction: column; gap: 2px; font-size: 0.82rem; } }
-.studio-preview { position: sticky; top: 16px; margin: 0; }
-/* Aperçu : onglets et découpes centrés au-dessus de la page */
-.pv-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; }
+@media (max-width: 460px) { .tabbar [role=tab] { flex-direction: column; gap: 2px; font-size: 0.82rem; } .pv-close-text { display: none; } }
+/* Colonne de droite : l'aperçu puis le bouton « Créer ma file », collés en haut pendant qu'on remplit. */
+.studio-side { position: sticky; top: 16px; display: grid; gap: 12px; }
+.studio-side > * { margin: 0; min-width: 0; }
+.studio-preview { margin: 0; padding: 0; overflow: visible; }
+.studio > .studio-preview { position: sticky; top: 16px; } /* espace commerçant (Imprimer) : aperçu seul à droite */
+/* Aperçu : en-tête d'onglets identique à celui des réglages, découpes au bout */
+.pv-bar { display: flex; align-items: center; gap: 4px; padding: 6px; border-bottom: 1px solid var(--line); background: var(--surface-2); border-radius: var(--r-box) var(--r-box) 0 0; }
+.pv-body { padding: 16px; }
 .pv-frame { position: relative; overflow: hidden; background: var(--surface-2); border-radius: 12px; }
 /* Onglets de l'aperçu : même style que ceux des réglages, défilants s'ils sont nombreux */
-.pv-bar .pv-tabs { flex: 1 1 auto; min-width: 0; display: flex; gap: 4px; padding: 4px; overflow-x: auto; scrollbar-width: none; border: 0; border-radius: var(--r-ctl); }
-.pv-tabs [role=tab] { flex: none; min-height: 40px; padding: 6px 10px; font-size: 0.88rem; }
+.pv-bar .pv-tabs { flex: 1 1 auto; min-width: 0; display: flex; gap: 4px; padding: 0; overflow-x: auto; scrollbar-width: none; border: 0; border-radius: 0; background: none; }
+.pv-tabs [role=tab] { flex: 1 0 auto; padding-inline: 10px; }
 .pv-tabs [role=tab][hidden] { display: none; }
 /* Écran public en aperçu (mêmes éléments que la démonstration de l'accueil) */
 .pv-screen { margin: 14px; padding-bottom: 0; }
@@ -816,7 +822,12 @@ dialog.act-dialog::backdrop { background: rgb(14 16 19 / 0.55); }
 .pvp-message { margin: 0; padding: 3.4cqw; border-radius: 3.4cqw; background: rgb(255 255 255 / 0.16); font-size: 4.3cqw; line-height: 1.35; }
 .pvp-ready .pvp-promo { margin-top: 0; background: rgb(255 255 255 / 0.16); color: inherit; text-align: left; }
 /* « Tout » : chaque vue en vignette, un appui l'ouvre */
-.pv-all { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; margin: 14px; }
+.pv-all { display: grid; gap: 14px; margin: 14px; }
+.pv-all-sheets { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+/* Écran et téléphone du client à parts égales : l'écran grandit, les téléphones rétrécissent. */
+.pv-all-live { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; align-items: start; }
+.pv-all-live:empty { display: none; }
+.pv-all-live .pv-phones { gap: 10px; }
 .pv-tile { display: grid; gap: 8px; align-content: start; padding: 10px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); color: var(--text); font: inherit; text-align: left; cursor: pointer; }
 .pv-tile:hover, .pv-tile:focus-visible { border-color: var(--brand); }
 .pv-tile-label { display: flex; align-items: center; gap: 6px; font-size: 0.88rem; font-weight: 650; }
@@ -824,13 +835,13 @@ dialog.act-dialog::backdrop { background: rgb(14 16 19 / 0.55); }
 .pv-tile-view { position: relative; overflow: hidden; pointer-events: none; }
 .pv-tile-view > .sheet { transform-origin: top left; box-shadow: var(--shadow-1); }
 .pv-tile-view .pv-screen, .pv-tile-view .pv-phones { margin: 0; }
-@media (min-width: 560px) { .pv-tile-client { grid-column: span 2; } }
 .pv-frame > .sheet { transform-origin: top left; box-shadow: var(--shadow-2); flex: none; }
 .pv-info { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 12px 0 6px; padding: 0; list-style: none; }
 .pv-info li { padding: 3px 10px; border-radius: var(--r-pill); background: var(--surface-2); font-size: 0.82rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 .pv-info b { color: var(--text); font-weight: 600; }
 .pv-close, .pv-fab { display: none; }
-.pv-cuts { min-height: 38px; padding: 6px 10px; }
+.pv-bar .pv-cuts, .pv-bar .pv-close { flex: none; min-height: 44px; padding: 8px 12px; border-color: transparent; background: transparent; color: var(--muted); }
+.pv-bar .pv-cuts:hover { color: var(--text); }
 .pv-cuts[aria-pressed='true'] { border-color: #e11d48; color: #e11d48; }
 /* « Voir les découpes » : traits en rouge, marges et espaces hachurés (aperçu seulement). */
 .pv-frame.show-cuts .sheet-tickets { background-image: repeating-linear-gradient(45deg, rgb(225 29 72 / 0.14) 0 1.5mm, transparent 1.5mm 3mm); }
@@ -872,7 +883,9 @@ dialog.catalog h2 { margin: 0; }
 @media (max-width: 900px) {
   .studio { grid-template-columns: 1fr; }
   /* Sur téléphone, l'aperçu s'ouvre en plein écran par un bouton flottant. */
-  .studio-preview { display: none; position: fixed; inset: 0; z-index: 30; border-radius: 0; overflow: auto; }
+  .studio-side { position: static; }
+  .studio-preview, .studio > .studio-preview { display: none; position: fixed; inset: 0; z-index: 30; border-radius: 0; overflow: auto; }
+  .studio-preview .pv-bar { position: sticky; top: 0; z-index: 1; border-radius: 0; }
   .studio-preview.open { display: block; }
   .pv-close { display: inline-flex; }
   .pv-fab { display: inline-flex; position: fixed; right: 16px; bottom: 16px; z-index: 25; box-shadow: var(--shadow-2); }

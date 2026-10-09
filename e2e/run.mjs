@@ -66,7 +66,7 @@ try {
   assert.ok((await m.locator('.how-step p').first().textContent()).length > 20); // l'accueil est bien traduit
   assert.equal(await m.locator('.hero-cta svg').count(), 1); // et ses icônes posées
   assert.doesNotMatch(await m.locator('.compare').textContent(), /cmp_|plan_/); // aucune clé de traduction oubliée
-  // « Créer mes tickets » aussi dans le menu, et rien ne déborde sur un téléphone.
+  // « Créer ma file » aussi dans le menu, et rien ne déborde sur un téléphone.
   assert.equal(await m.locator('.topnav .nav-cta[href="/creer"] svg').count(), 1);
   // Les 4 moyens de prévenir, gratuits, et ce qui part d'où selon l'appareil (ici un ordinateur : SMS depuis le téléphone).
   assert.equal(await m.locator('.ch-card').count(), 4);
@@ -126,7 +126,7 @@ try {
   await m.click('#tab-message');
   await m.fill('#promo', 'Suivez-nous sur Instagram @snacktony');
   await m.fill('#link', 'https://instagram.com/snacktony');
-  await m.click('button[type=submit]');
+  await m.click('#create-btn');
   await m.waitForSelector('#created:not([hidden])', { timeout: 30_000 });
   await shot(m, '02-lot-cree');
   step('lot créé avec mot de passe');
@@ -407,7 +407,7 @@ try {
   await p4.fill('#rp', 'nouveau mot de passe');
   await p4.fill('#rp2', 'nouveau mot de passe');
   await p4.click('form button[type=submit]');
-  await p4.waitForSelector('h2:has-text("Mes lots")', { timeout: 30_000 });
+  await p4.waitForSelector('h2:has-text("Mes files")', { timeout: 30_000 });
   assert.match(await p4.locator('.waiting-list').textContent(), /Snack Tony/);
   await shot(p4, '17-compte');
   step('mot de passe oublié : fiche de secours → nouveau mot de passe, rien perdu');
@@ -499,7 +499,7 @@ try {
   await p4.click('#tab-look');
   await p4.check('#c-wl');
   await p4.fill('#th-screenNumber', '#2b7fff');
-  await p4.click('#create-form button[type=submit]');
+  await p4.click('#create-btn');
   await p4.waitForSelector('#created:not([hidden])', { timeout: 30_000 });
   assert.equal(await p4.locator('#created .banner-warn:has-text("options Pro")').count(), 0);
   await p4.goto(`${BASE}/m`);
