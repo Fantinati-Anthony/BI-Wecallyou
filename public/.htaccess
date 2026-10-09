@@ -20,6 +20,7 @@ AddType application/manifest+json .webmanifest
   RewriteRule ^soutenir/?$ soutenir.html [L,NC]
   RewriteRule ^merci/?$ merci.html [L]
   RewriteRule ^confidentialite/?$ confidentialite.html [L]
+  RewriteRule ^compte/?$ compte.html [L]
   RewriteRule ^ecran/[A-Za-z2-7]{23}/?$ ecran.html [L,NC]
 
   # Ticket : /<code de 26 caractères>, et son manifeste (installation sur iPhone)

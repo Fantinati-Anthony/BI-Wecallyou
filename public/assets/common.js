@@ -50,7 +50,8 @@ export function translatePage(vars = {}) {
 export async function api(path, { body, auth } = {}) {
   const headers = {};
   if (body !== undefined) headers['Content-Type'] = 'application/json';
-  if (auth) headers.Authorization = `Lot ${auth}`;
+  // Jeton seul = accès à un lot ; sinon en-tête complet (« Account … », « Recovery … »).
+  if (auth) headers.Authorization = auth.includes(' ') ? auth : `Lot ${auth}`;
   try {
     const res = await fetch(`/api${path}`, {
       method: body === undefined ? 'GET' : 'POST',

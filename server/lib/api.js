@@ -1,5 +1,6 @@
 import { Role, label } from './token.js';
-import { fail, readJson, sendJson, clientIp, RateLimit } from './http.js';
+import { fail, readJson, readRaw, sendJson, clientIp, RateLimit } from './http.js';
+import { verifySignature, applyEvent } from './stripe.js';
 import { checkMessage, relay } from './relay.js';
 import { LIFETIMES, DEFAULT_LIFETIME } from './store.js';
 import { createHmac, timingSafeEqual } from 'node:crypto';
@@ -135,10 +136,60 @@ function publicKey(value) {
   return bytes?.length === 65 && bytes[0] === 4 ? value : fail(400, 'key');
 }
 
+const IDENT = /^[a-z0-9][a-z0-9._-]{2,31}$/;
+const HEX64 = /^[0-9a-f]{64}$/;
+const MAX_VAULT = 60_000;
+const sealed = (value, max) => typeof value === 'string' && value.length >= 40 && value.length <= max && /^[\w-]+$/.test(value);
+const pick = (object, keys) => Object.fromEntries(keys.map((k) => [k, object[k]]));
+
 /* ------------------------------------------------------------------ API */
 
-export function createApi({ config, store, tokens, events }) {
+export function createApi({ config, store, accounts, tokens, events, gate }) {
   const limits = new RateLimit();
+
+  /* ---------------------------------------------------- comptes et priorité */
+
+  const accountOf = async (req, kind = 'acc') => {
+    const header = req.headers.authorization ?? '';
+    const prefix = kind === 'acc' ? 'Account ' : 'Recovery ';
+    const account = header.startsWith(prefix) ? await accounts.byToken(kind, header.slice(prefix.length)) : null;
+    if (account) return account;
+    limits.check(`auth:${clientIp(req)}`, 60, 10 * MINUTE);
+    return fail(401, 'login');
+  };
+
+  const accountView = (account) => ({
+    ok: true,
+    id: account.id,
+    wrapPw: account.wrapPw,
+    vault: account.vault,
+    version: account.version,
+    pro: accounts.isPro(account),
+    premiumUntil: account.premiumUntil || null,
+  });
+
+  const lotIsPro = async (lotId) => {
+    if (!Number.isInteger(lotId) || lotId < 1) return false;
+    const lot = await store.lot(lotId);
+    return lot?.owner ? accounts.isProId(lot.owner) : false;
+  };
+
+  /** Lot (ou compte) concerné par une requête, pour savoir s'il passe en priorité. */
+  const priorityOf = async (req, pathname) => {
+    try {
+      const header = req.headers.authorization ?? '';
+      if (header.startsWith('Account ')) return accounts.isPro(await accounts.byToken('acc', header.slice(8)));
+      let lotId = header.startsWith('Lot ') ? (await store.lotByAuth(header.slice(4)))?.id : undefined;
+      const ticket = /^\/t\/([A-Za-z2-7]{26})$/.exec(pathname)?.[1];
+      if (!lotId && ticket) lotId = tokens.decode(ticket.toUpperCase())?.lot;
+      const screen = /^\/screen\/([A-Za-z2-7]{23})$/.exec(pathname)?.[1];
+      if (!lotId && screen) lotId = base32.decode(screen.toUpperCase())?.readUInt32BE(0);
+      lotId ??= Number(req.headers['x-lot']); // simple indice envoyé par la page d'un ticket
+      return lotIsPro(lotId);
+    } catch {
+      return false;
+    }
+  };
 
   const ticketOf = (text, role) => {
     const ticket = tokens.decode(typeof text === 'string' ? text.toUpperCase() : '');
@@ -262,6 +313,8 @@ export function createApi({ config, store, tokens, events }) {
         ok: true,
         ...privateLot(lot),
         wrapped: lot.wrapped,
+        owned: Boolean(lot.owner),
+        pro: await lotIsPro(lot.id),
         waiting: waiting.map((w) => ({ n: w.n, label: label(w.n), calledAt: w.calledAt, subs: w.subs })),
         queue: queueView(await store.queue(lot.id), waiting.filter((w) => w.calledAt === null).length),
       };
@@ -439,6 +492,87 @@ export function createApi({ config, store, tokens, events }) {
       }
       return { ok: true, statuses };
     }],
+
+    /* ------------------------------------------------- comptes (facultatifs) */
+
+    // Création : le navigateur envoie seulement des empreintes et des blocs chiffrés.
+    ['POST', /^\/account$/, async (req) => {
+      limits.check(`signup:${clientIp(req)}`, 10, HOUR);
+      const body = await readJson(req);
+      const ident = typeof body.ident === 'string' ? body.ident.trim().toLowerCase() : '';
+      if (!IDENT.test(ident)) fail(400, 'ident');
+      if (!HEX64.test(body.verifier ?? '') || !HEX64.test(body.recoveryVerifier ?? '') || body.verifier === body.recoveryVerifier) fail(400, 'verifier');
+      if (!sealed(body.wrapPw, 200) || !sealed(body.wrapRec, 200) || !sealed(body.vault, MAX_VAULT)) fail(400, 'vault');
+      const account = (await accounts.create({ ident, ...pick(body, ['verifier', 'recoveryVerifier', 'wrapPw', 'wrapRec', 'vault']) })) ?? fail(409, 'ident_taken');
+      return { ok: true, id: account.id, version: account.version };
+    }],
+
+    ['GET', /^\/account$/, async (req) => accountView(await accountOf(req))],
+
+    // Fiche de secours : ouvre le coffre sans le mot de passe, pour en choisir un nouveau.
+    ['GET', /^\/account\/recover$/, async (req) => {
+      const account = await accountOf(req, 'rec');
+      return { ok: true, id: account.id, wrapRec: account.wrapRec, vault: account.vault, version: account.version };
+    }],
+
+    ['POST', /^\/account\/password$/, async (req) => {
+      const recovery = (req.headers.authorization ?? '').startsWith('Recovery ');
+      const account = await accountOf(req, recovery ? 'rec' : 'acc');
+      const body = await readJson(req);
+      if (!HEX64.test(body.verifier ?? '') || !sealed(body.wrapPw, 200)) fail(400, 'verifier');
+      // Le nouveau mot de passe est dérivé de l'identifiant : une faute de frappe rendrait le compte
+      // impossible à ouvrir ensuite. On vérifie donc l'identifiant (par son empreinte) avant d'accepter.
+      const ident = typeof body.ident === 'string' ? body.ident.trim().toLowerCase() : '';
+      if (recovery && accounts.identHash(ident) !== account.identHash) fail(400, 'ident');
+      await accounts.setPassword(account, body.verifier, body.wrapPw);
+      return { ok: true };
+    }],
+
+    ['POST', /^\/account\/recovery$/, async (req) => {
+      const account = await accountOf(req);
+      const body = await readJson(req);
+      if (!HEX64.test(body.recoveryVerifier ?? '') || !sealed(body.wrapRec, 200)) fail(400, 'verifier');
+      await accounts.setRecovery(account, body.recoveryVerifier, body.wrapRec);
+      return { ok: true };
+    }],
+
+    ['POST', /^\/account\/vault$/, async (req) => {
+      const account = await accountOf(req);
+      const body = await readJson(req);
+      if (!sealed(body.vault, MAX_VAULT) || !Number.isInteger(body.version)) fail(400, 'vault');
+      return { ok: true, version: (await accounts.setVault(account, body.vault, body.version)) ?? fail(409, 'conflict') };
+    }],
+
+    // Rattache un lot au compte (preuve : le jeton du lot) : ses requêtes profitent du Pro du compte.
+    ['POST', /^\/account\/link$/, async (req) => {
+      const account = await accountOf(req);
+      const body = await readJson(req);
+      const lot = (await store.lotByAuth(body.lotAuth)) ?? fail(404, 'invalid');
+      if (lot.owner !== account.id) {
+        lot.owner = account.id;
+        await store.saveLot(lot);
+      }
+      return { ok: true };
+    }],
+
+    ['POST', /^\/account\/delete$/, async (req) => {
+      await accounts.remove(await accountOf(req));
+      return { ok: true };
+    }],
+
+    // Stripe prévient d'un paiement : signature vérifiée, chaque événement traité une seule fois.
+    ['POST', /^\/stripe\/webhook$/, async (req) => {
+      const raw = await readRaw(req);
+      if (!verifySignature(raw, req.headers['stripe-signature'], config.stripeWebhookSecret)) fail(400, 'signature');
+      let event;
+      try {
+        event = JSON.parse(raw);
+      } catch {
+        fail(400, 'bad_json');
+      }
+      if (await accounts.alreadyHandled(event.id)) return { ok: true, duplicate: true };
+      return { ok: true, result: await applyEvent(event, accounts) };
+    }],
   ];
 
   /** Traite la requête si elle vise l'API ; renvoie false sinon. */
@@ -451,24 +585,33 @@ export function createApi({ config, store, tokens, events }) {
         sendJson(res, err.status, { ok: false, error: err.code });
         return true;
       }
-      if (!events.subscribe(sse[1], req, res)) sendJson(res, 503, { ok: false, error: 'busy' });
+      // Les dernières places de temps réel sont gardées pour les lots Pro ; les autres pages passent
+      // alors en vérification périodique (même résultat, quelques secondes plus tard).
+      const reserved = events.clients >= events.maxClients * 0.8;
+      const pro = reserved ? await lotIsPro(Number(new URL(req.url, 'http://x').searchParams.get('l'))) : true;
+      if (!pro || !events.subscribe(sse[1], req, res)) sendJson(res, 503, { ok: false, error: 'busy' });
       return true;
     }
-    for (const [method, pattern, handler] of routes) {
-      const match = pattern.exec(pathname);
-      if (!match) continue;
-      try {
-        if (req.method !== method) fail(405, 'method');
-        sendJson(res, 200, await handler(req, match.slice(1)));
-      } catch (err) {
-        if (err.status) sendJson(res, err.status, { ok: false, error: err.code });
-        else {
-          console.error(err);
-          sendJson(res, 500, { ok: false, error: 'server' });
-        }
+    // Une même adresse peut avoir plusieurs méthodes (GET /account, POST /account).
+    const matching = routes.filter(([, pattern]) => pattern.test(pathname));
+    if (matching.length === 0) return false;
+    const [method, pattern, handler] = matching.find(([m]) => m === req.method) ?? matching[0];
+    let entered = false;
+    try {
+      if (req.method !== method) fail(405, 'method');
+      // Priorité seulement si le serveur sature : sinon, personne ne paie le coût de la vérification.
+      entered = await gate.enter(gate.saturated ? await priorityOf(req, pathname) : false);
+      if (!entered) fail(503, 'busy');
+      sendJson(res, 200, await handler(req, pattern.exec(pathname).slice(1)));
+    } catch (err) {
+      if (err.status) sendJson(res, err.status, { ok: false, error: err.code });
+      else {
+        console.error(err);
+        sendJson(res, 500, { ok: false, error: 'server' });
       }
-      return true;
+    } finally {
+      if (entered) gate.leave();
     }
-    return false;
+    return true;
   };
 }

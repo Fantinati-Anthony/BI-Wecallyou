@@ -4,6 +4,7 @@ import { createLot, secretToText, b64u } from './crypto.js';
 import { LAYOUTS, DEFAULT_LAYOUT, ticketSheets } from './sheets.js';
 import { printPlan, printOptions, readLogo, pagesFor } from './print.js';
 import { supportCard, nudgeAfterPrint, loadSupport } from './donate.js';
+import { session, sync } from './account.js';
 
 const LIFETIMES = [1, 3, 6, 12, 24, 48];
 const DEFAULT_LIFETIME = 6;
@@ -69,6 +70,7 @@ form.addEventListener('submit', async (event) => {
     const res = await api('/lots', { body: { name, from, to, ttl: Number(ttlSelect.value), channels, promo, link, ...lot.request } });
     if (!res.ok) return showError(res.error);
     lots.save(res.lot, { key: secretToText(lot.secret), material: b64u.encode(lot.material), name, password: Boolean(password.value) });
+    if (session.get()) await sync(); // connecté : le lot rejoint le compte (et son statut Pro)
     const options = {
       perPage: Number(layoutSelect.value),
       showNumber: form.elements.showNumber.checked,

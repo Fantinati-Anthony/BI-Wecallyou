@@ -7,6 +7,22 @@ import { composer, needsComposer, groupOf, parseNumbers } from './message.js';
 import { LAYOUTS, keySheet, fillPrintRoot } from './sheets.js';
 import { printPlan, printOptions, readLogo } from './print.js';
 import { supportCard, loadSupport } from './donate.js';
+import { session, sync, removeLot } from './account.js';
+
+/** Ligne du compte en haut de l'espace commerçant : Pro, gratuit, ou invitation (facultative). */
+function accountLine(lot) {
+  const account = session.get();
+  if (!account) return h('p', { class: 'small' }, h('a', { href: '/compte' }, `👤 ${t('acc_login_link')}`));
+  const pro = account.premiumUntil && account.premiumUntil > Date.now();
+  return h(
+    'div',
+    { class: 'pro-line small' },
+    h('a', { href: '/compte' }, `👤 ${account.ident}`),
+    pro || lot.pro
+      ? h('span', { class: 'badge' }, t('m_account_pro', { date: new Date(account.premiumUntil).toLocaleDateString(LANG) }))
+      : h('a', { href: '/soutenir' }, t('m_account_free')),
+  );
+}
 
 translatePage();
 
@@ -59,6 +75,7 @@ function connectView({ key = '', needsPassword = false, message = '' } = {}) {
     }
     await openLot(material, lot.wrapped); // vérifie que les clés privées s'ouvrent bien
     lots.save(lot.lot, { key: secretToText(secret), material: b64u.encode(material), name: lot.name, password: Boolean(pwInput.value) });
+    if (session.get()) await sync(); // le lot rejoint aussi le compte
     dashboard(lot.lot);
   });
   const others = Object.entries(lots.all());
@@ -66,6 +83,7 @@ function connectView({ key = '', needsPassword = false, message = '' } = {}) {
     app,
     form,
     others.length > 0 && lotSwitcher(),
+    !session.get() && h('p', { class: 'center' }, h('a', { href: '/compte' }, `👤 ${t('acc_login_link')}`)),
     h('p', { class: 'center' }, h('a', { href: '/' }, t('m_new_lot'))),
   );
   (needsPassword && key ? pwInput : keyInput).focus();
@@ -115,7 +133,7 @@ async function dashboard(lotId) {
     tabs.append(h('button', { type: 'button', class: 'btn btn-soft', 'data-tab': name, onclick: () => show(name) }, t(key)));
   }
   const donation = await supportCard({ context: 'dashboard', brand: info.brand });
-  render(app, h('h1', {}, lot.name), tabs, panel, donation);
+  render(app, h('h1', {}, lot.name), accountLine(lot), tabs, panel, donation);
   show('call');
 }
 
@@ -541,9 +559,9 @@ function settingsTab(panel, { lot, access, reload }) {
   });
 
   const forget = h('button', { type: 'button', class: 'btn btn-ghost btn-block' }, t('m_forget'));
-  forget.addEventListener('click', () => {
+  forget.addEventListener('click', async () => {
     if (!confirm(t('m_forget_confirm'))) return;
-    lots.forget(lot.lot);
+    await removeLot(lot.lot);
     const next = Object.keys(lots.all())[0];
     if (next) dashboard(Number(next));
     else connectView();
@@ -559,6 +577,9 @@ function settingsTab(panel, { lot, access, reload }) {
 }
 
 /* ------------------------------------------------------------------ départ */
+
+// Compte connecté : les lots du compte arrivent sur ce téléphone (et inversement).
+if (session.get()) await sync();
 
 const hash = decodeURIComponent(location.hash.slice(1));
 if (hash) {

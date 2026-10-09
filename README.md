@@ -23,6 +23,8 @@ Snacks, food trucks, boulangeries, buvettes, tournois sportifs, vestiaires, cord
 - **Votre message** (facultatif) : partenaire, sponsor, réseaux sociaux, affiché sur la page du ticket et ajouté aux messages. C’est la seule « pub » possible : celle du créateur du lot.
 - **Français et anglais**, selon la langue du téléphone ; chaque client reçoit son message dans sa langue.
 - **Dons** ponctuels ou mensuels via Stripe, présentés au moment de la création des tickets, sans jamais bloquer.
+- **Compte facultatif, chiffré** : un identifiant et un mot de passe (pas d’e-mail) pour retrouver tous ses lots sur n’importe quel téléphone. Mot de passe oublié → **fiche de secours** imprimable et téléchargeable (identifiant + clé de secours + QR).
+- **Statut Pro** : chaque don active le Pro du compte pendant un mois (en continu avec un don mensuel, puis il s’arrête seul à la fin de la période payée). En cas d’affluence, les lots Pro passent en priorité ; le gratuit n’est jamais ralenti exprès.
 
 ## Sécurité et vie privée
 
@@ -36,6 +38,8 @@ Le principe : **le serveur ne sait rien d’utile**.
 | Ticket imprimé | Nulle part : le code du QR se vérifie par le calcul | — |
 | Journal d’un ticket (scanné, appelé…) | Serveur, sans donnée personnelle | Le commerçant ; effacé en fin de vie du ticket |
 | Statistiques | Serveur, compteurs par jour | Le commerçant ; 90 jours |
+| Compte (facultatif) | Serveur : empreinte de l’identifiant, coffre chiffré | Le titulaire, avec son mot de passe ou sa fiche de secours |
+| Paiements | Stripe | Stripe ; le serveur ne reçoit que « payé, compte n° … » (webhook signé) |
 
 **Cryptographie** (WebCrypto, dans les navigateurs) :
 
@@ -119,6 +123,18 @@ Stockage : de simples fichiers (`server/data/`), pas de base de données. Un tic
 3. Collez les adresses dans `public/soutien.json` (champs `url`), ajustez `costs`, `goal_month` et, chaque mois, `raised_month`.
 
 Tant qu’un lien est vide, le bouton affiche « Les dons ouvrent très bientôt ».
+
+### Activer le statut Pro automatique (webhook Stripe)
+
+Quand un donateur est connecté à son compte, le lien de paiement transmet son identifiant de compte (`client_reference_id`). Pour que le serveur l’apprenne :
+
+1. Stripe > *Développeurs* > *Webhooks* > *Ajouter un endpoint* : `https://votre-domaine/api/stripe/webhook`.
+2. Événements : `checkout.session.completed` et `invoice.paid`.
+3. Copiez le *secret de signature* (`whsec_…`) dans `server/config.json`, champ `stripeWebhookSecret`, puis redémarrez l’application.
+
+Règles appliquées : un don ponctuel ajoute un mois de Pro (cumulable) ; un don mensuel prolonge le Pro jusqu’à la fin de chaque période payée (+ 3 jours de marge) ; s’il s’arrête, le Pro se termine à la fin de la période déjà payée. Chaque événement n’est traité qu’une fois, et seule une signature valide est acceptée.
+
+> Un don qui donne droit à un avantage n’est plus juridiquement un « don » : faites valider la présentation (et la fiscalité) par un comptable.
 
 ## Développer
 

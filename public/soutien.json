@@ -5,6 +5,29 @@
   "tax_deductible": false,
   "fee_percent": 1.5,
   "fee_fixed": 0.25,
+  "roadmap": [
+    {
+      "month": 21,
+      "fr": "Aujourd’hui : un serveur mutualisé en France (o2switch)",
+      "en": "Today: a shared server in France (o2switch)",
+      "detail_fr": "Gratuit pour tous. Sa capacité est limitée : en cas d’affluence, les lots des donateurs (Pro) passent en priorité, les autres attendent quelques secondes.",
+      "detail_en": "Free for everyone. Its capacity is limited: when it gets busy, donors’ batches (Pro) go first, others wait a few seconds."
+    },
+    {
+      "month": 60,
+      "fr": "Palier 2 : serveurs à la demande (Scaleway, France) et base Neon (Europe)",
+      "en": "Step 2: on-demand servers (Scaleway, France) and a Neon database (Europe)",
+      "detail_fr": "Plusieurs copies du service qui se multiplient seules quand la charge monte, sans intervention humaine. Plus d’attente aux heures de pointe, pour tout le monde.",
+      "detail_en": "Several copies of the service that multiply on their own when load rises, with no human intervention. No more waiting at peak times, for everyone."
+    },
+    {
+      "month": 150,
+      "fr": "Palier 3 : secours dans une seconde zone et temps de développement",
+      "en": "Step 3: backup in a second zone and development time",
+      "detail_fr": "Le service tient même si un centre de données tombe, et du temps rémunéré fait évoluer l’outil (nouvelles fonctions, nouvelles langues).",
+      "detail_en": "The service keeps running even if a data centre fails, and paid time keeps improving the tool (new features, new languages)."
+    }
+  ],
   "costs": [
     { "fr": "Hébergement (o2switch Cloud, prix normal)", "en": "Hosting (o2switch Cloud, regular price)", "month": 16 },
     { "fr": "Noms de domaine", "en": "Domain names", "month": 5 },

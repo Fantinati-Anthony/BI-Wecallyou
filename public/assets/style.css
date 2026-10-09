@@ -225,6 +225,19 @@ details[open] > summary { margin-bottom: 10px; }
 .screen-qr svg { width: 200px; height: 200px; margin: 0 auto; background: #fff; padding: 10px; border-radius: 12px; }
 .screen-link { overflow-wrap: anywhere; text-align: center; }
 
+.kit-key {
+  font: 700 1.35rem/1.4 ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace; letter-spacing: 0.04em;
+  background: var(--surface-2); border: 2px dashed var(--gold); border-radius: 12px; padding: 14px; text-align: center; word-break: break-all;
+}
+.pro-line { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+.roadmap { list-style: none; margin: 0; padding: 0; }
+.roadmap li { position: relative; padding: 0 0 18px 34px; }
+.roadmap li::before { content: ''; position: absolute; left: 8px; top: 6px; width: 14px; height: 14px; border-radius: 50%; border: 3px solid var(--line); background: var(--surface); }
+.roadmap li.done::before { border-color: var(--ok); background: var(--ok); }
+.roadmap li.next::before { border-color: var(--gold); }
+.roadmap li:not(:last-child)::after { content: ''; position: absolute; left: 14px; top: 22px; bottom: 0; width: 2px; background: var(--line); }
+.roadmap .progress { margin-top: 8px; }
+
 /* ------------------------------------------------------------ écran public */
 
 .screen-body { background: #0f0e0c; color: #fff; }

@@ -4,10 +4,10 @@
 import { chromium } from 'playwright';
 import jsQR from 'jsqr';
 import { PNG } from 'pngjs';
-import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { randomBytes } from 'node:crypto';
+import { randomBytes, createHmac } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
 import { createServer } from '../server/lib/server.js';
@@ -29,6 +29,7 @@ const { server } = await createServer({
   basePath: '/api',
   tokenKey: randomBytes(16),
   statusKey: randomBytes(32),
+  stripeWebhookSecret: 'whsec_e2e',
 });
 await new Promise((resolve) => server.listen(PORT, resolve));
 
@@ -221,6 +222,66 @@ try {
   await p2.waitForSelector('.waiting-list');
   assert.equal(p2.url(), `${BASE}/m`);
   step('second téléphone : refusé sans le bon mot de passe, accepté avec');
+
+  /* ------------------------------------- compte, fiche de secours, Pro */
+  await m.goto(`${BASE}/compte#creer`);
+  await m.fill('#si', 'snack.tony');
+  await m.fill('#sp', 'mot de passe du snack');
+  await m.fill('#sp2', 'mot de passe du snack');
+  await m.click('form button[type=submit]');
+  await m.waitForSelector('.kit-key', { timeout: 30_000 });
+  const recoveryKey = (await m.locator('.kit-key').textContent()).trim();
+  assert.match(recoveryKey, /^([A-Z2-7]{4}-){6}[A-Z2-7]{2}$/);
+  await shot(m, '16-fiche-de-secours');
+  const [download] = await Promise.all([m.waitForEvent('download'), m.getByRole('button', { name: /Télécharger le fichier/ }).click()]);
+  assert.equal(download.suggestedFilename(), 'wecallyou-secours-snack.tony.txt');
+  const kitText = readFileSync(await download.path(), 'utf8');
+  assert.match(kitText, /snack\.tony/);
+  assert.match(kitText, new RegExp(recoveryKey));
+  await m.check('#kit-ok');
+  await m.getByRole('button', { name: 'Continuer' }).click();
+  await m.waitForURL(`${BASE}/m`);
+  step('compte créé, fiche de secours téléchargée (identifiant + clé)');
+
+  // Un autre téléphone : identifiant + mot de passe → il retrouve le lot, sans la page 1.
+  const phone3 = await browser.newContext({ locale: 'fr-FR', viewport: { width: 390, height: 844 } });
+  const p3 = await phone3.newPage();
+  p3.on('pageerror', (err) => errors.push(err.message));
+  await p3.goto(`${BASE}/compte`);
+  await p3.fill('#li', 'Snack.Tony');
+  await p3.fill('#lp', 'mot de passe du snack');
+  await p3.click('form button[type=submit]');
+  await p3.waitForURL(`${BASE}/m`, { timeout: 30_000 });
+  await p3.waitForSelector('h1:has-text("Snack Tony")');
+  step('autre téléphone : connexion par identifiant, le lot est retrouvé');
+
+  // Mot de passe oublié : la fiche de secours (son QR) permet d'en choisir un nouveau.
+  const phone4 = await browser.newContext({ locale: 'fr-FR', viewport: { width: 390, height: 844 } });
+  const p4 = await phone4.newPage();
+  p4.on('pageerror', (err) => errors.push(err.message));
+  await p4.goto(`${BASE}/compte#secours=snack.tony:${recoveryKey.replaceAll('-', '')}`);
+  assert.equal(await p4.inputValue('#ri'), 'snack.tony');
+  await p4.fill('#rp', 'nouveau mot de passe');
+  await p4.fill('#rp2', 'nouveau mot de passe');
+  await p4.click('form button[type=submit]');
+  await p4.waitForSelector('h2:has-text("Mes lots")', { timeout: 30_000 });
+  assert.match(await p4.locator('.waiting-list').textContent(), /Snack Tony/);
+  await shot(p4, '17-compte');
+  step('mot de passe oublié : fiche de secours → nouveau mot de passe, rien perdu');
+
+  // Don (Stripe, simulé et signé) : le compte passe Pro, le badge apparaît.
+  const accountId = await m.evaluate(() => JSON.parse(localStorage.getItem('wcy:account')).id);
+  const event = JSON.stringify({ id: 'evt_e2e', type: 'checkout.session.completed', data: { object: { client_reference_id: accountId, mode: 'payment', customer: null } } });
+  const ts = Math.floor(Date.now() / 1000);
+  const signature = createHmac('sha256', 'whsec_e2e').update(`${ts}.${event}`).digest('hex');
+  const hook = await fetch(`${BASE}/api/stripe/webhook`, { method: 'POST', headers: { 'Stripe-Signature': `t=${ts},v1=${signature}` }, body: event });
+  assert.equal((await hook.json()).result, 'pro');
+  await p4.goto(`${BASE}/compte`);
+  await p4.waitForSelector('.banner-ok:has-text("Pro jusqu")');
+  await p4.goto(`${BASE}/m`);
+  await p4.waitForSelector('.pro-line .badge:has-text("Pro")');
+  await shot(p4, '18-pro');
+  step('don reçu : statut Pro actif, visible dans l’espace commerçant');
 
   /* ------------------------------------------- disposition 24 par page */
   await m.goto(`${BASE}/m`);

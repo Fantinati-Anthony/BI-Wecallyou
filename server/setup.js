@@ -35,6 +35,9 @@ const config = {
   tokenKey: randomBytes(16).toString('hex'),
   // Clé des noms de fichiers d'état (impossibles à deviner sans elle).
   statusKey: randomBytes(32).toString('hex'),
+  // À remplir avec le secret du webhook Stripe (whsec_…) pour activer le Pro des donateurs.
+  stripeWebhookSecret: '',
+  capacity: 40,
 };
 
 writeFileSync(values.config, `${JSON.stringify(config, null, 2)}\n`, { mode: 0o600 });

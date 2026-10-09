@@ -1,5 +1,5 @@
 // Page « Soutenir » : encart de dons + tableau transparent des frais (depuis /soutien.json).
-import { h, LANG, render, translatePage } from './common.js';
+import { h, t, LANG, render, translatePage } from './common.js';
 import { supportCard, loadSupport } from './donate.js';
 
 translatePage();
@@ -8,6 +8,28 @@ const cfg = await loadSupport();
 document.getElementById('card').append(await supportCard({ context: 'support' }));
 
 if (cfg) {
+  // Feuille de route : chaque palier se débloque quand les dons mensuels atteignent son coût.
+  const stages = cfg.roadmap ?? [];
+  const nextIndex = stages.findIndex((s) => cfg.raised_month < s.month);
+  render(
+    document.getElementById('roadmap'),
+    stages.map((stage, i) => {
+      const reached = i === 0 || cfg.raised_month >= stage.month;
+      const bar = h('span');
+      requestAnimationFrame(() => {
+        bar.style.width = `${Math.min(100, Math.round((cfg.raised_month / stage.month) * 100))}%`;
+      });
+      return h(
+        'li',
+        { class: reached ? 'done' : i === nextIndex ? 'next' : '' },
+        h('strong', {}, stage[LANG] ?? stage.fr),
+        h('p', { class: 'small' }, stage[`detail_${LANG}`] ?? stage.detail_fr),
+        h('span', { class: 'badge' }, t('road_month', { amount: stage.month }), reached && i > 0 ? ` · ${t('road_reached')}` : ''),
+        i > 0 && !reached && h('div', { class: 'progress' }, bar),
+      );
+    }),
+  );
+
   const total = cfg.costs.reduce((sum, c) => sum + c.month, 0);
   render(
     document.getElementById('costs'),

@@ -168,6 +168,91 @@ export async function openLot(material, wrapped) {
   };
 }
 
+/* ------------------------------------------------- comptes (facultatifs) */
+//
+// Le mot de passe (étiré par PBKDF2) et la clé de secours (imprimée sur la fiche) ouvrent chacun la
+// même « clé du coffre ». Le coffre, chiffré avec elle, contient les clés des lots du compte.
+// Le serveur ne reçoit que des empreintes et des blocs chiffrés : sans mot de passe ni fiche de
+// secours, personne (pas même nous) ne peut ouvrir un compte.
+
+export const normalizeIdent = (ident) => String(ident).trim().toLowerCase();
+
+async function sealBytes(key, bytes) {
+  const iv = randomBytes(12);
+  return b64u.encode(concat(iv, new Uint8Array(await subtle.encrypt({ name: 'AES-GCM', iv }, key, bytes))));
+}
+
+async function openBytes(key, sealed) {
+  const bytes = b64u.decode(sealed);
+  return new Uint8Array(await subtle.decrypt({ name: 'AES-GCM', iv: bytes.slice(0, 12) }, key, bytes.slice(12)));
+}
+
+async function accessFrom(seed, label) {
+  return {
+    token: b64u.encode(await hkdf(seed, EMPTY, text.encode(`wecallyou/account/${label}/auth`), 32)),
+    wrapKey: await aesKey(await hkdf(seed, EMPTY, text.encode(`wecallyou/account/${label}/wrap`), 32)),
+  };
+}
+
+/** Accès dérivé de l'identifiant et du mot de passe (lent exprès : 600 000 tours). */
+export async function loginKeys(ident, password) {
+  const pw = await subtle.importKey('raw', text.encode(password.normalize('NFKC')), 'PBKDF2', false, ['deriveBits']);
+  const salt = text.encode(`wecallyou/account/${normalizeIdent(ident)}`);
+  const seed = new Uint8Array(await subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt, iterations: PASSWORD_ITERATIONS }, pw, 256));
+  return accessFrom(seed, 'password');
+}
+
+/** Accès dérivé de la clé de secours (16 octets aléatoires, imprimés sur la fiche). */
+export const recoveryKeys = (recovery) => accessFrom(recovery, 'recovery');
+
+export async function openVaultKey(wrapKey, wrapped) {
+  return b64u.encode(await openBytes(wrapKey, wrapped));
+}
+
+export async function readVault(vaultKey, vault) {
+  const plain = await openBytes(await aesKey(b64u.decode(vaultKey)), vault);
+  return JSON.parse(new TextDecoder().decode(plain));
+}
+
+export async function writeVault(vaultKey, data) {
+  return sealBytes(await aesKey(b64u.decode(vaultKey)), text.encode(JSON.stringify(data)));
+}
+
+/** Nouveau compte : clé du coffre, clé de secours, et tout ce que le serveur doit garder. */
+export async function createAccount(ident, password) {
+  const vaultKey = randomBytes(32);
+  const recovery = randomBytes(16);
+  const pw = await loginKeys(ident, password);
+  const rec = await recoveryKeys(recovery);
+  const session = { token: pw.token, vaultKey: b64u.encode(vaultKey) };
+  return {
+    recovery,
+    session,
+    recoveryToken: rec.token,
+    request: {
+      ident: normalizeIdent(ident),
+      verifier: await verifierOf(pw.token),
+      recoveryVerifier: await verifierOf(rec.token),
+      wrapPw: await sealBytes(pw.wrapKey, vaultKey),
+      wrapRec: await sealBytes(rec.wrapKey, vaultKey),
+      vault: await writeVault(session.vaultKey, { lots: {}, recovery: secretToText(recovery) }),
+    },
+  };
+}
+
+/** Nouveau mot de passe (connecté, ou après la fiche de secours) : le coffre ne change pas. */
+export async function newPassword(ident, password, vaultKey) {
+  const pw = await loginKeys(ident, password);
+  return { token: pw.token, request: { verifier: await verifierOf(pw.token), wrapPw: await sealBytes(pw.wrapKey, b64u.decode(vaultKey)) } };
+}
+
+/** Nouvelle clé de secours (l'ancienne fiche ne sert plus à rien). */
+export async function newRecovery(vaultKey) {
+  const recovery = randomBytes(16);
+  const rec = await recoveryKeys(recovery);
+  return { recovery, request: { recoveryVerifier: await verifierOf(rec.token), wrapRec: await sealBytes(rec.wrapKey, b64u.decode(vaultKey)) } };
+}
+
 /* ------------------------------------- coordonnées : client → commerçant */
 
 async function contactKey(sharedSecret, ephemeralPublic) {

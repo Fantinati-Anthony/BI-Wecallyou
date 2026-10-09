@@ -32,14 +32,32 @@ async function age(file, now) {
 
 const removeIfEmpty = (dir) => fs.rmdir(dir).catch(() => {});
 
+/** Comptes inutilisés depuis 400 jours, et traces d'événements Stripe de plus de 30 jours. */
+async function purgeAccounts(accounts, now, done) {
+  for (const name of await list(accounts.eventsDir)) {
+    if ((await age(path.join(accounts.eventsDir, name), now)) > 30 * DAY) await fs.rm(path.join(accounts.eventsDir, name), { force: true });
+  }
+  for (const name of await list(accounts.dir)) {
+    if (!name.endsWith('.json')) continue;
+    if ((await age(path.join(accounts.dir, name), now)) > RETENTION.lot) {
+      const account = await accounts.get(name.slice(0, -5));
+      if (account && !accounts.isPro(account)) {
+        await accounts.remove(account);
+        done.accounts++;
+      }
+    }
+  }
+}
+
 /**
  * Efface tout ce qui a fait son temps. Lancé toutes les 10 minutes par le serveur (ou par cron).
  *  1. Les tickets arrivés en fin de vie (durée du lot, comptée depuis le premier scan).
  *  2. Les coordonnées chiffrées, 30 min après l'appel du ticket.
  *  3. Tout reste orphelin de plus de 48 h, les statistiques de plus de 90 jours, les lots oubliés.
  */
-export async function purge(store, now = Date.now()) {
-  const done = { tickets: 0, contacts: 0, orphans: 0, stats: 0, lots: 0 };
+export async function purge(store, now = Date.now(), accounts = null) {
+  const done = { tickets: 0, contacts: 0, orphans: 0, stats: 0, lots: 0, accounts: 0 };
+  if (accounts) await purgeAccounts(accounts, now, done);
   const lifetimes = new Map();
   const lifetimeOf = async (lot) => {
     if (!lifetimes.has(lot)) {

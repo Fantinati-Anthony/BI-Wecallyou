@@ -14,6 +14,9 @@ Merci de ne **pas** ouvrir d’issue publique. Utilisez l’onglet *Security > R
 | Personne qui trouve la page 1, lot **sans** mot de passe | Accès au lot : appels et inscrits en cours | — |
 | Personne qui trouve la page 1, lot **avec** mot de passe | Doit deviner le mot de passe (PBKDF2, 600 000 tours, essais en ligne limités) | Accès au lot tant que le mot de passe tient |
 | Réseau (Wi-Fi public…) | Rien : HTTPS partout, HSTS | — |
+| Accès complet au serveur, côté comptes | Empreintes d’identifiants, coffres chiffrés, dates de fin de Pro | Identifiants, mots de passe, lots des comptes (coffre chiffré dans le navigateur) |
+| Personne qui trouve une fiche de secours **et** connaît l’identifiant | Peut choisir un nouveau mot de passe et prendre la main sur le compte | Rien sans l’identifiant ; une nouvelle fiche révoque l’ancienne |
+| Faux paiement envoyé au webhook | Rien : signature Stripe vérifiée, événements rejoués ignorés | — |
 | Google, Apple, Mozilla (notifications) | Le fait qu’une notification part | Son contenu (chiffré de bout en bout) |
 
 Hors périmètre : un téléphone de commerçant compromis (il détient la clé des lots qui y sont connectés), et le contenu des SMS, WhatsApp et e-mails une fois envoyés par le commerçant.

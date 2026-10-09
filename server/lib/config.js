@@ -22,5 +22,9 @@ export function loadConfig(file = process.env.TN_CONFIG ?? path.join(SERVER_DIR,
     port: Number(process.env.PORT ?? raw.port ?? 3000),
     tokenKey: Buffer.from(raw.tokenKey, 'hex'),
     statusKey: Buffer.from(raw.statusKey, 'hex'),
+    // Secret du webhook Stripe (whsec_…) : vide = dons sans activation automatique du Pro.
+    stripeWebhookSecret: raw.stripeWebhookSecret ?? '',
+    // Requêtes traitées en même temps par processus avant que la priorité Pro n'entre en jeu.
+    capacity: raw.capacity ?? 40,
   };
 }

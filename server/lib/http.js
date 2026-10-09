@@ -24,7 +24,8 @@ export function sendJson(res, status, data) {
   res.end(body);
 }
 
-export async function readJson(req) {
+/** Corps brut (nécessaire pour vérifier une signature, comme celle de Stripe). */
+export async function readRaw(req) {
   let size = 0;
   const chunks = [];
   for await (const chunk of req) {
@@ -32,8 +33,13 @@ export async function readJson(req) {
     if (size > MAX_BODY) fail(413, 'too_large');
     chunks.push(chunk);
   }
+  return Buffer.concat(chunks).toString('utf8');
+}
+
+export async function readJson(req) {
+  const raw = await readRaw(req);
   try {
-    const data = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+    const data = JSON.parse(raw);
     return data && typeof data === 'object' ? data : {};
   } catch {
     fail(400, 'bad_json');
