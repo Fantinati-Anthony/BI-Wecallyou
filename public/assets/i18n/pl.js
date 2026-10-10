@@ -452,7 +452,7 @@ export default {
   pv_tickets: 'Bilety',
   pv_key: 'Strona z kluczem',
   pv_close: 'Zamknij',
-  pv_sample: 'Przykład: prawdziwe kody QR powstaną razem z kolejką.',
+  pv_sample: 'Przykład',
   pv_impossible: 'Te bilety nie zmieszczą się na tym papierze z czytelnym kodem QR: zmniejsz liczbę kolumn lub wierszy albo wybierz większy papier.',
   pv_qr_warn: 'Uwaga: kody QR {qr} mm są za małe. Po wydruku mogą przestać się skanować. Zmniejsz liczbę kolumn lub wierszy albo drukuj w wysokiej jakości.',
   pv_roll: 'Jeden bilet na stronę: drukarka tnie między biletami.',
@@ -739,4 +739,7 @@ export default {
   vote_link: 'Głosuj, co dalej',
   err_votes_full: 'Wykorzystano wszystkie głosy: wycofaj jeden, aby zagłosować na coś innego.',
   err_idea: 'Na ten pomysł nie można już głosować.',
+
+  // Aperçu : l'explication de la pastille « Exemple », dans un « ? »
+  pv_sample_hint: 'Prawdziwe kody QR powstaną razem z kolejką.',
 };

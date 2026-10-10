@@ -452,7 +452,7 @@ export default {
   pv_tickets: 'Tickets',
   pv_key: 'Sleutelpagina',
   pv_close: 'Sluiten',
-  pv_sample: 'Voorbeeld: de echte QR-codes worden met de wachtrij aangemaakt.',
+  pv_sample: 'Voorbeeld',
   pv_impossible: 'Deze tickets passen niet op dit papier met een leesbare QR-code: verminder het aantal kolommen of rijen, of kies groter papier.',
   pv_qr_warn: 'Let op: QR-codes van {qr} mm zijn te klein. Geprint zijn ze mogelijk niet meer leesbaar. Verminder de kolommen of rijen, of print in hoge kwaliteit.',
   pv_roll: 'Eén ticket per pagina: de printer snijdt na elk ticket.',
@@ -739,4 +739,7 @@ export default {
   vote_link: 'Stem voor wat er komt',
   err_votes_full: 'U hebt al uw stemmen gebruikt: trek er een in om ergens anders op te stemmen.',
   err_idea: 'Over dit idee wordt niet meer gestemd.',
+
+  // Aperçu : l'explication de la pastille « Exemple », dans un « ? »
+  pv_sample_hint: 'De echte QR-codes worden met de wachtrij aangemaakt.',
 };

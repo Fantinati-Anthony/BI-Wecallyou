@@ -702,7 +702,7 @@ export function livePreview() {
     const layout = fitDesign(design, contentOf(design, { ...ctx, last: lastNumber }));
     const page = pageOf(design);
     // « Exemple » en tête des repères : les vrais QR codes naissent avec la file.
-    const sample = h('li', { class: 'pv-sample' }, t('pv_sample'));
+    const sample = h('li', { class: 'pv-sample' }, t('pv_sample'), helpTip(t('pv_sample_hint')));
     const warn = (text) => h('p', { class: 'banner-warn pv-alert' }, icon('warning'), h('span', {}, text));
     if (!layout.ok) {
       render(info, sample, h('li', {}, t('pv_size', { w: mmText(page.w), h: mmText(page.h) })));

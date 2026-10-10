@@ -452,7 +452,7 @@ export default {
   pv_tickets: 'Tichete',
   pv_key: 'Pagina-cheie',
   pv_close: 'Închideți',
-  pv_sample: 'Exemplu: codurile QR reale sunt create odată cu coada.',
+  pv_sample: 'Exemplu',
   pv_impossible: 'Aceste tichete nu încap pe această hârtie cu un cod QR lizibil: reduceți numărul de coloane sau de rânduri ori alegeți o hârtie mai mare.',
   pv_qr_warn: 'Atenție: coduri QR de {qr} mm, prea mici. După imprimare s-ar putea să nu mai poată fi citite. Reduceți coloanele sau rândurile ori imprimați la calitate înaltă.',
   pv_roll: 'Un tichet pe pagină: imprimanta taie între tichete.',
@@ -739,4 +739,7 @@ export default {
   vote_link: 'Votați ce urmează',
   err_votes_full: 'Ați folosit toate voturile: retrageți unul pentru a vota altceva.',
   err_idea: 'Această idee nu mai este supusă votului.',
+
+  // Aperçu : l'explication de la pastille « Exemple », dans un « ? »
+  pv_sample_hint: 'Codurile QR reale sunt create odată cu coada.',
 };

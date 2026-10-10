@@ -452,7 +452,7 @@ export default {
   pv_tickets: 'Tickets',
   pv_key: 'Page clé',
   pv_close: 'Fermer',
-  pv_sample: 'Exemple : les vrais QR codes sont créés avec la file.',
+  pv_sample: 'Exemple',
   pv_impossible: 'Ces tickets ne tiennent pas sur ce papier avec un QR code lisible : réduisez les colonnes ou les lignes, ou choisissez un papier plus grand.',
   pv_qr_warn: 'Attention : QR codes de {qr} mm, trop petits. Une fois imprimés, ils risquent de ne plus se lire. Réduisez les colonnes ou les lignes, ou imprimez en haute qualité.',
   pv_roll: 'Un ticket par page : l’imprimante coupe entre chaque ticket.',
@@ -739,4 +739,7 @@ export default {
   vote_link: 'Votez pour la suite',
   err_votes_full: 'Vous avez utilisé toutes vos voix : retirez-en une pour voter ailleurs.',
   err_idea: 'Cette idée n’est plus soumise au vote.',
+
+  // Aperçu : l'explication de la pastille « Exemple », dans un « ? »
+  pv_sample_hint: 'Les vrais QR codes sont créés avec la file.',
 };

@@ -845,7 +845,8 @@ dialog.act-dialog::backdrop { background: rgb(14 16 19 / 0.55); }
 .pv-info { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 12px 0 6px; padding: 0; list-style: none; }
 .pv-info li { padding: 3px 10px; border-radius: var(--r-pill); background: var(--surface-2); font-size: 0.82rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 .pv-info b { color: var(--text); font-weight: 600; }
-.pv-info .pv-sample { background: var(--brand-soft); color: var(--brand-text); font-weight: 600; }
+.pv-info .pv-sample { display: inline-flex; align-items: center; gap: 6px; padding-right: 4px; background: var(--brand-soft); color: var(--brand-text); font-weight: 600; }
+.pv-sample .tip-btn { width: 18px; height: 18px; border-color: transparent; background: var(--surface); color: var(--brand-text); font-size: 0.7rem; }
 /* QR trop petit, papier trop petit : une alerte qu'on ne peut pas rater */
 .pv-alerts:not(:empty) { display: grid; gap: 8px; margin-bottom: 12px; }
 .pv-alerts > p { margin: 0; }

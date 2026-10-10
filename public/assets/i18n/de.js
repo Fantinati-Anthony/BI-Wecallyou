@@ -452,7 +452,7 @@ export default {
   pv_tickets: 'Tickets',
   pv_key: 'Schlüsselseite',
   pv_close: 'Schließen',
-  pv_sample: 'Beispiel: Die echten QR-Codes werden mit der Warteschlange erstellt.',
+  pv_sample: 'Beispiel',
   pv_impossible: 'Diese Tickets passen mit lesbarem QR-Code nicht auf dieses Papier: Verringern Sie die Spalten oder Zeilen oder wählen Sie ein größeres Papier.',
   pv_qr_warn: 'Achtung: QR-Codes mit {qr} mm sind zu klein. Gedruckt sind sie womöglich nicht mehr lesbar. Verringern Sie Spalten oder Zeilen oder drucken Sie in hoher Qualität.',
   pv_roll: 'Ein Ticket pro Seite: Der Drucker schneidet zwischen den Tickets.',
@@ -739,4 +739,7 @@ export default {
   vote_link: 'Stimmen Sie für das Nächste ab',
   err_votes_full: 'Sie haben alle Ihre Stimmen vergeben: Ziehen Sie eine zurück, um anders abzustimmen.',
   err_idea: 'Über diese Idee wird nicht mehr abgestimmt.',
+
+  // Aperçu : l'explication de la pastille « Exemple », dans un « ? »
+  pv_sample_hint: 'Die echten QR-Codes werden mit der Warteschlange erstellt.',
 };

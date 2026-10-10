@@ -452,7 +452,7 @@ export default {
   pv_tickets: 'Biglietti',
   pv_key: 'Pagina chiave',
   pv_close: 'Chiudi',
-  pv_sample: 'Esempio: i veri QR code vengono creati con la coda.',
+  pv_sample: 'Esempio',
   pv_impossible: 'Questi biglietti non stanno su questa carta con un QR code leggibile: riduca colonne o righe, oppure scelga una carta più grande.',
   pv_qr_warn: 'Attenzione: QR code da {qr} mm, troppo piccoli. Una volta stampati potrebbero non leggersi più. Riduca le colonne o le righe, oppure stampi in alta qualità.',
   pv_roll: 'Un biglietto per pagina: la stampante taglia tra un biglietto e l’altro.',
@@ -739,4 +739,7 @@ export default {
   vote_link: 'Voti per le prossime novità',
   err_votes_full: 'Ha usato tutti i suoi voti: ne ritiri uno per votare altrove.',
   err_idea: 'Questa idea non è più in votazione.',
+
+  // Aperçu : l'explication de la pastille « Exemple », dans un « ? »
+  pv_sample_hint: 'I veri QR code vengono creati con la coda.',
 };

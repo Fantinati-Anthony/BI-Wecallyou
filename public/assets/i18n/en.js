@@ -452,7 +452,7 @@ export default {
   pv_tickets: 'Tickets',
   pv_key: 'Key page',
   pv_close: 'Close',
-  pv_sample: 'Sample: the real QR codes are created with the queue.',
+  pv_sample: 'Sample',
   pv_impossible: 'These tickets don’t fit on this paper with a readable QR code: reduce columns or rows, or choose a larger paper.',
   pv_qr_warn: 'Warning: {qr} mm QR codes are too small. Once printed, they may no longer scan. Reduce columns or rows, or print in high quality.',
   pv_roll: 'One ticket per page: the printer cuts between tickets.',
@@ -739,4 +739,7 @@ export default {
   vote_link: 'Vote for what’s next',
   err_votes_full: 'You’ve used all your votes: remove one to vote elsewhere.',
   err_idea: 'This idea is no longer open for voting.',
+
+  // Aperçu : l'explication de la pastille « Exemple », dans un « ? »
+  pv_sample_hint: 'The real QR codes are created with the queue.',
 };

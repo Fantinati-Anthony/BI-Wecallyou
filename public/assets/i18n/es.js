@@ -452,7 +452,7 @@ export default {
   pv_tickets: 'Tickets',
   pv_key: 'Página de clave',
   pv_close: 'Cerrar',
-  pv_sample: 'Ejemplo: los códigos QR reales se crean con la cola.',
+  pv_sample: 'Ejemplo',
   pv_impossible: 'Estos tickets no caben en este papel con un código QR legible: reduzca las columnas o las filas, o elija un papel más grande.',
   pv_qr_warn: 'Atención: códigos QR de {qr} mm, demasiado pequeños. Una vez impresos, puede que ya no se lean. Reduzca las columnas o las filas, o imprima en alta calidad.',
   pv_roll: 'Un ticket por página: la impresora corta entre cada ticket.',
@@ -739,4 +739,7 @@ export default {
   vote_link: 'Vote por lo siguiente',
   err_votes_full: 'Ha usado todos sus votos: retire uno para votar por otra idea.',
   err_idea: 'Esta idea ya no está en votación.',
+
+  // Aperçu : l'explication de la pastille « Exemple », dans un « ? »
+  pv_sample_hint: 'Los códigos QR reales se crean con la cola.',
 };
