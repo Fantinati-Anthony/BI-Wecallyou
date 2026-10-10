@@ -88,6 +88,7 @@ server/            API Node.js 24, AUCUNE dépendance npm
   start.js         démarrage direct (node start.js)
   setup.js         création de config.json (clés secrètes)
   purge.js         purge manuelle (le serveur purge seul toutes les 10 min)
+  charge.js        test de charge (en local, ou en douceur sur le site)
   lib/             api, stockage en fichiers, jetons, relais, temps réel (SSE), purge
   test/            tests (node --test)
 e2e/               parcours complet dans Chromium (Playwright)
@@ -171,6 +172,8 @@ cd server
 node setup.js --local --domain=localhost:3000   # crée config.json (serveStatic: true)
 node start.js                                    # http://localhost:3000
 npm test                                         # tests serveur, cryptographie, mise en page
+npm run charge                                   # test de charge en local (un processus, jusqu’à 1 600 clients en direct)
+node charge.js --site https://wecall.you         # sur le site, en douceur : connexions en direct seulement, rien n’est créé
 cd ../e2e && npm install && node run.mjs         # parcours complet dans Chromium
 node shots.mjs                                   # captures de l’accueil (public/assets/img)
 ```
