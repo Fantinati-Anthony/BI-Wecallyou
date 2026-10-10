@@ -778,4 +778,22 @@ export default {
   home_vision_after: 'And then',
   home_vision_after_text: 'AI serving the common good, with choices made by people, as equals.',
   home_vision_cta: 'Join the adventure',
+
+  // Essai, ouverture pour 24 h, fermeture et suppression d'une file
+  lot_state_test: 'Trial: everything works, but nothing is counted. When you open the queue, the trial tickets start from zero.',
+  lot_state_open: 'Open until {until}.',
+  lot_state_closed: 'Closed since {since}: no new tickets or calls. Customers already in the queue keep their page.',
+  lot_open: 'Open the queue for 24 h',
+  lot_reopen: 'Reopen for 24 h',
+  lot_open_confirm: 'Open the queue for real? It can’t be undone: the trial tickets start from zero and the queue is open for 24 h. After that, scan the key page again to reopen it.',
+  lot_delete_test: 'Without a subscription, this queue will be deleted on {at} if it hasn’t been opened by then.',
+  lot_delete_closed: 'Without a subscription, this queue and its data will be deleted on {at} if it isn’t reopened by then.',
+  lot_keep: 'Keep my queues with a subscription',
+  t_test: 'Trial queue: this ticket will start from zero when the queue opens.',
+  t_closed_title: 'Queue closed for now',
+  t_closed_text: 'Your ticket will work as soon as the queue reopens: scan it again then.',
+  desk_closed: 'Queue closed: reopen it from your space to add this ticket.',
+  err_closed: 'The queue is closed for now.',
+  e_test: 'Trial',
+  e_closed: 'Queue closed',
 };

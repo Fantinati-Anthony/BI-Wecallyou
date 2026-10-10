@@ -2,7 +2,8 @@ import { Role, label } from './token.js';
 import { fail, readJson, readRaw, sendJson, clientIp, RateLimit } from './http.js';
 import { verifySignature, applyEvent } from './stripe.js';
 import { checkMessage, relay } from './relay.js';
-import { LIFETIMES, PRO_LIFETIMES, DEFAULT_LIFETIME } from './store.js';
+import { LIFETIMES, PRO_LIFETIMES, DEFAULT_LIFETIME, lotState, OPEN_FOR } from './store.js';
+import { RETENTION } from './purge.js';
 import { STATS_DAYS } from './pro.js';
 import { createHmac, timingSafeEqual, randomInt } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
@@ -333,8 +334,14 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
       // et couleurs personnalisées. Hors Pro, elles restent enregistrées mais ne s'appliquent plus.
       whiteLabel: Boolean(lot.whiteLabel) && pro,
       theme: pro ? cleanTheme(lot.theme) : null,
+      // À l'essai (rien n'est compté), ouverte jusqu'à openUntil, ou fermée.
+      state: lotState(lot),
+      openUntil: lot.openUntil ?? null,
     };
   };
+
+  /** Une file fermée ne prend plus de nouveaux tickets et n'appelle plus : on la rouvre pour 24 h. */
+  const refuseClosed = (lot) => lotState(lot) === 'closed' && fail(409, 'closed');
 
   /** Nom du premier groupe du lot qui contient ce numéro ('' sinon). */
   const groupOf = (lot, n) => (lot.groups ?? []).find((g) => parseNumbers(g.numbers)?.includes(n))?.name ?? '';
@@ -358,6 +365,9 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
       proUntil: status.until,
       // Durée de vie réellement appliquée (une durée Pro retombe à 48 h après la fin du Pro et de sa marge).
       ttlApplied: await plans.lifetimeHours(lot, lot.ttl ?? DEFAULT_LIFETIME),
+      // Sans abonnement, la file est supprimée 24 h après sa fermeture (30 jours après sa création si elle
+      // n'a jamais été ouverte) ; avec un abonnement, elle vit tant qu'il dure.
+      deleteAt: status.grace ? null : lot.opened ? (lot.openUntil ?? 0) + RETENTION.closed : (lot.created ?? Date.now()) + RETENTION.unopened,
     };
   };
 
@@ -448,8 +458,8 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
     const previous = await store.call(lot.id, n, info);
     events.notify(store.statusId(lot.id, n));
     await store.event(lot.id, n, previous === null ? 'call' : 'recall');
-    if (previous === null && firstEvent) {
-      store.count(lot.id, 'wait_ms', Date.now() - firstEvent); // attente réelle entre scan et appel
+    if (previous === null && firstEvent && lot.opened) {
+      store.count(lot.id, 'wait_ms', Date.now() - firstEvent); // attente réelle entre scan et appel (pas à l'essai)
       store.count(lot.id, 'waits');
     }
     return {
@@ -498,7 +508,7 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
         lot.posterFrom = from;
         await store.saveLot(lot);
       }
-      await store.countLot(Math.max(0, lot.to - lot.from + 1));
+      // Les statistiques du mois comptent la file à sa première ouverture, pas à sa création (l'essai ne compte pas).
       // Les tickets eux-mêmes sont demandés ensuite, cahier par cahier (POST /lot/tickets).
       // Lien de l'écran public : imprimé en QR code sur la page clé.
       return { ok: true, ...(await publicLot(lot)), screen: screenToken(lot) };
@@ -521,22 +531,40 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
       };
     }],
 
+    // Ouvrir la file pour 24 h (scan de la fiche de démarrage). La première fois, l'essai est effacé
+    // (tickets, inscriptions, appels, numéros de l'affiche) : les statistiques ne comptent que le réel.
+    // C'est irréversible ; ensuite, on la rouvre pour 24 h quand elle est fermée, sans rien effacer.
+    ['POST', /^\/lot\/open$/, async (req) => {
+      const lot = await lotOf(req);
+      const state = lotState(lot);
+      if (state === 'test') {
+        await store.resetLot(lot.id);
+        if (shuffled(lot)) lot.posterIdx = 0;
+        lot.opened = Date.now();
+        await store.countLot(Math.max(0, lot.to - lot.from + 1));
+      }
+      if (state !== 'open') lot.openUntil = Date.now() + OPEN_FOR;
+      await store.saveLot(lot);
+      return { ok: true, ...(await privateLot(lot)) };
+    }],
+
     // Affiche : chaque scan reçoit un numéro unique tiré au hasard, sans ticket imprimé. Le numéro ne dit
     // rien de l'ordre (un ticket imprimé peut être scanné entre deux scans de l'affiche) : l'ordre
     // d'arrivée reste connu du commerçant, dans sa file d'arrivée.
     ['POST', /^\/poster\/([A-Za-z2-7]{23})$/, async (req, [token]) => {
       limits.check(`poster:${ipOf(req)}`, 30, 10 * MINUTE);
       const lot = await lotOfPoster(token.toUpperCase());
+      refuseClosed(lot);
       limits.check(`poster-lot:${lot.id}`, 5000, 24 * HOUR);
       let n;
       if (shuffled(lot)) {
         n = await nextShuffled(lot);
-        await store.countTickets(1);
+        if (lot.opened) await store.countTickets(1);
       } else {
         lot.posterFrom ??= lot.to + 1; // lot à tickets imprimés : l'affiche prend les numéros au-delà
         n = await drawPosterNumber(lot);
         if (n > lot.to) {
-          await store.countTickets(1);
+          if (lot.opened) await store.countTickets(1);
           lot.to = n;
         }
       }
@@ -567,7 +595,7 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
       const lot = await lotOfScreen(token.toUpperCase());
       const { pro } = await plans.status(lot);
       const theme = pro ? cleanTheme(lot.theme) : null;
-      return { ok: true, name: lot.name, promo: lot.promo ?? '', link: lot.link ?? '', theme, ...queueView(await store.queue(lot.id), null) };
+      return { ok: true, name: lot.name, promo: lot.promo ?? '', link: lot.link ?? '', theme, state: lotState(lot), ...queueView(await store.queue(lot.id), null) };
     }],
 
     // Écran d'affichage (tablette, TV) : seulement des numéros, rafraîchi toutes les quelques secondes.
@@ -586,7 +614,7 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
       if (lot.posterFrom !== undefined && to >= lot.posterFrom) fail(409, 'poster_range');
       if (from < (lot.from ?? 1) || to > (lot.to ?? MAX_NUMBER)) {
         // Numéros en dehors du lot initial : le lot s'agrandit (et les statistiques le comptent).
-        await store.countTickets(Math.max(0, (lot.from ?? from) - from) + Math.max(0, to - (lot.to ?? to)));
+        if (lot.opened) await store.countTickets(Math.max(0, (lot.from ?? from) - from) + Math.max(0, to - (lot.to ?? to)));
         lot.from = Math.min(lot.from ?? from, from);
         lot.to = Math.max(lot.to ?? to, to);
         await store.saveLot(lot);
@@ -640,6 +668,7 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
       const lot = await lotOf(req);
       const n = number((await readJson(req)).n);
       if (await store.isActive(lot.id, n)) return { ok: true, added: false, called: (await store.callInfo(lot.id, n)) !== null, n, label: label(n) };
+      refuseClosed(lot);
       // Seul un ticket imprimé de cette file peut entrer ainsi (ceux de l'affiche sont actifs dès leur tirage).
       const issued = shuffled(lot) ? n <= lot.span && rankOf(lot, n) <= lot.to : n >= (lot.from ?? 1) && n <= (lot.to ?? 0);
       if (!issued) fail(404, 'not_issued');
@@ -662,17 +691,19 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
     ['GET', /^\/t\/([A-Za-z2-7]{26})$/, async (req, [token]) => {
       const ticket = ticketOf(token);
       const lot = (await store.lot(ticket.lot)) ?? fail(404, 'invalid');
-      if (ticket.role === Role.CLIENT) health?.read(lot.id); // affluence réelle (bulletin du mois)
+      if (ticket.role === Role.CLIENT && lot.opened) health?.read(lot.id); // affluence réelle, sans l'essai (bulletin du mois)
       const callInfo = await store.callInfo(lot.id, ticket.n);
       const called = callInfo !== null;
-      // Premier scan du client : le ticket s'active (et commence sa durée de vie).
-      const activated = ticket.role === Role.CLIENT && !(await store.isActive(lot.id, ticket.n));
+      // Premier scan du client : le ticket s'active (et commence sa durée de vie), sauf si la file est fermée.
+      const activated = ticket.role === Role.CLIENT && lotState(lot) !== 'closed' && !(await store.isActive(lot.id, ticket.n));
       if (activated) await store.event(lot.id, ticket.n, 'scan');
       return {
         ok: true,
         role: ticket.role === Role.STUB ? 'stub' : 'client',
         // Ce scan vient de faire entrer le ticket dans la file (le téléphone du commerçant le dit).
         activated,
+        // Le ticket est dans la file (une file fermée n'en prend plus de nouveaux).
+        active: activated || (await store.isActive(lot.id, ticket.n)),
         n: ticket.n,
         label: label(ticket.n),
         ...(await publicLot(lot)),
@@ -722,6 +753,7 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
     // Appel d'un ticket (souche ou numéro) ou d'un groupe entier, avec le message choisi au moment de l'envoi.
     ['POST', /^\/call$/, async (req) => {
       const lot = await lotOf(req);
+      refuseClosed(lot);
       const body = await readJson(req);
       const message = cleanText(body.message, 280);
       const tag = cleanText(body.tag, 80);

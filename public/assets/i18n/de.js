@@ -778,4 +778,22 @@ export default {
   home_vision_after: 'Und danach',
   home_vision_after_text: 'KI im Dienst des Guten, mit Entscheidungen, die Menschen gleichberechtigt treffen.',
   home_vision_cta: 'Beim Abenteuer mitmachen',
+
+  // Essai, ouverture pour 24 h, fermeture et suppression d'une file
+  lot_state_test: 'Test: Alles funktioniert, aber nichts wird gezählt. Beim Öffnen beginnen die Testtickets wieder bei null.',
+  lot_state_open: 'Geöffnet bis {until}.',
+  lot_state_closed: 'Geschlossen seit {since}: keine neuen Tickets und keine Aufrufe. Kunden, die schon in der Warteschlange sind, behalten ihre Seite.',
+  lot_open: 'Warteschlange für 24 Std. öffnen',
+  lot_reopen: 'Für 24 Std. wieder öffnen',
+  lot_open_confirm: 'Die Warteschlange wirklich öffnen? Das ist endgültig: Die Testtickets beginnen wieder bei null und die Warteschlange ist 24 Std. geöffnet. Danach scannen Sie die Schlüsselseite erneut, um sie wieder zu öffnen.',
+  lot_delete_test: 'Ohne Abo wird diese Warteschlange am {at} gelöscht, wenn sie bis dahin nicht geöffnet wurde.',
+  lot_delete_closed: 'Ohne Abo werden diese Warteschlange und ihre Daten am {at} gelöscht, wenn sie bis dahin nicht wieder geöffnet wird.',
+  lot_keep: 'Meine Warteschlangen mit einem Abo behalten',
+  t_test: 'Testwarteschlange: Dieses Ticket beginnt beim Öffnen wieder bei null.',
+  t_closed_title: 'Warteschlange vorerst geschlossen',
+  t_closed_text: 'Ihr Ticket funktioniert, sobald die Warteschlange wieder öffnet: Scannen Sie es dann erneut.',
+  desk_closed: 'Warteschlange geschlossen: Öffnen Sie sie in Ihrem Bereich wieder, um dieses Ticket aufzunehmen.',
+  err_closed: 'Die Warteschlange ist vorerst geschlossen.',
+  e_test: 'Test',
+  e_closed: 'Warteschlange geschlossen',
 };

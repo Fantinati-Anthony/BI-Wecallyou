@@ -778,4 +778,22 @@ export default {
   home_vision_after: 'Y después',
   home_vision_after_text: 'La IA al servicio del bien, con decisiones tomadas por las personas, en igualdad.',
   home_vision_cta: 'Unirse a la aventura',
+
+  // Essai, ouverture pour 24 h, fermeture et suppression d'une file
+  lot_state_test: 'Prueba: todo funciona, pero no se cuenta nada. Al abrir la cola, los tickets de prueba vuelven a cero.',
+  lot_state_open: 'Abierta hasta el {until}.',
+  lot_state_closed: 'Cerrada desde el {since}: ni nuevos tickets ni llamadas. Los clientes que ya están en la cola conservan su página.',
+  lot_open: 'Abrir la cola durante 24 h',
+  lot_reopen: 'Reabrir durante 24 h',
+  lot_open_confirm: '¿Abrir la cola de verdad? Es irreversible: los tickets de prueba vuelven a cero y la cola queda abierta 24 h. Después, escanee de nuevo la página clave para reabrirla.',
+  lot_delete_test: 'Sin suscripción, esta cola se eliminará el {at} si no se ha abierto antes.',
+  lot_delete_closed: 'Sin suscripción, esta cola y sus datos se eliminarán el {at} si no se reabre antes.',
+  lot_keep: 'Conservar mis colas con una suscripción',
+  t_test: 'Cola de prueba: este ticket volverá a cero cuando se abra la cola.',
+  t_closed_title: 'Cola cerrada por ahora',
+  t_closed_text: 'Su ticket funcionará en cuanto la cola vuelva a abrir: escanéelo de nuevo entonces.',
+  desk_closed: 'Cola cerrada: reábrala desde su espacio para añadir este ticket.',
+  err_closed: 'La cola está cerrada por ahora.',
+  e_test: 'Prueba',
+  e_closed: 'Cola cerrada',
 };

@@ -778,4 +778,22 @@ export default {
   home_vision_after: 'A potem',
   home_vision_after_text: 'AI w służbie dobra, a decyzje podejmują ludzie, na równych prawach.',
   home_vision_cta: 'Dołącz do przygody',
+
+  // Essai, ouverture pour 24 h, fermeture et suppression d'une file
+  lot_state_test: 'Test: wszystko działa, ale nic nie jest liczone. Po otwarciu kolejki bilety testowe zaczynają od zera.',
+  lot_state_open: 'Otwarta do {until}.',
+  lot_state_closed: 'Zamknięta od {since}: żadnych nowych biletów ani wezwań. Klienci, którzy są już w kolejce, zachowują swoją stronę.',
+  lot_open: 'Otwórz kolejkę na 24 h',
+  lot_reopen: 'Otwórz ponownie na 24 h',
+  lot_open_confirm: 'Naprawdę otworzyć kolejkę? Tego nie da się cofnąć: bilety testowe zaczynają od zera, a kolejka jest otwarta przez 24 h. Potem zeskanuj ponownie stronę klucza, aby ją ponownie otworzyć.',
+  lot_delete_test: 'Bez subskrypcji ta kolejka zostanie usunięta {at}, jeśli do tego czasu nie zostanie otwarta.',
+  lot_delete_closed: 'Bez subskrypcji ta kolejka i jej dane zostaną usunięte {at}, jeśli do tego czasu nie zostanie ponownie otwarta.',
+  lot_keep: 'Zachowaj moje kolejki dzięki subskrypcji',
+  t_test: 'Kolejka testowa: ten bilet zacznie od zera po otwarciu kolejki.',
+  t_closed_title: 'Kolejka na razie zamknięta',
+  t_closed_text: 'Twój bilet zadziała, gdy tylko kolejka zostanie ponownie otwarta: zeskanuj go wtedy jeszcze raz.',
+  desk_closed: 'Kolejka zamknięta: otwórz ją ponownie w swojej przestrzeni, aby dodać ten bilet.',
+  err_closed: 'Kolejka jest na razie zamknięta.',
+  e_test: 'Test',
+  e_closed: 'Kolejka zamknięta',
 };

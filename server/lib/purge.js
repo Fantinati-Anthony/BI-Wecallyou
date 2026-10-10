@@ -12,6 +12,8 @@ export const RETENTION = Object.freeze({
   stats: 90 * DAY, // statistiques anonymes du lot (gratuit)
   statsPro: 365 * DAY, // statistiques anonymes du lot (Pro)
   lot: 400 * DAY, // un lot jamais réutilisé pendant 400 jours est supprimé
+  closed: DAY, // sans abonnement, une file fermée depuis 24 h est supprimée avec tout ce qui la concerne
+  unopened: 30 * DAY, // sans abonnement, une file jamais ouverte (essai) est supprimée 30 jours après sa création
 });
 
 async function list(dir) {
@@ -134,15 +136,16 @@ export async function purge(store, now = Date.now(), accounts = null, plans = nu
     await removeIfEmpty(path.join(store.lotStatsDir, lot));
   }
 
-  // Lots inutilisés depuis 400 jours.
+  // Files : sans abonnement, supprimées 24 h après leur fermeture (30 jours après leur création si elles
+  // n'ont jamais été ouvertes) ; avec un abonnement, gardées tant qu'il dure. Et les lots oubliés depuis 400 jours.
   for (const name of await list(store.lotsDir)) {
     if (!name.endsWith('.json')) continue;
     const file = path.join(store.lotsDir, name);
-    if ((await age(file, now)) > RETENTION.lot) {
-      const lot = JSON.parse(await fs.readFile(file, 'utf8'));
-      await fs.rm(path.join(store.keysDir, lot.verifier), { force: true });
-      await fs.rm(path.join(store.lotStatsDir, String(lot.id)), { recursive: true, force: true });
-      await fs.rm(file, { force: true });
+    const lot = JSON.parse(await fs.readFile(file, 'utf8'));
+    const kept = plans ? (await plans.status(lot)).grace : false;
+    const over = lot.opened ? now - (lot.openUntil ?? 0) > RETENTION.closed : now - (lot.created ?? now) > RETENTION.unopened;
+    if ((!kept && over) || (await age(file, now)) > RETENTION.lot) {
+      await store.dropLot(lot);
       done.lots++;
     }
   }

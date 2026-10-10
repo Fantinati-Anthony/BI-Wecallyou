@@ -1,19 +1,19 @@
 {
- "updated": "2026-10-10T20:13:45.258Z",
+ "updated": "2026-10-10T20:43:35.084Z",
  "since": "2026-10-08",
  "days": 3,
- "hours": 14,
- "messages": 93,
- "replies": 1834,
+ "hours": 14.3,
+ "messages": 94,
+ "replies": 1896,
  "tokens": {
-  "input": 3670,
-  "output": 2789561,
-  "cacheWrite": 7180111,
-  "cacheRead": 840781007
+  "input": 3794,
+  "output": 2865502,
+  "cacheWrite": 7294646,
+  "cacheRead": 882054115
  },
- "usd": 281.4,
- "subscription": 1.8,
- "month": 1.8,
+ "usd": 292.09,
+ "subscription": 1.89,
+ "month": 1.89,
  "evolutions": [
   {
    "commit": "63eed2c",
@@ -399,11 +399,18 @@
    "title": "Ce que le projet a coûté, mesuré et publié : temps, jetons d'IA, coût réel de chaque évolution",
    "usd": 7.1,
    "tokens": 24106194
+  },
+  {
+   "commit": "576c06c",
+   "date": "2026-10-10",
+   "title": "Coûts : ce qui a été payé et la valeur du travail de l'IA, clairement séparés ; ligne IA mesurée",
+   "usd": 2.79,
+   "tokens": 9992980
   }
  ],
  "current": {
-  "usd": 2.63,
-  "tokens": 9389813
+  "usd": 10.54,
+  "tokens": 40860541
  },
- "lines": 26773
+ "lines": 27150
 }

@@ -778,4 +778,22 @@ export default {
   home_vision_after: 'En daarna',
   home_vision_after_text: 'AI in dienst van het goede, met keuzes die mensen als gelijken maken.',
   home_vision_cta: 'Doe mee aan het avontuur',
+
+  // Essai, ouverture pour 24 h, fermeture et suppression d'une file
+  lot_state_test: 'Proef: alles werkt, maar niets wordt geteld. Bij het openen beginnen de proeftickets opnieuw bij nul.',
+  lot_state_open: 'Open tot {until}.',
+  lot_state_closed: 'Gesloten sinds {since}: geen nieuwe tickets of oproepen. Klanten die al in de wachtrij staan, houden hun pagina.',
+  lot_open: 'Wachtrij 24 u openen',
+  lot_reopen: '24 u opnieuw openen',
+  lot_open_confirm: 'De wachtrij echt openen? Dit is onomkeerbaar: de proeftickets beginnen opnieuw bij nul en de wachtrij is 24 u open. Scan daarna de sleutelpagina opnieuw om hem weer te openen.',
+  lot_delete_test: 'Zonder abonnement wordt deze wachtrij op {at} verwijderd als hij tegen dan niet geopend is.',
+  lot_delete_closed: 'Zonder abonnement worden deze wachtrij en zijn gegevens op {at} verwijderd als hij tegen dan niet opnieuw geopend is.',
+  lot_keep: 'Mijn wachtrijen bewaren met een abonnement',
+  t_test: 'Proefwachtrij: dit ticket begint opnieuw bij nul wanneer de wachtrij opent.',
+  t_closed_title: 'Wachtrij voorlopig gesloten',
+  t_closed_text: 'Uw ticket werkt zodra de wachtrij weer opent: scan het dan opnieuw.',
+  desk_closed: 'Wachtrij gesloten: open hem opnieuw vanuit uw ruimte om dit ticket toe te voegen.',
+  err_closed: 'De wachtrij is voorlopig gesloten.',
+  e_test: 'Proef',
+  e_closed: 'Wachtrij gesloten',
 };

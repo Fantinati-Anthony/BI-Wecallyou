@@ -778,4 +778,22 @@ export default {
   home_vision_after: 'Et après',
   home_vision_after_text: 'L’IA au service du bien, avec des choix décidés par les humains, à égalité.',
   home_vision_cta: 'Rejoindre l’aventure',
+
+  // Essai, ouverture pour 24 h, fermeture et suppression d'une file
+  lot_state_test: 'Essai : tout fonctionne, mais rien n’est compté. À l’ouverture, les tickets d’essai repartent de zéro.',
+  lot_state_open: 'Ouverte jusqu’au {until}.',
+  lot_state_closed: 'Fermée depuis le {since} : plus de nouveau ticket ni d’appel. Les clients déjà dans la file gardent leur page.',
+  lot_open: 'Ouvrir la file pour 24 h',
+  lot_reopen: 'Rouvrir pour 24 h',
+  lot_open_confirm: 'Ouvrir la file pour de vrai ? C’est irréversible : les tickets d’essai repartent de zéro et la file est ouverte 24 h. Ensuite, scannez de nouveau la page clé pour la rouvrir.',
+  lot_delete_test: 'Sans abonnement, cette file sera supprimée le {at} si elle n’a pas été ouverte d’ici là.',
+  lot_delete_closed: 'Sans abonnement, cette file et ses données seront supprimées le {at} si elle n’est pas rouverte d’ici là.',
+  lot_keep: 'Garder mes files avec un abonnement',
+  t_test: 'File en essai : ce ticket repartira de zéro à l’ouverture.',
+  t_closed_title: 'File fermée pour le moment',
+  t_closed_text: 'Votre ticket fonctionnera dès que la file rouvrira : scannez-le de nouveau à ce moment-là.',
+  desk_closed: 'File fermée : rouvrez-la depuis votre espace pour faire entrer ce ticket.',
+  err_closed: 'La file est fermée pour le moment.',
+  e_test: 'Essai',
+  e_closed: 'File fermée',
 };

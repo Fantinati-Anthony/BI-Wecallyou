@@ -19,7 +19,7 @@ const tmp = mkdtempSync(path.join(tmpdir(), 'wcy-e2e-'));
 const PORT = 3999;
 const BASE = `http://localhost:${PORT}`;
 
-const { server } = await createServer({
+const { server, store } = await createServer({
   domain: `localhost:${PORT}`,
   brand: 'WeCall.You',
   contact: 'mailto:contact@wecall.you',
@@ -168,6 +168,22 @@ try {
     await tv.close();
   }
   step('QR codes imprimés relus et corrects (ticket client, souche, écran d’affichage de la page clé)');
+
+  /* ------------------------- page clé : la file à l'essai, puis ouverte pour 24 h */
+  await m.goto(`${BASE}/m`);
+  await m.waitForSelector('#lot-state.test');
+  assert.match(await m.locator('#lot-state').textContent(), /Essai : tout fonctionne, mais rien n’est compté/);
+  assert.match(await m.locator('#lot-state').textContent(), /supprimée le .* si elle n’a pas été ouverte/);
+  const trial = await (await browser.newContext({ locale: 'fr-FR', viewport: { width: 390, height: 844 } })).newPage();
+  trial.on('pageerror', (err) => errors.push(err.message));
+  await trial.goto(`${BASE}/${tickets[2].c}`);
+  await trial.waitForSelector('#test-hint'); // le client voit que c'est un essai
+  m.once('dialog', (dialog) => dialog.accept()); // « irréversible : l'essai est effacé »
+  await m.click('#lot-open');
+  await m.waitForSelector('#lot-state.open');
+  assert.match(await m.locator('#lot-state').textContent(), /Ouverte jusqu’au/);
+  await trial.close(); // son ticket d'essai repart de zéro (vérifié côté serveur)
+  step('page clé : essai (rien n’est compté), puis ouverture pour 24 h, l’essai effacé');
 
   /* ---------------------------------------------------- client : inscription */
   const client = await browser.newContext({ locale: 'en-US', viewport: { width: 390, height: 844 } });
@@ -373,6 +389,26 @@ try {
   await p2.waitForSelector('.waiting-list');
   assert.equal(p2.url(), `${BASE}/m`);
   step('second téléphone : refusé sans le bon mot de passe, accepté avec');
+
+  /* ------------- 24 h plus tard : la file est fermée, on la rouvre avec la page clé */
+  const mainLot = (await (await fetch(`${BASE}/api/t/${tickets[0].s}`)).json()).lot; // la souche n'active rien
+  await store.saveLot({ ...(await store.lot(mainLot)), openUntil: Date.now() - 60_000 });
+  const late = await (await browser.newContext({ locale: 'fr-FR', viewport: { width: 390, height: 844 } })).newPage();
+  late.on('pageerror', (err) => errors.push(err.message));
+  let unused = null; // un ticket jamais entré dans la file (ceux qui y sont gardent leur page)
+  for (const ticket of tickets) if (!unused && !(await store.isActive(mainLot, ticket.n))) unused = ticket;
+  await late.goto(`${BASE}/${unused.c}`);
+  await late.waitForSelector('#t-closed'); // un nouveau ticket attend la réouverture
+  await p2.goto(`${BASE}/m`);
+  await p2.waitForSelector('#lot-state.closed');
+  assert.match(await p2.locator('#lot-state').textContent(), /Fermée depuis le .*plus de nouveau ticket ni d’appel/);
+  assert.match(await p2.locator('#lot-state').textContent(), /supprimées le .* si elle n’est pas rouverte/);
+  await p2.click('#lot-open'); // rouvrir : sans confirmation, rien n'est effacé
+  await p2.waitForSelector('#lot-state.open');
+  await late.reload();
+  await late.waitForSelector('.choice');
+  await late.close();
+  step('24 h plus tard : file fermée (nouveau ticket en attente, date de suppression), rouverte depuis la page clé');
 
   /* ------------------------------------- compte, fiche de secours, Pro */
   await m.goto(`${BASE}/compte#creer`);

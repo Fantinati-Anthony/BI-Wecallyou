@@ -54,6 +54,7 @@ function ring() {
 function header() {
   const box = h('div', { class: 'ticket-head' }, h('div', { class: 'merchant' }, data.name), h('div', { class: 'number' }, data.label));
   if (fromPoster && data.role === 'client' && !desking) box.append(h('p', { class: 'poster-hint' }, icon('storefront'), t('poster_show')));
+  if (data.state === 'test') box.append(h('p', { class: 'test-hint', id: 'test-hint' }, icon('info'), t('t_test')));
   const q = data.queue;
   if (q && data.role === 'client' && !desking) {
     const place = q.position === 1 ? t('queue_next') : t('queue_pos', { pos: ordinal(q.position) });
@@ -368,6 +369,10 @@ async function desk(login) {
   const access = await unlock(data.lot, lot.wrapped);
   const arrived = lot.arrivals ?? [];
   const rank = arrived.findIndex((a) => a.n === data.n);
+  // File fermée : ni entrée ni appel tant qu'elle n'est pas rouverte depuis l'espace commerçant.
+  if (lot.state === 'closed') {
+    return view(h('div', { class: 'banner-warn', id: 'desk-status' }, icon('clock'), t('desk_closed')), dashboardLink(), h('div', { class: 'center' }, h('button', { type: 'button', class: 'linklike', onclick: clientFlow }, t('desk_client'))));
+  }
   const go = h('button', { type: 'button', class: 'btn btn-big btn-block', id: 'desk-call' }, icon('megaphone'), t('call_this', { n: data.label }));
   go.addEventListener('click', () => callFlow(lot, access, info, { n: data.n }));
   view(
@@ -383,6 +388,10 @@ async function desk(login) {
 /** La page du client : prévenu par quel moyen, ou déjà inscrit, ou déjà appelé. */
 function clientFlow() {
   desking = false;
+  // File fermée et ticket pas encore entré : il fonctionnera dès qu'elle rouvrira.
+  if (data.state === 'closed' && !data.active && !data.called) {
+    return view(h('div', { class: 'card center', id: 't-closed' }, icon('clock'), h('h2', {}, t('t_closed_title')), h('p', {}, t('t_closed_text'))));
+  }
   if (data.channels.includes('push') && 'serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
   if (data.called) ready();
   else if (local.get(storageKey)) registered();

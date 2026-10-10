@@ -196,8 +196,32 @@ async function dashboard(lotId) {
     h('div', {}, h('p', { class: 'lot-meta small muted' }, t('lot_number', { id: lot.lot }), ' · ', t('lots_range', { from: labelOf(lot.from), to: labelOf(lot.to) })), h('h1', {}, lot.name)),
     h('button', { type: 'button', class: 'btn btn-ghost', id: 'my-lots', onclick: lotsView }, icon(multiLots() ? 'squares-four' : 'lock-key'), t('lots_mine', { n: Object.keys(lots.all()).length })),
   );
-  render(app, head, accountLine(lot), tabs, panel, donation);
+  render(app, head, stateLine(lot, access, lotId), accountLine(lot), tabs, panel, donation);
   show('call');
+}
+
+/**
+ * État de la file : à l'essai (rien n'est compté), ouverte pour 24 h, ou fermée. On l'ouvre ou on la
+ * rouvre ici (c'est là qu'arrive le scan de la page clé) ; sans abonnement, la date de suppression.
+ */
+function stateLine(lot, access, lotId) {
+  const when = (ms) => new Date(ms).toLocaleString(LANG, { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+  const error = h('p', { class: 'small', role: 'alert' });
+  const open = async (first) => {
+    if (first && !confirm(t('lot_open_confirm'))) return;
+    const res = await api('/lot/open', { body: {}, auth: access.auth });
+    if (res.ok) dashboard(lotId);
+    else error.textContent = errorText(res.error);
+  };
+  const removal = lot.deleteAt && lot.state !== 'open' && h('p', { class: 'small' }, t(lot.state === 'test' ? 'lot_delete_test' : 'lot_delete_closed', { at: when(lot.deleteAt) }), ' ', h('a', { href: '/soutenir' }, t('lot_keep')));
+  if (lot.state === 'open') return h('div', { class: 'state-banner open', id: 'lot-state' }, icon('check-circle'), h('p', {}, t('lot_state_open', { until: when(lot.openUntil) })));
+  const button = h('button', { type: 'button', class: 'btn', id: 'lot-open', onclick: () => open(lot.state === 'test') }, icon('storefront'), t(lot.state === 'test' ? 'lot_open' : 'lot_reopen'));
+  return h(
+    'div',
+    { class: `state-banner ${lot.state}`, id: 'lot-state' },
+    icon(lot.state === 'test' ? 'info' : 'clock'),
+    h('div', { class: 'stack' }, h('p', {}, lot.state === 'test' ? t('lot_state_test') : t('lot_state_closed', { since: when(lot.openUntil) })), removal, button, error),
+  );
 }
 
 /* ------------------------------------------------------------------ appels */

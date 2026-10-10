@@ -130,7 +130,8 @@ function show(data) {
   name.textContent = data.name;
   document.title = data.name;
   promo.textContent = [data.promo, data.link?.replace(/^https:\/\//, '')].filter(Boolean).join(' · ');
-  pace.textContent = data.avgMs ? t('e_pace', { min: Math.max(1, Math.round(data.avgMs / 60000)) }) : '';
+  // À l'essai ou fermée : l'écran le dit, à la place du rythme des appels.
+  pace.textContent = data.state === 'closed' ? t('e_closed') : [data.state === 'test' && t('e_test'), data.avgMs && t('e_pace', { min: Math.max(1, Math.round(data.avgMs / 60000)) })].filter(Boolean).join(' · ');
   const list = announcements(data.recent);
   const current = list[0];
   if (!current) {

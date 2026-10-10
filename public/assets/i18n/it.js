@@ -778,4 +778,22 @@ export default {
   home_vision_after: 'E dopo',
   home_vision_after_text: 'L’IA al servizio del bene, con scelte decise dalle persone, alla pari.',
   home_vision_cta: 'Unirsi all’avventura',
+
+  // Essai, ouverture pour 24 h, fermeture et suppression d'une file
+  lot_state_test: 'Prova: tutto funziona, ma non si conta nulla. All’apertura, i biglietti di prova ripartono da zero.',
+  lot_state_open: 'Aperta fino al {until}.',
+  lot_state_closed: 'Chiusa dal {since}: niente nuovi biglietti né chiamate. I clienti già in coda conservano la loro pagina.',
+  lot_open: 'Apri la coda per 24 h',
+  lot_reopen: 'Riapri per 24 h',
+  lot_open_confirm: 'Aprire la coda davvero? È irreversibile: i biglietti di prova ripartono da zero e la coda resta aperta 24 h. Poi scansionate di nuovo la pagina chiave per riaprirla.',
+  lot_delete_test: 'Senza abbonamento, questa coda sarà eliminata il {at} se non sarà stata aperta prima.',
+  lot_delete_closed: 'Senza abbonamento, questa coda e i suoi dati saranno eliminati il {at} se non sarà riaperta prima.',
+  lot_keep: 'Conservare le mie code con un abbonamento',
+  t_test: 'Coda di prova: questo biglietto ripartirà da zero all’apertura.',
+  t_closed_title: 'Coda chiusa per ora',
+  t_closed_text: 'Il vostro biglietto funzionerà appena la coda riaprirà: scansionatelo di nuovo in quel momento.',
+  desk_closed: 'Coda chiusa: riapritela dal vostro spazio per aggiungere questo biglietto.',
+  err_closed: 'La coda è chiusa per ora.',
+  e_test: 'Prova',
+  e_closed: 'Coda chiusa',
 };

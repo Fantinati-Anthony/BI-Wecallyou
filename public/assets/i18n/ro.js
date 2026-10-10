@@ -778,4 +778,22 @@ export default {
   home_vision_after: 'Și apoi',
   home_vision_after_text: 'IA în slujba binelui, cu decizii luate de oameni, în mod egal.',
   home_vision_cta: 'Alăturați-vă aventurii',
+
+  // Essai, ouverture pour 24 h, fermeture et suppression d'une file
+  lot_state_test: 'Probă: totul funcționează, dar nimic nu se numără. La deschidere, tichetele de probă pornesc de la zero.',
+  lot_state_open: 'Deschisă până la {until}.',
+  lot_state_closed: 'Închisă din {since}: niciun tichet nou și niciun apel. Clienții deja la coadă își păstrează pagina.',
+  lot_open: 'Deschide coada pentru 24 h',
+  lot_reopen: 'Redeschide pentru 24 h',
+  lot_open_confirm: 'Deschideți coada de-adevăratelea? Este ireversibil: tichetele de probă pornesc de la zero și coada rămâne deschisă 24 h. Apoi scanați din nou pagina cheie pentru a o redeschide.',
+  lot_delete_test: 'Fără abonament, această coadă va fi ștearsă pe {at} dacă nu a fost deschisă până atunci.',
+  lot_delete_closed: 'Fără abonament, această coadă și datele ei vor fi șterse pe {at} dacă nu este redeschisă până atunci.',
+  lot_keep: 'Păstrează-mi cozile cu un abonament',
+  t_test: 'Coadă de probă: acest tichet va porni de la zero la deschidere.',
+  t_closed_title: 'Coadă închisă deocamdată',
+  t_closed_text: 'Tichetul dumneavoastră va funcționa imediat ce coada se redeschide: scanați-l din nou atunci.',
+  desk_closed: 'Coadă închisă: redeschideți-o din spațiul dumneavoastră pentru a adăuga acest tichet.',
+  err_closed: 'Coada este închisă deocamdată.',
+  e_test: 'Probă',
+  e_closed: 'Coadă închisă',
 };

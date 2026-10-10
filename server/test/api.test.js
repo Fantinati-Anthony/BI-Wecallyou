@@ -49,10 +49,12 @@ async function call(method, route, body, authToken) {
   return { status: res.status, ...(await res.json()) };
 }
 
-async function newLot(extra = {}) {
+/** Une file de 20 tickets, ouverte pour 24 h comme en vrai (à l'essai, rien ne serait compté). */
+async function newLot(extra = {}, { open = true } = {}) {
   const lot = await wc.createLot();
   const res = await call('POST', '/lots', { name: 'Snack Tony', channels: ['push', 'sms', 'wa', 'mail'], from: 1, to: 20, ...lot.request, ...extra });
   if (res.ok) res.tickets = (await call('POST', '/lot/tickets', { from: 1, to: 20 }, lot.authToken)).tickets;
+  if (res.ok && open) await call('POST', '/lot/open', {}, lot.authToken);
   return { ...lot, res };
 }
 
@@ -504,4 +506,73 @@ test('bulletin de santé : files actives, clients du mois, direct plein compté,
   assert.equal(view.host, null); // sans hébergeur cPanel, pas de mesure de charge
   assert.equal(view.load, null);
   assert.deepEqual(Object.keys(view).filter((key) => key !== 'status').sort(), ['busyHours', 'calls', 'full', 'host', 'limits', 'live', 'load', 'month', 'ok', 'pages', 'pagesQueues', 'priority', 'queues', 'tickets', 'wait']);
+});
+
+test('essai, ouverture, fermeture : l’essai ne compte pas, l’ouverture l’efface, une file fermée ne prend plus rien', async () => {
+  const lot = await newLot({}, { open: false });
+  const auth = lot.authToken;
+  const id = lot.res.lot;
+  const [t1, t2] = lot.res.tickets;
+  // À l'essai : tout marche (scan, appel), rien n'est compté.
+  assert.equal((await call('GET', '/lot', undefined, auth)).state, 'test');
+  assert.equal((await call('GET', `/t/${t1.c}`)).activated, true);
+  assert.equal((await call('POST', '/call', { n: t1.n }, auth)).ok, true);
+  assert.deepEqual(await store.lotStats(id), []);
+  const month = await store.stats();
+  // Ouverture (fiche de démarrage) : 24 h, l'essai est effacé, la file compte dans le mois.
+  const opened = await call('POST', '/lot/open', {}, auth);
+  assert.equal(opened.state, 'open');
+  assert.ok(opened.openUntil > Date.now() + 23 * 3_600_000);
+  assert.equal(await store.isActive(id, t1.n), false); // le ticket d'essai repart de zéro
+  assert.equal(await store.callInfo(id, t1.n), null);
+  assert.equal((await store.stats()).lots, month.lots + 1);
+  assert.equal((await call('GET', `/t/${t1.c}`)).activated, true); // le vrai premier scan
+  assert.equal((await store.lotStats(id))[0].scan, 1);
+  // Une file ouverte qu'on « rouvre » ne bouge pas ; il n'y a pas de retour à l'essai.
+  assert.equal((await call('POST', '/lot/open', {}, auth)).openUntil, opened.openUntil);
+  assert.equal(await store.isActive(id, t1.n), true);
+  // Fermée (24 h plus tard) : plus de nouveau ticket ni d'appel ; un ticket déjà entré garde sa page.
+  const saved = await store.lot(id);
+  saved.openUntil = Date.now() - 1000;
+  await store.saveLot(saved);
+  const late = await call('GET', `/t/${t2.c}`);
+  assert.equal(late.state, 'closed');
+  assert.equal(late.activated, false);
+  assert.equal(late.active, false);
+  assert.equal(await store.isActive(id, t2.n), false);
+  assert.equal((await call('GET', `/t/${t1.c}`)).n, t1.n);
+  assert.equal((await call('POST', '/call', { n: t1.n }, auth)).error, 'closed');
+  assert.equal((await call('POST', '/lot/arrive', { n: t2.n }, auth)).error, 'closed');
+  const free = await call('GET', '/lot', undefined, auth);
+  assert.equal(free.deleteAt, saved.openUntil + 86_400_000); // sans abonnement : supprimée 24 h après la fermeture
+  // Rouverte le lendemain : 24 h de plus, rien d'effacé.
+  const reopened = await call('POST', '/lot/open', {}, auth);
+  assert.equal(reopened.state, 'open');
+  assert.equal(await store.isActive(id, t1.n), true);
+  assert.equal((await call('POST', '/call', { n: t1.n }, auth)).ok, true);
+});
+
+test('suppression : sans abonnement, une file fermée depuis 24 h ou jamais ouverte depuis 30 jours ; avec abonnement, gardée', async () => {
+  // Files créées directement (l'API limite les créations par adresse) ; seule « kept » a un abonnement.
+  const make = async (fields) => {
+    const lot = Object.assign(await store.createLot({ name: 'File', verifier: randomBytes(32).toString('hex'), from: 1, to: 10 }), fields);
+    await store.saveLot(lot);
+    return lot;
+  };
+  const DAY = 86_400_000;
+  const closed = await make({ opened: Date.now() - 2 * DAY, openUntil: Date.now() - 25 * 3_600_000 });
+  const kept = await make({ opened: Date.now() - 2 * DAY, openUntil: Date.now() - 25 * 3_600_000 });
+  const unopened = await make({ created: Date.now() - 31 * DAY });
+  const fresh = await make({ created: Date.now() - 29 * DAY });
+  const reopened = await make({ opened: Date.now() - 3 * DAY, openUntil: Date.now() - 23 * 3_600_000 }); // fermée depuis 23 h
+  await store.event(closed.id, 4, 'scan');
+  const plans = { status: async (lot) => ({ grace: lot?.id === kept.id }), lifetimeHours: async (lot, hours) => hours };
+  await purge(store, Date.now(), null, plans);
+  assert.equal(await store.lot(closed.id), null);
+  assert.equal(existsSync(path.join(store.keysDir, closed.verifier)), false);
+  assert.equal(await store.isActive(closed.id, 4), false); // tout ce qui la concerne
+  assert.equal(await store.lot(unopened.id), null);
+  assert.ok(await store.lot(fresh.id)); // 29 jours : encore le temps de préparer l'événement
+  assert.ok(await store.lot(kept.id));
+  assert.ok(await store.lot(reopened.id)); // encore une heure pour la rouvrir
 });

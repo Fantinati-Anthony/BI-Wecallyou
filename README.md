@@ -54,7 +54,7 @@ Le principe : **le serveur ne sait rien d’utile**.
 - Coordonnées : ECDH P-256 éphémère vers la clé publique du lot, HKDF, AES-256-GCM.
 - Notifications : construites sur le téléphone du commerçant (RFC 8291 aes128gcm + VAPID RFC 8292 signé avec la clé du lot), puis **relayées à l’aveugle** par le serveur vers Google, Apple, Mozilla ou Microsoft uniquement.
 
-**Durées de conservation** : coordonnées chiffrées effacées 30 min après l’appel ; tout ce qui concerne un ticket effacé à la fin de sa durée de vie (1 à 48 h après le premier scan, 6 h par défaut) ; statistiques 90 jours ; lots inutilisés 400 jours. Les sauvegardes de l’hébergeur ne contiennent donc que des blocs chiffrés.
+**Durées de conservation** : coordonnées chiffrées effacées 30 min après l’appel ; tout ce qui concerne un ticket effacé à la fin de sa durée de vie (1 à 48 h après le premier scan, 6 h par défaut) ; statistiques 90 jours (l’essai d’une file n’est jamais compté : tout est effacé à son ouverture, pour 24 h, rouvrable le lendemain) ; sans abonnement, une file est supprimée 24 h après sa fermeture, 30 jours après sa création si elle n’a jamais été ouverte ; lots inutilisés 400 jours. Les sauvegardes de l’hébergeur ne contiennent donc que des blocs chiffrés.
 
 **Défenses** : CSP stricte sans script tiers, aucun cookie, aucun traceur, `Referrer-Policy: no-referrer`, limites de débit, validation de toutes les entrées, liens SMS, WhatsApp et e-mail reconstruits seulement à partir de coordonnées validées (pas d’injection de destinataires), relais limité aux services de notification et sans redirection, fichiers en 0600.
 

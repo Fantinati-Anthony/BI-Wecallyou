@@ -14,6 +14,17 @@ export const DEFAULT_LIFETIME = 6;
 export const EVENTS = ['scan', 'sub', 'unsub', 'call', 'recall', 'push', 'send', 'seen'];
 
 const DAY = 86_400_000;
+
+/**
+ * Une file vit en trois temps. À sa création, elle est à l'essai : tout marche, rien n'est compté.
+ * Ouverte (scan de la fiche de démarrage), elle sert 24 h ; la première ouverture efface l'essai.
+ * Puis elle est fermée jusqu'à ce qu'on la rouvre pour 24 h, sans rien effacer.
+ */
+export const OPEN_FOR = DAY;
+export function lotState(lot, now = Date.now()) {
+  if (!lot.opened) return 'test';
+  return now < (lot.openUntil ?? 0) ? 'open' : 'closed';
+}
 const MAX_SERVICE_GAP = 20 * 60_000;
 const GROUP_WINDOW = 3000;
 const sha256 = (text) => createHash('sha256').update(text).digest('hex');
@@ -41,6 +52,7 @@ const today = (ms = Date.now()) => new Date(ms).toISOString().slice(0, 10);
 export class Store {
   #statusKey;
   #queueCache = new Map();
+  #counted = new Map(); // lot → { at, value } : le lot compte-t-il (ouvert au moins une fois) ? gardé 1 min
   #votesWrite = Promise.resolve(); // les votes s'écrivent l'un après l'autre
   #pendingStats = new Map(); // « lot|jour » → compteurs à ajouter (écrits par lots toutes les 10 s)
   #flushing = Promise.resolve(); // une écriture des statistiques à la fois : aucun compteur perdu
@@ -91,12 +103,45 @@ export class Store {
       });
   }
 
-  /** Ajoute un événement au journal (le premier active le ticket) et compte la statistique. */
+  /** Ajoute un événement au journal (le premier active le ticket) et compte la statistique (pas à l'essai). */
   async event(lot, n, type, detail = '') {
     if (!EVENTS.includes(type) || !/^[a-z]{0,8}$/.test(detail)) throw new Error(`événement invalide : ${type}`);
     await fs.mkdir(path.join(this.ticketsDir, String(lot)), { recursive: true, mode: 0o700 });
     await fs.appendFile(this.logFile(lot, n), `${Date.now()} ${type} ${detail}\n`, { mode: 0o600 });
-    this.count(lot, detail ? `${type}_${detail}` : type);
+    if (await this.counts(lot)) this.count(lot, detail ? `${type}_${detail}` : type);
+  }
+
+  /** Les statistiques ne comptent que les files ouvertes au moins une fois (l'essai ne compte pas). */
+  async counts(lot) {
+    const cached = this.#counted.get(lot);
+    if (cached && Date.now() - cached.at < 60_000) return cached.value;
+    const value = Boolean((await this.lot(lot))?.opened);
+    this.#counted.set(lot, { at: Date.now(), value });
+    return value;
+  }
+
+  /**
+   * Fin de l'essai : tickets, numéros de l'affiche, inscriptions, appels, états « prêt » et
+   * statistiques du lot effacés. Le lot lui-même (nom, réglages, clés) ne change pas.
+   */
+  async resetLot(lot) {
+    const dirs = [this.ticketsDir, this.subsDir, this.callsDir].map((dir) => path.join(dir, String(lot)));
+    const numbers = new Set();
+    for (const dir of dirs) {
+      for (const name of await fs.readdir(dir).catch(() => [])) numbers.add(Number.parseInt(name, 10));
+    }
+    for (const n of numbers) if (Number.isInteger(n)) await fs.rm(this.statusFile(this.statusId(lot, n)), { force: true });
+    for (const dir of [...dirs, path.join(this.lotStatsDir, String(lot))]) await fs.rm(dir, { recursive: true, force: true });
+    for (const key of this.#pendingStats.keys()) if (key.startsWith(`${lot}|`)) this.#pendingStats.delete(key);
+    this.forgetQueue(lot);
+  }
+
+  /** Suppression d'une file et de tout ce qui la concerne. */
+  async dropLot(lot) {
+    await this.resetLot(lot.id);
+    await fs.rm(path.join(this.keysDir, lot.verifier), { force: true });
+    await fs.rm(this.lotFile(lot.id), { force: true });
+    this.#counted.delete(lot.id);
   }
 
   /**
@@ -293,7 +338,8 @@ export class Store {
   }
 
   async saveLot(lot) {
-    const tmp = `${this.lotFile(lot.id)}.${randomBytes(4).toString('hex')}.tmp`;
+    this.#counted.set(lot.id, { at: Date.now(), value: Boolean(lot.opened) });
+    const tmp =`${this.lotFile(lot.id)}.${randomBytes(4).toString('hex')}.tmp`;
     await fs.writeFile(tmp, JSON.stringify(lot), { mode: 0o600 });
     await fs.rename(tmp, this.lotFile(lot.id));
   }
