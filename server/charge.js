@@ -8,7 +8,10 @@
 //     [--minutes 3]                      3 min, avec exactement les requêtes des vraies pages ; mesure
 //                                        les temps de réponse et la charge de l'hébergement. Rien
 //                                        n'est créé, et le test refuse de tourner si le site ne
-//                                        limite pas le direct.
+//                                        limite pas le direct. Tout part d'une seule adresse : au-delà
+//                                        de quelques centaines de clients, le frontal de l'hébergeur
+//                                        la freine (codes d'erreur affichés), ce n'est plus la lune
+//                                        qu'on mesure.
 //
 // Résultat : un tableau et une conclusion.
 import { fork } from 'node:child_process';
@@ -224,13 +227,13 @@ const fakeStatus = () => randomBytes(16).toString('hex');
 
 // Connexions gardées ouvertes entre deux requêtes, comme un téléphone. Sans cela (fetch les ferme
 // après 4 s, les pages vérifient toutes les 5 s), l'ordinateur du test ouvre des centaines de
-// connexions sécurisées par seconde et mesure son propre réseau : des réponses à 3 s pile, quand
-// Windows retente une connexion perdue par la box ou Cloudflare. La lune, elle, ne voit que Cloudflare.
+// connexions sécurisées par seconde, que le frontal de l'hébergeur freine : des réponses à 3 s pile,
+// quand Windows retente une connexion perdue. Le test se présente sous son nom (User-Agent).
 const agents = { 'http:': new http.Agent({ keepAlive: true, maxSockets: 64 }), 'https:': new https.Agent({ keepAlive: true, maxSockets: 64 }) };
 const get = (url) =>
   new Promise((resolve) => {
     const { protocol } = new URL(url);
-    const req = (protocol === 'https:' ? https : http).get(url, { agent: agents[protocol] }, (res) => {
+    const req = (protocol === 'https:' ? https : http).get(url, { agent: agents[protocol], headers: { 'User-Agent': 'WeCallYou-charge (+https://github.com/Fantinati-Anthony/BI-Wecallyou)' } }, (res) => {
       const chunks = [];
       res.on('data', (chunk) => chunks.push(chunk));
       res.on('end', () => resolve({ status: res.statusCode, type: res.headers['content-type'] ?? '', body: Buffer.concat(chunks) }));
@@ -253,7 +256,7 @@ async function scenario(site, snacks, perSnack, minutes) {
   }
   const api = `${site}/api`;
   const total = snacks * perSnack;
-  const stats = new Map(KINDS.map(([kind]) => [kind, { times: [], failed: 0 }]));
+  const stats = new Map(KINDS.map(([kind]) => [kind, { times: [], failed: 0, codes: new Map() }]));
   const loads = new Map(); // mesures de l'hébergement, une par minute : date → part de la limite la plus haute
   const timers = [];
   const conns = [];
@@ -264,7 +267,12 @@ async function scenario(site, snacks, perSnack, minutes) {
     const t0 = now();
     const res = await get(url);
     stats.get(kind).times.push(ms(t0));
-    if (!res || !expected.includes(res.status)) stats.get(kind).failed++;
+    if (!res || !expected.includes(res.status)) {
+      const { codes } = stats.get(kind);
+      const code = res?.status ?? 'réseau';
+      codes.set(code, (codes.get(code) ?? 0) + 1);
+      stats.get(kind).failed++;
+    }
     if (res?.type.includes('json')) {
       try {
         const body = JSON.parse(res.body);
@@ -273,6 +281,10 @@ async function scenario(site, snacks, perSnack, minutes) {
         // réponse tronquée : seule la mesure de charge manque
       }
     }
+  };
+  const failing = () => {
+    const { times, failed } = all();
+    return times.length >= 100 && failed / times.length > 0.02; // ça décroche : on arrête tout de suite
   };
   const all = () => [...stats.values()].reduce((sum, s) => ({ times: sum.times.concat(s.times), failed: sum.failed + s.failed }), { times: [], failed: 0 });
 
@@ -315,17 +327,13 @@ async function scenario(site, snacks, perSnack, minutes) {
   try {
     for (let s = 0; s < snacks; s++) timers.push(setInterval(() => Promise.all([hit('shop', `${api}/info`), hit('shop', `${api}/info`)]), 10_000));
     const arrivals = [];
-    for (let i = 0; i < total; i++) {
+    for (let i = 0; i < total && !failing(); i++) {
       arrivals.push(client());
       await pause(60_000 / total);
     }
     await Promise.all(arrivals);
     const hold = Date.now();
-    while (Date.now() - hold < minutes * 60_000) {
-      await pause(1000);
-      const { times, failed } = all();
-      if (times.length >= 100 && failed / times.length > 0.02) break; // ça décroche : on arrête tout de suite
-    }
+    while (Date.now() - hold < minutes * 60_000 && !failing()) await pause(1000);
   } finally {
     clearInterval(progress);
     for (const timer of timers) clearInterval(timer);
@@ -336,10 +344,11 @@ async function scenario(site, snacks, perSnack, minutes) {
   console.log('');
   table(
     KINDS.map(([kind, title]) => {
-      const { times, failed } = stats.get(kind);
-      return { title, count: times.length, p50: fmt(pct(times, 50)), p95: fmt(pct(times, 95)), failed };
+      const { times, failed, codes } = stats.get(kind);
+      const why = [...codes].map(([code, count]) => `${code} ×${count}`).join(', ');
+      return { title, count: times.length, p50: fmt(pct(times, 50)), p95: fmt(pct(times, 95)), failed: why ? `${failed} (${why})` : failed };
     }),
-    [['title', 'Requêtes'], ['count', 'Nombre'], ['p50', 'Réponse (ms, médiane)'], ['p95', 'Réponse (ms, 95 %)'], ['failed', 'En échec']],
+    [['title', 'Requêtes'], ['count', 'Nombre'], ['p50', 'Réponse (ms, médiane)'], ['p95', 'Réponse (ms, 95 %)'], ['failed', 'En échec (codes)']],
   );
   const { times, failed } = all();
   const measured = [...loads.entries()].filter(([at]) => at > start + 60_000).map(([, ratio]) => ratio);
@@ -348,8 +357,15 @@ async function scenario(site, snacks, perSnack, minutes) {
   const high = peak === null ? null : Math.round(peak * 100);
   console.log(`\nCharge de l’hébergement pendant l’attente : ${high === null ? 'non mesurée' : low === high ? `${high} %` : `de ${low} à ${high} %`}`);
   console.log(`(la plus haute des limites de la lune : connexions, processeur, mémoire… le détail est dans cPanel › Utilisation des ressources)`);
-  const holds = failed / Math.max(1, times.length) <= 0.01 && pct(times, 95) <= 1000 && (peak ?? 0) < 0.75;
-  console.log(`\nVerdict : ${holds ? 'la lune tient' : 'la lune peine'} avec ${snacks} snack${snacks > 1 ? 's' : ''} × ${perSnack} clients : ${times.length} requêtes, ${failed} en échec, réponse en ${fmt(pct(times, 95))} ms (95 %), charge la plus haute ${peak === null ? '–' : `${Math.round(peak * 100)} %`}.`);
+  const verdict =
+    failed / Math.max(1, times.length) > 0.01
+      ? 'des requêtes échouent (voir les codes ci-dessus)'
+      : pct(times, 95) > 1000
+        ? 'réponses lentes'
+        : (peak ?? 0) >= 0.75
+          ? 'la lune approche de ses limites'
+          : 'la lune tient';
+  console.log(`\nVerdict : ${verdict}, avec ${snacks} snack${snacks > 1 ? 's' : ''} × ${perSnack} clients : ${times.length} requêtes, ${failed} en échec, réponse en ${fmt(pct(times, 95))} ms (95 %), charge la plus haute ${peak === null ? '–' : `${Math.round(peak * 100)} %`}.`);
   console.log('Toutes les connexions sont fermées. Aucune file, aucun ticket, aucune donnée n’a été créé.\n');
 }
 
