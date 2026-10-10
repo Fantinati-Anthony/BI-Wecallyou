@@ -1,19 +1,19 @@
 {
- "updated": "2026-10-10T20:48:58.927Z",
+ "updated": "2026-10-10T22:39:44.882Z",
  "since": "2026-10-08",
  "days": 3,
- "hours": 14.4,
- "messages": 94,
- "replies": 1914,
+ "hours": 14.8,
+ "messages": 100,
+ "replies": 1954,
  "tokens": {
-  "input": 3830,
-  "output": 2886448,
-  "cacheWrite": 7323812,
-  "cacheRead": 895192865
+  "input": 3910,
+  "output": 3006280,
+  "cacheWrite": 7494139,
+  "cacheRead": 928481589
  },
- "usd": 295.37,
- "subscription": 1.92,
- "month": 1.92,
+ "usd": 305.79,
+ "subscription": 2,
+ "month": 2,
  "evolutions": [
   {
    "commit": "63eed2c",
@@ -413,11 +413,18 @@
    "title": "Files à l'essai, ouvertes 24 h, fermées : des statistiques sur les seuls tickets réels",
    "usd": 10.54,
    "tokens": 40860541
+  },
+  {
+   "commit": "bf09d16",
+   "date": "2026-10-10",
+   "title": "Soutenir : la charge de la lune jour après jour, depuis le lancement",
+   "usd": 3.5,
+   "tokens": 13936610
   }
  ],
  "current": {
-  "usd": 3.28,
-  "tokens": 13188898
+  "usd": 10.2,
+  "tokens": 32831251
  },
- "lines": 27323
+ "lines": 27330
 }

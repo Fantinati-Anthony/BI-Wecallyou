@@ -120,7 +120,7 @@
       "fr": "Scaleway (France), conteneurs à la demande",
       "en": "Scaleway (France), on-demand containers",
       "vcpu_100k": 1,
-      "gb_100k": 0.1,
+      "gb_100k": 0.2,
       "free_vcpu_s": 200000,
       "free_gb_s": 400000,
       "gb": 2,
