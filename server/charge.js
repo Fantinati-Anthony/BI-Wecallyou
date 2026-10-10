@@ -156,12 +156,12 @@ async function benchLocal() {
         const ticket = tickets[start + i];
         const ip = fakeIp(); // chaque client a sa propre adresse, comme dans la vraie vie
         const t0 = now();
-        const res = await fetch(`${base}/t/${ticket.c}`, { headers: { 'X-Forwarded-For': ip } }).catch(() => null);
+        const res = await fetch(`${base}/t/${ticket.c}`, { headers: { 'X-Real-IP': ip } }).catch(() => null);
         const data = res?.ok ? await res.json() : null;
         pageTimes.push(ms(t0));
         if (!data?.ok) return void errors++;
         const client = { n: ticket.n, calledAt: null, eventAt: null };
-        const live = liveConnection(`${base}/events/${data.status}`, { 'X-Forwarded-For': ip }, () => (client.eventAt ??= now()));
+        const live = liveConnection(`${base}/events/${data.status}`, { 'X-Real-IP': ip }, () => (client.eventAt ??= now()));
         client.close = live.close;
         if (!(await live.opened).ok) errors++;
         clients.push(client);

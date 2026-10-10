@@ -165,6 +165,7 @@ const pick = (object, keys) => Object.fromEntries(keys.map((k) => [k, object[k]]
 
 export function createApi({ config, store, accounts, plans, tokens, events, gate, hostLoad = null }) {
   const limits = new RateLimit();
+  const ipOf = (req) => clientIp(req, config.ipHeader);
 
   /* ---------------------------------------------------- comptes et priorité */
 
@@ -173,7 +174,7 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
     const prefix = kind === 'acc' ? 'Account ' : 'Recovery ';
     const account = header.startsWith(prefix) ? await accounts.byToken(kind, header.slice(prefix.length)) : null;
     if (account) return account;
-    limits.check(`auth:${clientIp(req)}`, 60, 10 * MINUTE);
+    limits.check(`auth:${ipOf(req)}`, 60, 10 * MINUTE);
     return fail(401, 'login');
   };
 
@@ -240,7 +241,7 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
     const header = req.headers.authorization ?? '';
     const lot = header.startsWith('Lot ') ? await store.lotByAuth(header.slice(4)) : null;
     if (lot) return lot;
-    limits.check(`auth:${clientIp(req)}`, 60, 10 * MINUTE); // essais de clés au hasard : vite freinés
+    limits.check(`auth:${ipOf(req)}`, 60, 10 * MINUTE); // essais de clés au hasard : vite freinés
     return fail(401, 'login');
   };
 
@@ -437,7 +438,7 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
     // Création d'un lot : le navigateur a déjà fabriqué les clés, il n'envoie que les parties publiques
     // et les clés privées chiffrées avec la clé du lot (que le serveur ne reçoit jamais).
     ['POST', /^\/lots$/, async (req) => {
-      limits.check(`lots:${clientIp(req)}`, 20, HOUR);
+      limits.check(`lots:${ipOf(req)}`, 20, HOUR);
       const body = await readJson(req);
       const [from, to] = range(body.from, body.to);
       const name = cleanName(body.name) || fail(400, 'name');
@@ -493,7 +494,7 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
     // rien de l'ordre (un ticket imprimé peut être scanné entre deux scans de l'affiche) : l'ordre
     // d'arrivée reste connu du commerçant, dans sa file d'arrivée.
     ['POST', /^\/poster\/([A-Za-z2-7]{23})$/, async (req, [token]) => {
-      limits.check(`poster:${clientIp(req)}`, 30, 10 * MINUTE);
+      limits.check(`poster:${ipOf(req)}`, 30, 10 * MINUTE);
       const lot = await lotOfPoster(token.toUpperCase());
       limits.check(`poster-lot:${lot.id}`, 5000, 24 * HOUR);
       let n;
@@ -531,7 +532,7 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
 
     // Écran public (tablette, TV) : lien secret à diffuser, seulement des numéros et des repères.
     ['GET', /^\/screen\/([A-Za-z2-7]{23})$/, async (req, [token]) => {
-      limits.check(`screen:${clientIp(req)}`, 300, 10 * MINUTE);
+      limits.check(`screen:${ipOf(req)}`, 300, 10 * MINUTE);
       const lot = await lotOfScreen(token.toUpperCase());
       const { pro } = await plans.status(lot);
       const theme = pro ? cleanTheme(lot.theme) : null;
@@ -655,7 +656,7 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
     }],
 
     ['POST', /^\/sub$/, async (req) => {
-      limits.check(`sub:${clientIp(req)}`, 60, 10 * MINUTE);
+      limits.check(`sub:${ipOf(req)}`, 60, 10 * MINUTE);
       const body = await readJson(req);
       const ticket = ticketOf(body.t, Role.CLIENT);
       if (!(await store.lot(ticket.lot))) fail(404, 'invalid');
@@ -734,7 +735,7 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
 
     // Création : le navigateur envoie seulement des empreintes et des blocs chiffrés.
     ['POST', /^\/account$/, async (req) => {
-      limits.check(`signup:${clientIp(req)}`, 10, HOUR);
+      limits.check(`signup:${ipOf(req)}`, 10, HOUR);
       const body = await readJson(req);
       const ident = typeof body.ident === 'string' ? body.ident.trim().toLowerCase() : '';
       if (!IDENT.test(ident)) fail(400, 'ident');
@@ -871,7 +872,7 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
     const sse = /^\/events\/([0-9a-f]{32})$/.exec(pathname);
     if (sse && req.method === 'GET') {
       try {
-        limits.check(`sse:${clientIp(req)}`, 600, 10 * MINUTE);
+        limits.check(`sse:${ipOf(req)}`, 600, 10 * MINUTE);
       } catch (err) {
         sendJson(res, err.status, { ok: false, error: err.code });
         return true;

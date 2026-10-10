@@ -1,5 +1,5 @@
 # Fichiers d'état « prêt » écrits par le serveur Node. Lus par les pages client en secours du temps réel.
-# Ticket pas encore appelé = 404 « attente ». Les deux réponses sont gardées 2 s en cache (Cloudflare).
+# Ticket pas encore appelé = 404 « attente ». Les deux réponses sont gardées 2 s en cache.
 Options -Indexes
 ErrorDocument 404 "attente"
 

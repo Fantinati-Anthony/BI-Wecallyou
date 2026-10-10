@@ -98,7 +98,7 @@ Stockage : de simples fichiers (`server/data/`), pas de base de données. Un tic
 
 ## Installer sur o2switch (ou tout cPanel avec Node.js)
 
-1. **Nom de domaine** : pointez-le vers l’hébergement (Cloudflare devant est conseillé : SSL « Full (strict) », proxy activé).
+1. **Nom de domaine** : pointez-le vers l’hébergement. Un DNS Cloudflare en « DNS uniquement » (nuage gris) convient ; son proxy est inutile, le frontal d’o2switch protège déjà le site. Le serveur lit l’adresse des visiteurs dans `X-Real-IP`, que ce frontal réécrit à chaque requête ; derrière un autre frontal, réglez `ipHeader` dans `config.json` (`"cf-connecting-ip"` derrière le proxy Cloudflare, `""` sans frontal), sinon les limites anti-abus se contournent.
 2. **Fichiers** : en SSH, `git clone https://github.com/Fantinati-Anthony/BI-Wecallyou.git ~/wecallyou` (ou envoyez le dossier par le gestionnaire de fichiers).
 3. **Racine du site** : dans cPanel > Domaines, réglez la racine du domaine sur `~/wecallyou/public`. **Surtout pas** sur `wecallyou/server`, qui contient les clés (il est protégé par son propre `.htaccess`, mais le site ne marcherait pas). Vérification : `https://votre-domaine/config.json` doit répondre « introuvable ».
 4. **Application Node.js** : cPanel > *Setup Node.js App* > Créer une application :

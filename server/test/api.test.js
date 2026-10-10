@@ -8,6 +8,7 @@ import path from 'node:path';
 import { randomBytes } from 'node:crypto';
 import { createServer } from '../lib/server.js';
 import { purge } from '../lib/purge.js';
+import { clientIp } from '../lib/http.js';
 import * as wc from '../../public/assets/crypto.js';
 
 let base;
@@ -274,6 +275,19 @@ test('sécurité : requêtes malformées, essais de clés au hasard, relais verr
   for (let i = 0; i < 70 && status !== 429; i++) status = (await call('GET', '/lot', undefined, wc.b64u.encode(wc.randomBytes(32)))).status;
   assert.equal(status, 429);
   assert.equal((await call('GET', '/info')).ok, true); // le serveur tient
+});
+
+test('adresse du visiteur : seul l’en-tête réécrit par le frontal compte, les autres se falsifient', async () => {
+  // Mesuré sur o2switch : X-Real-IP est toujours remplacé par la vraie adresse, CF-Connecting-IP passe tel quel.
+  const tryKey = (realIp) => fetch(`${base}/lot`, { headers: { Authorization: `Lot ${wc.b64u.encode(wc.randomBytes(32))}`, 'X-Real-IP': realIp, 'CF-Connecting-IP': `198.51.100.${Math.floor(Math.random() * 255)}`, 'X-Forwarded-For': `192.0.2.${Math.floor(Math.random() * 255)}` } });
+  let status = 0;
+  for (let i = 0; i < 70 && status !== 429; i++) status = (await tryKey('203.0.113.7')).status;
+  assert.equal(status, 429); // changer de fausse adresse à chaque essai ne contourne plus la limite
+  assert.equal((await tryKey('203.0.113.8')).status, 401); // une autre vraie adresse a sa propre limite
+  const req = (headers) => ({ headers, socket: { remoteAddress: '127.0.0.1' } });
+  assert.equal(clientIp(req({ 'cf-connecting-ip': '198.51.100.1' })), '127.0.0.1');
+  assert.equal(clientIp(req({ 'cf-connecting-ip': '198.51.100.1' }), 'cf-connecting-ip'), '198.51.100.1'); // derrière le proxy Cloudflare
+  assert.equal(clientIp(req({ 'x-real-ip': '203.0.113.7' }), ''), '127.0.0.1'); // sans frontal
 });
 
 test('listes, groupes, message personnalisé et écran public', async () => {

@@ -39,6 +39,9 @@ export function loadConfig(file = process.env.TN_CONFIG ?? path.join(SERVER_DIR,
     allPro: raw.allPro ?? false,
     // Requêtes traitées en même temps par processus avant que la priorité Pro n'entre en jeu.
     capacity: raw.capacity ?? 40,
+    // En-tête où le frontal de l'hébergeur écrit l'adresse du visiteur (o2switch : x-real-ip ;
+    // proxy Cloudflare : cf-connecting-ip ; "" sans frontal). Tout autre en-tête se falsifie.
+    ipHeader: String(raw.ipHeader ?? 'x-real-ip').toLowerCase(),
     // Charge de l'hébergement : { "local": true } (commande uapi, sans jeton) ou { host, user, token }.
     cpanel: raw.cpanel ?? null,
   };

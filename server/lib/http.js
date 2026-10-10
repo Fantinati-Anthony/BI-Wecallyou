@@ -46,9 +46,15 @@ export async function readJson(req) {
   }
 }
 
-/** Adresse du visiteur, gardée en mémoire seulement le temps de limiter les abus. */
-export function clientIp(req) {
-  return req.headers['cf-connecting-ip'] ?? req.headers['x-forwarded-for']?.split(',')[0].trim() ?? req.socket.remoteAddress ?? '';
+/**
+ * Adresse du visiteur, gardée en mémoire seulement le temps de limiter les abus. On ne croit que
+ * l'en-tête que le frontal de l'hébergeur réécrit à chaque requête (o2switch : X-Real-IP ; proxy
+ * Cloudflare : CF-Connecting-IP) : tout autre en-tête passe tel quel et se falsifie. Sans frontal
+ * (header vide), l'adresse de la connexion.
+ */
+export function clientIp(req, header = 'x-real-ip') {
+  const value = header ? req.headers[header] : undefined;
+  return (typeof value === 'string' && value.trim()) || req.socket.remoteAddress || '';
 }
 
 /** Limiteur en mémoire : quelques essais par fenêtre de temps. */

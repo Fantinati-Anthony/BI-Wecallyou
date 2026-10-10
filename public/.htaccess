@@ -15,7 +15,7 @@ AddType image/webp .webp
   # Validation des certificats (AutoSSL, Let's Encrypt) : servie telle quelle, sans redirection
   RewriteRule ^\.well-known/ - [L]
 
-  # Tout en HTTPS (Cloudflare transmet X-Forwarded-Proto)
+  # Tout en HTTPS (le frontal de l'hébergeur transmet X-Forwarded-Proto)
   RewriteCond %{HTTPS} !=on
   RewriteCond %{HTTP:X-Forwarded-Proto} !=https
   RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
