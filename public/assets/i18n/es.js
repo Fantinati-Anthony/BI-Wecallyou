@@ -747,4 +747,18 @@ export default {
   don_yearly: 'Cada año',
   don_cta_yearly: 'Apoyar con {amount} € / año',
   don_impact_yearly: '{amount} € al año = {percent} % de los gastos de un año.',
+
+  // Encart de soutien : deux offres (juste soutenir, ou une licence avec le soutien moral en prime)
+  offer_moral_title: 'Solo apoyar',
+  offer_moral_text: 'Sin nada a cambio, para decir «seguid así».',
+  offer_moral_btn: 'Apoyar',
+  offer_flee_1: '¡Uy!',
+  offer_flee_2: 'No tan rápido…',
+  offer_flee_3: '¿Y si mejor una licencia?',
+  offer_flee_done: 'Vale, de acuerdo. ¡Gracias!',
+  offer_licence_title: 'Una licencia, y el apoyo moral de regalo',
+  offer_licence_text: 'WeCall.You Pro: marca oculta, tickets de hasta 30 días, estadísticas de un año, prioridad en horas punta. Paga un servicio real y el proyecto avanza.',
+  offer_licence_btn: 'Obtener una licencia',
+  offer_licence_tag: '¡Es su turno!',
+  don_goal_year: '{raised} € reunidos de {goal} €: 12 meses de gastos por adelantado',
 };

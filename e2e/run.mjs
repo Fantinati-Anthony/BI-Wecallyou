@@ -766,9 +766,22 @@ try {
     p.on('pageerror', (err) => errors.push(err.message));
     await p.goto(`${BASE}/soutenir`);
     await p.waitForSelector('#challenge:not([hidden]) #ch-raised');
-    assert.match(await p.locator('#ch-goal').textContent(), /sur 50\s€ par mois/); // espace fine insécable avant €
+    assert.match(await p.locator('#ch-goal').textContent(), /sur 600\s€ : 12 mois de frais d’avance/); // espace fine insécable avant €
     assert.equal(await p.locator('#roadmap li.next').count(), 1);
     assert.match(await p.locator('#costs').textContent(), /2,50\s€/);
+    assert.equal(await p.locator('#licence-btn').getAttribute('href'), '/pro');
+    // « Juste soutenir » : le bouton esquive la souris trois fois, puis se laisse attraper.
+    const runaway = p.locator('#runaway-btn');
+    await runaway.scrollIntoViewIfNeeded();
+    for (let i = 0; i < 3; i++) {
+      const box = await runaway.boundingBox();
+      await p.mouse.move(box.x + box.width / 2 + 40, box.y + box.height / 2);
+      await p.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 4 });
+      await p.waitForTimeout(500);
+    }
+    assert.equal(await p.locator('.offer-chooser').isHidden(), true);
+    await runaway.click();
+    await waitText(p.locator('.runaway-says'), 'Bon, d’accord. Merci !');
     await p.getByRole('button', { name: 'Chaque année' }).click();
     assert.match(await p.locator('.donate .impact').textContent(), /par an/);
     assert.match(await p.locator('.donate').textContent(), /micro-entreprise du fondateur/);

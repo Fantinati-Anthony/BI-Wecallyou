@@ -747,4 +747,18 @@ export default {
   don_yearly: 'Co roku',
   don_cta_yearly: 'Wesprzyj kwotą {amount} € / rok',
   don_impact_yearly: '{amount} € rocznie = {percent}% kosztów całego roku.',
+
+  // Encart de soutien : deux offres (juste soutenir, ou une licence avec le soutien moral en prime)
+  offer_moral_title: 'Po prostu wesprzyj',
+  offer_moral_text: 'Bez niczego w zamian, żeby powiedzieć „tak trzymać”.',
+  offer_moral_btn: 'Wesprzyj',
+  offer_flee_1: 'Hop!',
+  offer_flee_2: 'Nie tak szybko…',
+  offer_flee_3: 'A może jednak licencja?',
+  offer_flee_done: 'No dobrze. Dziękujemy!',
+  offer_licence_title: 'Licencja, a wsparcie moralne w gratisie',
+  offer_licence_text: 'WeCall.You Pro: ukryta marka, bilety ważne do 30 dni, statystyki z całego roku, pierwszeństwo w godzinach szczytu. Płacisz za prawdziwą usługę, a projekt idzie naprzód.',
+  offer_licence_btn: 'Kup licencję',
+  offer_licence_tag: 'Twoja kolej!',
+  don_goal_year: 'Zebrano {raised} € z {goal} €: koszty na 12 miesięcy z góry',
 };

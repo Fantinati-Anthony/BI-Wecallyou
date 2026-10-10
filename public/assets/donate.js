@@ -61,14 +61,18 @@ export async function supportCard({ context, count = 0, brand = 'WeCall.You' }) 
     card.append(h('p', { class: 'small muted' }, t(key, { tickets: stats.tickets.toLocaleString(), lots: stats.lots.toLocaleString() })));
   }
 
-  // Transparence : objectif du mois et montant déjà reçu (mis à jour à la main dans soutien.json).
+  // Transparence : l'objectif (12 mois de frais d'avance, sinon le mois) et ce qui est déjà réuni
+  // (mis à jour à la main dans soutien.json).
+  const yearly = cfg.goal_total != null;
+  const target = yearly ? cfg.goal_total : goal;
+  const raised = yearly ? (cfg.raised_total ?? 0) : cfg.raised_month;
   const bar = h('span');
   card.append(
-    h('div', { class: 'progress', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': goal, 'aria-valuenow': cfg.raised_month }, bar),
-    h('p', { class: 'small' }, t('don_goal', { raised: euros(cfg.raised_month), goal: euros(goal) })),
+    h('div', { class: 'progress', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': target, 'aria-valuenow': raised }, bar),
+    h('p', { class: 'small' }, t(yearly ? 'don_goal_year' : 'don_goal', { raised: euros(raised), goal: euros(target) })),
   );
   requestAnimationFrame(() => {
-    bar.style.width = `${Math.min(100, Math.round((cfg.raised_month / goal) * 100))}%`;
+    bar.style.width = `${Math.min(100, Math.round((raised / target) * 100))}%`;
   });
 
   // Choix : une fois / chaque mois, puis montant. Le texte d'impact se met à jour en direct.
@@ -134,14 +138,26 @@ export async function supportCard({ context, count = 0, brand = 'WeCall.You' }) 
     toggle.append(btn);
   }
 
+  // Deux offres : « Juste soutenir » (son bouton se fait prier), ou une licence Pro, le soutien moral en prime.
+  const chooser = h('div', { class: 'stack offer-chooser', hidden: true }, toggle, chips, impact, cta, fees);
   card.append(
-    toggle,
-    chips,
-    impact,
-    cta,
-    fees,
+    h(
+      'div',
+      { class: 'support-offers' },
+      h(
+        'div',
+        { class: 'offer offer-moral' },
+        h('h4', {}, t('offer_moral_title')),
+        h('p', { class: 'small' }, t('offer_moral_text')),
+        runawayButton(() => {
+          chooser.hidden = false;
+          chips.querySelector('[aria-pressed="true"]')?.focus();
+        }),
+      ),
+      licenceOffer(),
+    ),
+    chooser,
     h('p', { class: 'small muted' }, t('don_secure'), ' ', t(cfg.tax_deductible ? 'don_tax_yes' : 'don_tax_no')),
-    h('p', { class: 'small' }, t('don_vs_pro'), ' ', h('a', { href: '/pro' }, t('pro_link'))),
   );
 
   if (context !== 'support') {
@@ -155,6 +171,81 @@ export async function supportCard({ context, count = 0, brand = 'WeCall.You' }) 
 
   drawChips();
   return card;
+}
+
+/**
+ * « Juste soutenir » : le bouton esquive la souris trois fois, avec une petite phrase, puis se laisse
+ * attraper. Au doigt, il saute une fois. Au clavier, ou si l'on réduit les animations, il ne fuit pas.
+ */
+function runawayButton(onAccept) {
+  const quiet = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const lines = ['offer_flee_1', 'offer_flee_2', 'offer_flee_3'];
+  let escapes = quiet ? lines.length : 0;
+  const button = h('button', { type: 'button', class: 'btn btn-soft runaway', id: 'runaway-btn' }, t('offer_moral_btn'));
+  const says = h('span', { class: 'runaway-says', 'aria-live': 'polite' });
+  const zone = h('div', { class: 'runaway-zone' }, button);
+  let resting = 0; // fin du saut en cours : on ne refuit pas pendant qu'il atterrit
+  let skipClick = false;
+  // Un saut ailleurs dans sa zone : parmi quelques places au hasard, la plus loin du pointeur.
+  const jump = (pointerX, pointerY) => {
+    const room = zone.getBoundingClientRect();
+    const size = button.getBoundingClientRect();
+    const spots = Array.from({ length: 8 }, () => ({ x: Math.random() * Math.max(0, room.width - size.width), y: Math.random() * Math.max(0, room.height - size.height) }));
+    const far = (s) => Math.hypot(room.left + s.x + size.width / 2 - pointerX, room.top + s.y + size.height / 2 - pointerY);
+    const spot = spots.reduce((a, b) => (far(b) > far(a) ? b : a));
+    button.style.setProperty('--run-x', `${spot.x}px`);
+    button.style.setProperty('--run-y', `${spot.y}px`);
+    zone.classList.add('running');
+    says.textContent = t(lines[escapes]);
+    escapes++;
+    resting = Date.now() + 400;
+    if (escapes === lines.length) setTimeout(() => (says.textContent = t('offer_flee_done')), 1100);
+  };
+  // La souris approche (à moins de trois quarts de largeur de bouton) : il file.
+  zone.addEventListener('pointermove', (event) => {
+    if (event.pointerType !== 'mouse' || escapes >= lines.length || Date.now() < resting) return;
+    const box = button.getBoundingClientRect();
+    if (Math.hypot(event.clientX - (box.left + box.width / 2), event.clientY - (box.top + box.height / 2)) < box.width * 0.75) jump(event.clientX, event.clientY);
+  });
+  // Au doigt : il saute une fois, ce premier appui ne compte pas, puis il se rend.
+  button.addEventListener('pointerdown', (event) => {
+    if (event.pointerType === 'mouse' || escapes > 0) return;
+    escapes = lines.length - 1;
+    skipClick = true;
+    jump(event.clientX, event.clientY);
+  });
+  button.addEventListener('click', (event) => {
+    if (skipClick) {
+      skipClick = false;
+      return;
+    }
+    if (escapes < lines.length && event.detail > 0) return; // attrapé avant la fin du jeu : ça ne compte pas
+    says.textContent = t('offer_flee_done');
+    onAccept();
+  });
+  return h('div', { class: 'runaway-wrap' }, zone, says);
+}
+
+/** La licence : le vrai bouton, avec le ticket « C'est votre tour ! » qui surgit au survol. */
+function licenceOffer() {
+  return h(
+    'div',
+    { class: 'offer offer-licence' },
+    h('h4', {}, t('offer_licence_title')),
+    h('p', { class: 'small' }, t('offer_licence_text')),
+    h(
+      'div',
+      { class: 'licence-wrap' },
+      h('span', { class: 'licence-halo', 'aria-hidden': 'true' }),
+      h(
+        'a',
+        { class: 'btn btn-big btn-block licence-btn', href: '/pro', id: 'licence-btn' },
+        h('span', { class: 'licence-tag', 'aria-hidden': 'true' }, h('b', {}, '001'), t('offer_licence_tag')),
+        h('span', { class: 'licence-bell' }, icon('bell-ringing')),
+        t('offer_licence_btn'),
+      ),
+    ),
+  );
 }
 
 /** Après l'impression : un rappel discret, une seule fois. */

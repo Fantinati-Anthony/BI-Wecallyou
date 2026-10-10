@@ -23,8 +23,11 @@ if (cfg) {
   // les autres (association, hébergeur mécène, autres outils) viendront quand les membres le décideront.
   const stages = cfg.roadmap ?? [];
   // Chapitres suivis par une jauge : un montant mensuel payé par les dons et le Pro (pas les ventes).
-  const gauged = (s) => s.month && !s.once && !s.by_fr;
-  const nextIndex = stages.findIndex((s, i) => i > 0 && gauged(s) && cfg.raised_month < s.month); // le chapitre 1, c'est aujourd'hui
+  // Les étapes « total » (frais d'avance) se mesurent au cumul réuni depuis le début, les autres au mois.
+  const raisedFor = (s) => (s.total ? (cfg.raised_total ?? 0) : cfg.raised_month);
+  const targetOf = (s) => s.total ?? s.month;
+  const gauged = (s) => targetOf(s) && !s.once && !s.by_fr;
+  const nextIndex = stages.findIndex((s, i) => i > 0 && gauged(s) && raisedFor(s) < targetOf(s)); // le chapitre 1, c'est aujourd'hui
   // Montants arrondis (« ≈ ») : investissement de départ et coût mensuel.
   const fr = LANG === 'fr';
   const cost = (stage) => {
@@ -32,6 +35,7 @@ if (cfg) {
     return [
       stage.once && `${about}${euros(stage.once)} ${fr ? 'd’investissement' : 'investment'}`,
       stage.month && `${about}${euros(stage.month)} ${fr ? '/ mois' : '/ month'}`,
+      stage.total && `${about}${euros(stage.total)} ${fr ? 'pour 12 mois de frais' : 'for 12 months of costs'}`,
       said(stage, 'by'),
     ].filter(Boolean).join(' · ') || said(stage, 'when');
   };
@@ -39,9 +43,9 @@ if (cfg) {
     document.getElementById('roadmap'),
     stages.flatMap((stage, i) => {
       const followed = gauged(stage);
-      const reached = i === 0 || (followed && cfg.raised_month >= stage.month);
+      const reached = i === 0 || (followed && raisedFor(stage) >= targetOf(stage));
       const bar = h('span');
-      if (followed) grow(bar, cfg.raised_month / stage.month);
+      if (followed) grow(bar, raisedFor(stage) / targetOf(stage));
       return [
         said(stage, 'act') && h('li', { class: 'act' }, h('p', { class: 'eyebrow' }, said(stage, 'act'))),
         h(
@@ -58,16 +62,22 @@ if (cfg) {
 
   // L'objectif du mois : la jauge du chapitre marqué « challenge » (ou du prochain palier).
   const challenge = stages.find((s) => s.challenge) ?? stages[nextIndex];
-  if (challenge?.month) {
-    const done = cfg.raised_month >= challenge.month;
-    document.getElementById('ch-raised').textContent = euros(cfg.raised_month);
-    document.getElementById('ch-goal').textContent = LANG === 'fr' ? `sur ${euros(challenge.month)} par mois` : `of ${euros(challenge.month)} a month`;
+  if (challenge && targetOf(challenge)) {
+    const raised = raisedFor(challenge);
+    const target = targetOf(challenge);
+    const done = raised >= target;
+    document.getElementById('ch-raised').textContent = euros(raised);
+    document.getElementById('ch-goal').textContent = challenge.total
+      ? (LANG === 'fr' ? `sur ${euros(target)} : 12 mois de frais d’avance` : `of ${euros(target)}: 12 months of costs ahead`)
+      : (LANG === 'fr' ? `sur ${euros(target)} par mois` : `of ${euros(target)} a month`);
     document.getElementById('ch-note').textContent = [
-      LANG === 'fr' ? 'Contributions et accès Pro du mois.' : 'Contributions and Pro access this month.',
+      challenge.total
+        ? (LANG === 'fr' ? 'Contributions et licences réunies depuis le début.' : 'Contributions and licences raised since the start.')
+        : (LANG === 'fr' ? 'Contributions et licences du mois.' : 'Contributions and licences this month.'),
       done ? (LANG === 'fr' ? 'Objectif atteint : merci à tous !' : 'Goal reached: thank you all!') : '',
       t('sup_updated', { date: cfg.updated }),
     ].filter(Boolean).join(' ');
-    grow(document.getElementById('ch-bar'), cfg.raised_month / challenge.month);
+    grow(document.getElementById('ch-bar'), raised / target);
     document.getElementById('challenge').hidden = false;
   }
 

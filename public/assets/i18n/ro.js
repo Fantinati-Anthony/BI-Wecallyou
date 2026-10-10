@@ -747,4 +747,18 @@ export default {
   don_yearly: 'În fiecare an',
   don_cta_yearly: 'Susțineți cu {amount} € / an',
   don_impact_yearly: '{amount} € pe an = {percent} % din costurile unui an.',
+
+  // Encart de soutien : deux offres (juste soutenir, ou une licence avec le soutien moral en prime)
+  offer_moral_title: 'Doar susțineți',
+  offer_moral_text: 'Fără nimic în schimb, doar ca să spuneți „continuați”.',
+  offer_moral_btn: 'Susțineți',
+  offer_flee_1: 'Hopa!',
+  offer_flee_2: 'Nu așa repede…',
+  offer_flee_3: 'Și dacă ați lua mai bine o licență?',
+  offer_flee_done: 'Bine, fie. Mulțumim!',
+  offer_licence_title: 'O licență, cu sprijin moral pe deasupra',
+  offer_licence_text: 'WeCall.You Pro: marcă ascunsă, tichete valabile până la 30 de zile, statistici pe un an, prioritate la orele de vârf. Plătiți un serviciu real, iar proiectul avansează.',
+  offer_licence_btn: 'Luați o licență',
+  offer_licence_tag: 'Este rândul dumneavoastră!',
+  don_goal_year: '{raised} € strânși din {goal} €: costurile pe 12 luni în avans',
 };

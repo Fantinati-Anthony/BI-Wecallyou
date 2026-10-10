@@ -747,4 +747,18 @@ export default {
   don_yearly: 'Chaque année',
   don_cta_yearly: 'Soutenir avec {amount} € / an',
   don_impact_yearly: '{amount} € par an = {percent} % des frais d’une année.',
+
+  // Encart de soutien : deux offres (juste soutenir, ou une licence avec le soutien moral en prime)
+  offer_moral_title: 'Juste soutenir',
+  offer_moral_text: 'Sans rien en échange, pour dire « continuez ».',
+  offer_moral_btn: 'Soutenir',
+  offer_flee_1: 'Hop !',
+  offer_flee_2: 'Pas si vite…',
+  offer_flee_3: 'Et une licence, plutôt ?',
+  offer_flee_done: 'Bon, d’accord. Merci !',
+  offer_licence_title: 'Une licence, et le soutien moral en prime',
+  offer_licence_text: 'WeCall.You Pro : marque masquée, tickets jusqu’à 30 jours, statistiques sur un an, priorité aux heures de pointe. Vous payez un vrai service, et le projet avance.',
+  offer_licence_btn: 'Prendre une licence',
+  offer_licence_tag: 'C’est votre tour !',
+  don_goal_year: '{raised} € réunis sur {goal} € : 12 mois de frais d’avance',
 };

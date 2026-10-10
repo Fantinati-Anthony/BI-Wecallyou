@@ -2,6 +2,8 @@
   "updated": "2026-10",
   "goal_month": 50,
   "raised_month": 0,
+  "goal_total": 600,
+  "raised_total": 0,
   "tax_deductible": false,
   "fee_percent": 1.5,
   "fee_fixed": 0.25,
@@ -31,49 +33,49 @@
       "when_en": "Under way",
       "fr": "Chapitre 1 · Un outil, un fondateur, quelques euros",
       "en": "Chapter 1 · One tool, one founder, a few euros",
-      "detail_fr": "WeCall.You tourne sur un petit serveur en France. Le fondateur avance les frais ; vos contributions les couvrent.",
-      "detail_en": "WeCall.You runs on a small server in France. The founder advances the costs; your contributions cover them."
+      "detail_fr": "WeCall.You tourne sur un petit serveur en France. Le fondateur avance les frais, environ 50 € par mois ; vos contributions et les licences les couvrent.",
+      "detail_en": "WeCall.You runs on a small server in France. The founder advances the costs, about €50 a month; your contributions and licences cover them."
     },
     {
-      "month": 50,
+      "total": 600,
       "challenge": true,
       "approx": true,
-      "fr": "Chapitre 2 · L’objectif : couvrir les frais du mois",
-      "en": "Chapter 2 · The goal: cover the month’s costs",
-      "detail_fr": "Hébergement, nom de domaine, téléphone, IA et petites dépenses. Atteint, le projet ne coûte plus rien à son fondateur.",
-      "detail_en": "Hosting, domain name, phone, AI and small expenses. Once reached, the project no longer costs its founder anything."
+      "fr": "Étape 1 · Douze mois de frais d’avance, puis l’association",
+      "en": "Step 1 · Twelve months of costs ahead, then the association",
+      "detail_fr": "Dès que douze mois de frais sont réunis, WeCall.You passe en association. Un an couvert, c’est le temps d’un exercice complet et de sa déclaration annuelle, sans prendre de risque.",
+      "detail_en": "As soon as twelve months of costs are raised, WeCall.You becomes an association. A covered year is the time of a full financial year and its annual declaration, without taking any risk."
     },
     {
-      "when_fr": "Dès que possible",
-      "when_en": "As soon as possible",
-      "fr": "Chapitre 3 · L’association : c’est vous qui décidez",
-      "en": "Chapter 3 · The association: you decide",
-      "detail_fr": "Une association loi 1901 reprend le projet. Ses membres votent les prochaines fonctions et la vie de l’association. WeCall.You marche dans les deux sens : on vous appelle quand c’est votre tour, et on vous appelle à décider.",
-      "detail_en": "A non-profit association takes over the project. Its members vote on the next features and the life of the association. WeCall.You works both ways: we call you when it’s your turn, and we call on you to decide."
+      "when_fr": "Avec l’association",
+      "when_en": "With the association",
+      "fr": "Étape 2 · Un hébergement qui ne dépend plus du fondateur",
+      "en": "Step 2 · Hosting that no longer depends on the founder",
+      "detail_fr": "Un hébergeur mécène offre les serveurs, ou l’association les paie elle-même. Dans les deux cas, le service tient même les jours d’affluence.",
+      "detail_en": "A sponsoring host provides the servers, or the association pays for them itself. Either way, the service holds even on the busiest days."
+    },
+    {
+      "when_fr": "Avec l’association",
+      "when_en": "With the association",
+      "fr": "Étape 3 · Vous votez la suite",
+      "en": "Step 3 · You vote on what’s next",
+      "detail_fr": "Les membres votent l’évolution de WeCall.You et la vie de l’association, puis, selon l’engouement, d’autres solutions à offrir et à faire grandir. On vous appelle quand c’est votre tour, et on vous appelle à décider.",
+      "detail_en": "Members vote on how WeCall.You evolves and on the life of the association, then, depending on the enthusiasm, other solutions to offer and grow. We call you when it’s your turn, and we call on you to decide."
     },
     {
       "act_fr": "Acte 2 · Grandir ensemble",
       "act_en": "Act 2 · Growing together",
       "month": 100,
       "approx": true,
-      "fr": "Chapitre 4 · Bénévoles et IA, main dans la main",
-      "en": "Chapter 4 · Volunteers and AI, hand in hand",
+      "fr": "Chapitre 2 · Bénévoles et IA, main dans la main",
+      "en": "Chapter 2 · Volunteers and AI, hand in hand",
       "detail_fr": "Plus d’IA pour développer vite, des bénévoles pour choisir, tester et accompagner. Les fonctions votées arrivent plus tôt.",
       "detail_en": "More AI to build fast, volunteers to choose, test and help others. The voted features arrive sooner."
     },
     {
-      "when_fr": "Notre recherche",
-      "when_en": "What we’re looking for",
-      "fr": "Chapitre 5 · Un hébergeur mécène",
-      "en": "Chapter 5 · A sponsoring host",
-      "detail_fr": "Un hébergeur européen offre les serveurs et la montée en charge, pour que le service tienne même les jours d’affluence : « Hébergé grâce à X ».",
-      "detail_en": "A European host provides the servers and scaling, so the service holds even on the busiest days: “Hosted thanks to X”."
-    },
-    {
       "when_fr": "Ensuite",
       "when_en": "Next",
-      "fr": "Chapitre 6 · D’autres outils que la file d’attente",
-      "en": "Chapter 6 · Other tools than the queue",
+      "fr": "Chapitre 3 · D’autres outils que la file d’attente",
+      "en": "Chapter 3 · Other tools than the queue",
       "detail_fr": "Le même esprit pour d’autres services, choisis par les membres : toujours libres, gratuits et respectueux de vos données.",
       "detail_en": "The same spirit for other services, chosen by the members: always free software, free of charge and respectful of your data."
     },
@@ -82,8 +84,8 @@
       "act_en": "Act 3 · The dream",
       "when_fr": "Le rêve",
       "when_en": "The dream",
-      "fr": "Chapitre 7 · Changer les choses, à petite échelle puis à grande",
-      "en": "Chapter 7 · Change things, on a small scale then a large one",
+      "fr": "Chapitre 4 · Changer les choses, à petite échelle puis à grande",
+      "en": "Chapter 4 · Change things, on a small scale then a large one",
       "detail_fr": "Des bénévoles, un jour peut-être des salariés, et des outils qui font gagner du temps et du confort à beaucoup de monde, sans jamais vendre leurs données.",
       "detail_en": "Volunteers, maybe one day employees, and tools that save time and comfort for many people, without ever selling their data."
     }
