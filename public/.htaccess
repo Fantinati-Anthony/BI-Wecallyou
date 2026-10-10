@@ -29,6 +29,7 @@ AddType image/webp .webp
   RewriteRule ^pro/?$ pro.html [L]
   RewriteRule ^mentions/?$ mentions.html [L]
   RewriteRule ^creer/?$ creer.html [L]
+  RewriteRule ^voter/?$ voter.html [L]
   RewriteRule ^[aA]/[A-Za-z2-7]{23}/?$ a.html [L]
   RewriteRule ^ecran/[A-Za-z2-7]{23}/?$ ecran.html [L,NC]
 

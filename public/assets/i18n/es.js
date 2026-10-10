@@ -734,4 +734,9 @@ export default {
   m_arrive_already: 'El {n} ya está en la cola.',
   m_arrive_called: 'El {n} ya ha sido llamado.',
   err_not_issued: 'Este número no pertenece a esta cola.',
+
+  // Page « Votez pour la suite »
+  vote_link: 'Vote por lo siguiente',
+  err_votes_full: 'Ha usado todos sus votos: retire uno para votar por otra idea.',
+  err_idea: 'Esta idea ya no está en votación.',
 };

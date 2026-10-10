@@ -734,4 +734,9 @@ export default {
   m_arrive_already: 'Numer {n} już jest w kolejce.',
   m_arrive_called: 'Numer {n} został już wywołany.',
   err_not_issued: 'Ten numer nie należy do tej kolejki.',
+
+  // Page « Votez pour la suite »
+  vote_link: 'Głosuj, co dalej',
+  err_votes_full: 'Wykorzystano wszystkie głosy: wycofaj jeden, aby zagłosować na coś innego.',
+  err_idea: 'Na ten pomysł nie można już głosować.',
 };

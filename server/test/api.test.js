@@ -417,6 +417,30 @@ test('numéros mélangés (« les deux », affiche seule) : tickets imprimés co
   assert.match(first.label, /^\d{3}$/);
 });
 
+test('« Votez pour la suite » : compte obligatoire, trois voix, idées ouvertes seulement, voix effacées avec le compte', async () => {
+  const account = await wc.createAccount('votante', 'mot-de-passe-long');
+  assert.equal((await call('POST', '/account', account.request)).status, 200);
+  const vote = async (idea, on = true, token = account.session.token) => {
+    const res = await fetch(`${base}/votes`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Account ${token}` }, body: JSON.stringify({ idea, on }) });
+    return { status: res.status, ...(await res.json()) };
+  };
+  // Sans compte : on lit les voix, on ne vote pas.
+  assert.equal((await call('GET', '/votes')).mine, null);
+  assert.equal((await call('POST', '/votes', { idea: 'termine', on: true })).ok, false);
+  for (const idea of ['termine', 'bientot', 'pause']) assert.equal((await vote(idea)).ok, true);
+  const full = await vote('stats');
+  assert.equal(full.error, 'votes_full'); // trois voix par compte
+  const back = await vote('pause', false);
+  assert.deepEqual(back.mine, ['termine', 'bientot']);
+  assert.equal(back.counts.termine, 1);
+  assert.equal((await vote('stats')).ok, true);
+  assert.equal((await vote('ajout-file')).error, 'idea'); // déjà livrée : plus de vote
+  assert.equal((await vote('nimporte-quoi')).error, 'idea');
+  // Le compte supprimé : ses voix aussi.
+  await fetch(`${base}/account/delete`, { method: 'POST', headers: { Authorization: `Account ${account.session.token}` } });
+  assert.equal((await call('GET', '/votes')).counts.termine, undefined);
+});
+
 test('le commerçant fait entrer un ticket dans la file : numéro tapé ou QR client scanné', async () => {
   const lot = await newLot();
   const [one, two, three] = lot.res.tickets;

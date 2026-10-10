@@ -734,4 +734,9 @@ export default {
   m_arrive_already: '{n} is already in the queue.',
   m_arrive_called: '{n} has already been called.',
   err_not_issued: 'This number doesn’t belong to this queue.',
+
+  // Page « Votez pour la suite »
+  vote_link: 'Vote for what’s next',
+  err_votes_full: 'You’ve used all your votes: remove one to vote elsewhere.',
+  err_idea: 'This idea is no longer open for voting.',
 };

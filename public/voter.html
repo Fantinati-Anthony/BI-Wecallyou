@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="Votez pour les prochaines fonctions de WeCall.You : chaque idée affiche son coût réel, les mieux votées passent en premier.">
+  <meta name="theme-color" content="#f2f3f5" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0e1013" media="(prefers-color-scheme: dark)">
+  <title>Votez pour la suite · WeCall.You</title>
+  <link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <link rel="stylesheet" href="/assets/style.css">
+  <script type="module" src="/assets/vote.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/"><img src="/assets/icon.svg" alt="" width="30" height="30"><span>WeCall<span class="brand-dot">.</span>You</span></a>
+    <nav class="topnav">
+      <a class="btn btn-ghost" href="/compte"><span data-icon="user-circle"></span><span class="label" data-i18n="acc_link">Mon compte</span></a>
+      <a class="btn nav-cta" href="/creer"><span data-icon="plus"></span><span class="label" data-i18n="create_title">Créer ma file</span></a>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <!-- Le mot du fondateur, la façon de chiffrer, puis le classement en direct. -->
+    <article class="story" data-lang="fr">
+      <p class="eyebrow">La suite, c’est vous</p>
+      <h1>Votez pour la suite</h1>
+      <p class="lead">J’ai bien plus d’idées que de soirées pour les coder. Plutôt que de choisir seul, je vous donne la main : chaque compte a trois voix, et les idées les mieux votées passent en premier.</p>
+      <p>Chaque idée affiche ce qu’elle coûte vraiment : les jours de travail, le prix si l’on embauche un développeur, et ce que coûte l’IA quand je la code moi-même. Quand une idée passe en développement, vos voix se libèrent pour la suivante.</p>
+      <p class="signature">Le fondateur de WeCall.You</p>
+    </article>
+    <article class="story" data-lang="en" hidden>
+      <p class="eyebrow">What’s next is up to you</p>
+      <h1>Vote for what’s next</h1>
+      <p class="lead">I have far more ideas than evenings to code them. Rather than choosing alone, I’m handing it to you: each account has three votes, and the best-voted ideas come first.</p>
+      <p>Each idea shows what it really costs: the days of work, the price if we hire a developer, and what AI costs when I code it myself. When an idea goes into development, your votes are freed for the next one.</p>
+      <p class="signature">The founder of WeCall.You</p>
+    </article>
+
+    <section class="card" id="rates">
+      <h2 data-lang="fr">Comment on chiffre</h2>
+      <h2 data-lang="en" hidden>How we estimate</h2>
+      <ul class="rates" id="rates-list"></ul>
+    </section>
+
+    <div id="vote-status" role="status"></div>
+    <p class="error" id="vote-error" role="alert" hidden></p>
+
+    <section class="card" id="open-ideas">
+      <h2 data-lang="fr">Le classement</h2>
+      <h2 data-lang="en" hidden>The ranking</h2>
+      <p class="small muted" id="top-sum"></p>
+      <ol class="ideas" id="ideas"></ol>
+    </section>
+
+    <section class="card" id="next-ideas" hidden>
+      <h2 data-lang="fr">En cours de développement</h2>
+      <h2 data-lang="en" hidden>In development</h2>
+      <ul class="ideas" id="ideas-next"></ul>
+    </section>
+
+    <section class="card" id="done-ideas" hidden>
+      <h2 data-lang="fr">Déjà livré</h2>
+      <h2 data-lang="en" hidden>Already delivered</h2>
+      <ul class="ideas" id="ideas-done"></ul>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span data-i18n="service_note">Service gratuit, sans pub, financé par les dons.</span>
+    <nav>
+      <a href="/soutenir" data-i18n="support_link">Soutenir le projet</a>
+      <a href="/pro" data-i18n="nav_pro">Offre Pro</a>
+      <a href="/confidentialite" data-i18n="privacy">Confidentialité</a>
+      <a href="/mentions" data-i18n="legal">Mentions légales et CGV</a>
+      <a href="https://github.com/Fantinati-Anthony/BI-Wecallyou" data-i18n="open_source">Code source</a>
+    </nav>
+  </footer>
+</body>
+</html>

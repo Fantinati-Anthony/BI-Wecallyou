@@ -734,4 +734,9 @@ export default {
   m_arrive_already: 'Il {n} è già in coda.',
   m_arrive_called: 'Il {n} è già stato chiamato.',
   err_not_issued: 'Questo numero non appartiene a questa coda.',
+
+  // Page « Votez pour la suite »
+  vote_link: 'Voti per le prossime novità',
+  err_votes_full: 'Ha usato tutti i suoi voti: ne ritiri uno per votare altrove.',
+  err_idea: 'Questa idea non è più in votazione.',
 };

@@ -734,4 +734,9 @@ export default {
   m_arrive_already: 'Numărul {n} este deja la coadă.',
   m_arrive_called: 'Numărul {n} a fost deja chemat.',
   err_not_issued: 'Acest număr nu aparține acestei cozi.',
+
+  // Page « Votez pour la suite »
+  vote_link: 'Votați ce urmează',
+  err_votes_full: 'Ați folosit toate voturile: retrageți unul pentru a vota altceva.',
+  err_idea: 'Această idee nu mai este supusă votului.',
 };

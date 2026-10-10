@@ -5,6 +5,7 @@ import { checkMessage, relay } from './relay.js';
 import { LIFETIMES, PRO_LIFETIMES, DEFAULT_LIFETIME } from './store.js';
 import { STATS_DAYS } from './pro.js';
 import { createHmac, timingSafeEqual, randomInt } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
 import * as base32 from './base32.js';
 
 export const CHANNELS = ['push', 'sms', 'wa', 'mail'];
@@ -152,6 +153,8 @@ function publicKey(value) {
   return bytes?.length === 65 && bytes[0] === 4 ? value : fail(400, 'key');
 }
 
+// Les idées soumises au vote, à côté des pages (public/idees.json).
+const IDEAS_FILE = new URL('../../public/idees.json', import.meta.url);
 const IDENT = /^[a-z0-9][a-z0-9._-]{2,31}$/;
 const HEX64 = /^[0-9a-f]{64}$/;
 const MAX_VAULT = 60_000;
@@ -172,6 +175,14 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
     if (account) return account;
     limits.check(`auth:${clientIp(req)}`, 60, 10 * MINUTE);
     return fail(401, 'login');
+  };
+
+  // Idées soumises au vote : le fichier public de la page « Votez » (relu à chaque fois, il est petit).
+  const ideasList = async () => JSON.parse(await readFile(IDEAS_FILE, 'utf8'));
+  const tally = (all) => {
+    const counts = {};
+    for (const list of Object.values(all)) for (const id of list) counts[id] = (counts[id] ?? 0) + 1;
+    return counts;
   };
 
   const accountView = async (account) => ({
@@ -791,8 +802,41 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
     }],
 
     ['POST', /^\/account\/delete$/, async (req) => {
-      await accounts.remove(await accountOf(req));
+      const account = await accountOf(req);
+      await accounts.remove(account);
+      await store.updateVotes(account.id, () => []); // ses voix partent avec lui
       return { ok: true };
+    }],
+
+    /* ------------------------------------------ « Votez pour la suite » */
+
+    // Les voix de chaque idée (publiques), et celles du compte connecté.
+    ['GET', /^\/votes$/, async (req) => {
+      const { votes_per_account: max } = await ideasList();
+      const all = await store.votes();
+      const mine = (req.headers.authorization ?? '').startsWith('Account ') ? (all[(await accountOf(req)).id] ?? []) : null;
+      return { ok: true, counts: tally(all), mine, max };
+    }],
+
+    // Donner ou retirer sa voix : compte obligatoire, quelques voix par compte sur les idées ouvertes.
+    ['POST', /^\/votes$/, async (req) => {
+      const account = await accountOf(req);
+      limits.check(`vote:${account.id}`, 60, 10 * MINUTE);
+      const body = await readJson(req);
+      const { ideas, votes_per_account: max } = await ideasList();
+      const open = new Set(ideas.filter((i) => i.status === 'vote').map((i) => i.id));
+      if (!open.has(body.idea)) fail(404, 'idea');
+      const all = await store.updateVotes(account.id, (mine) => {
+        const next = new Set(mine);
+        if (!body.on) next.delete(body.idea);
+        else if (!next.has(body.idea)) {
+          // Les voix posées sur une idée en cours ou livrée se libèrent.
+          if ([...next].filter((id) => open.has(id)).length >= max) fail(409, 'votes_full');
+          next.add(body.idea);
+        }
+        return [...next];
+      });
+      return { ok: true, counts: tally(all), mine: all[account.id] ?? [], max };
     }],
 
     // Stripe prévient d'un paiement : signature vérifiée, chaque événement traité une seule fois.

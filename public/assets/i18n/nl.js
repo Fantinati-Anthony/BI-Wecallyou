@@ -734,4 +734,9 @@ export default {
   m_arrive_already: '{n} staat al in de wachtrij.',
   m_arrive_called: '{n} is al opgeroepen.',
   err_not_issued: 'Dit nummer hoort niet bij deze wachtrij.',
+
+  // Page « Votez pour la suite »
+  vote_link: 'Stem voor wat er komt',
+  err_votes_full: 'U hebt al uw stemmen gebruikt: trek er een in om ergens anders op te stemmen.',
+  err_idea: 'Over dit idee wordt niet meer gestemd.',
 };

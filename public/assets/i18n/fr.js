@@ -734,4 +734,9 @@ export default {
   m_arrive_already: 'Le {n} est déjà dans la file.',
   m_arrive_called: 'Le {n} a déjà été appelé.',
   err_not_issued: 'Ce numéro n’appartient pas à cette file.',
+
+  // Page « Votez pour la suite »
+  vote_link: 'Votez pour la suite',
+  err_votes_full: 'Vous avez utilisé toutes vos voix : retirez-en une pour voter ailleurs.',
+  err_idea: 'Cette idée n’est plus soumise au vote.',
 };

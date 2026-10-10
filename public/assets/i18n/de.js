@@ -734,4 +734,9 @@ export default {
   m_arrive_already: 'Nr. {n} ist bereits in der Warteschlange.',
   m_arrive_called: 'Nr. {n} wurde bereits aufgerufen.',
   err_not_issued: 'Diese Nummer gehört nicht zu dieser Warteschlange.',
+
+  // Page « Votez pour la suite »
+  vote_link: 'Stimmen Sie für das Nächste ab',
+  err_votes_full: 'Sie haben alle Ihre Stimmen vergeben: Ziehen Sie eine zurück, um anders abzustimmen.',
+  err_idea: 'Über diese Idee wird nicht mehr abgestimmt.',
 };

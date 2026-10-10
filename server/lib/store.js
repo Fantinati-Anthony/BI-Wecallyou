@@ -39,6 +39,7 @@ const today = (ms = Date.now()) => new Date(ms).toISOString().slice(0, 10);
 export class Store {
   #statusKey;
   #queueCache = new Map();
+  #votesWrite = Promise.resolve(); // les votes s'écrivent l'un après l'autre
   #pendingStats = new Map(); // « lot|jour » → compteurs à ajouter (écrits par lots toutes les 10 s)
 
   constructor({ dataDir, publicDir, statusKey }) {
@@ -453,5 +454,37 @@ export class Store {
     const stats = await this.stats();
     stats.tickets += tickets;
     await fs.writeFile(this.statsFile(), JSON.stringify(stats));
+  }
+
+  /* ------------------------------------------- votes (« Votez pour la suite ») */
+
+  get votesFile() {
+    return path.join(this.dataDir, 'votes.json');
+  }
+
+  /** Les voix de chaque compte : { identifiant du compte : [idées] }. */
+  async votes() {
+    try {
+      return JSON.parse(await fs.readFile(this.votesFile, 'utf8'));
+    } catch (err) {
+      ignoreMissing(err);
+      return {};
+    }
+  }
+
+  /** Change les voix d'un compte (change(anciennes) → nouvelles), une écriture à la fois ; rend toutes les voix. */
+  updateVotes(account, change) {
+    const run = this.#votesWrite.then(async () => {
+      const all = await this.votes();
+      const next = change(all[account] ?? []);
+      if (next.length) all[account] = next;
+      else delete all[account];
+      const tmp = `${this.votesFile}.${randomBytes(4).toString('hex')}.tmp`;
+      await fs.writeFile(tmp, JSON.stringify(all), { mode: 0o600 });
+      await fs.rename(tmp, this.votesFile);
+      return all;
+    });
+    this.#votesWrite = run.catch(() => {});
+    return run;
   }
 }
