@@ -333,6 +333,7 @@ test('statistiques anonymes du mois', async () => {
   assert.ok(info.stats.lots >= 1);
   assert.ok(info.stats.tickets >= 20);
   assert.equal(info.brand, 'WeCall.You');
+  assert.equal(info.live.max, 2000); // pages en direct au plus (sur un hébergement limité : la moitié de ses connexions)
 });
 
 test('affiche : un numéro unique tiré au hasard par scan, ordre d’arrivée gardé, jamais imprimable, lien révocable', async () => {

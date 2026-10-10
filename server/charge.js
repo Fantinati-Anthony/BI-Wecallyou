@@ -251,22 +251,17 @@ async function scenario(site, snacks, perSnack, minutes) {
   const all = () => [...stats.values()].reduce((sum, s) => ({ times: sum.times.concat(s.times), failed: sum.failed + s.failed }), { times: [], failed: 0 });
 
   // Sécurité : sans plafond du direct, des centaines de pages en direct prendraient toutes les
-  // connexions de la lune et le site ne répondrait plus. On vérifie d'abord, sans danger (45 au plus).
-  const check = [];
-  for (let i = 0; i < 45; i++) {
-    const live = liveConnection(`${api}/events/${fakeStatus()}`, {});
-    check.push(live);
-    if (!(await live.opened).ok) break;
-  }
-  const uncapped = check.filter((live) => live.open).length > 40;
-  for (const live of check) live.close();
-  if (uncapped) {
-    console.error('\nLe site ne limite pas encore le direct : mettez la lune à jour (git pull, puis redémarrer l’application) avant ce test.\n');
+  // connexions de la lune et le site ne répondrait plus. Le site doit avoir lu ses limites (charge)
+  // et dire combien de pages il garde en direct. (Ouvrir des connexions pour vérifier ne va pas : une
+  // page fermée garde sa place une à deux minutes, le temps que la fermeture remonte jusqu'à Node.)
+  const info = await fetch(`${api}/info`).then((res) => res.json()).catch(() => null);
+  if (!info?.load || !info?.live) {
+    console.error('\nLe site ne dit pas encore qu’il limite le direct : mettez la lune à jour (git pull, puis redémarrer l’application), attendez une minute, puis relancez.\n');
     process.exit(1);
   }
-  await pause(2000);
 
-  console.log(`\n${snacks} snacks × ${perSnack} clients sur ${site} : les ${total} clients arrivent en une minute, puis attendent ${minutes} min.`);
+  console.log(`\n${snacks} snack${snacks > 1 ? 's' : ''} × ${perSnack} clients sur ${site} : les ${total} clients arrivent en une minute, puis attendent ${minutes} min.`);
+  console.log(`Direct : ${info.live.max} pages au plus (dont un cinquième gardé aux files des soutiens), les autres vérifient toutes les 5 s.`);
   console.log('Chaque client fait comme la vraie page ; chaque commerçant rafraîchit la sienne toutes les 10 s.');
   console.log('Rien n’est créé : tickets et fichiers d’état sont inconnus du serveur, qui répond sans rien écrire.\n');
 
@@ -322,10 +317,12 @@ async function scenario(site, snacks, perSnack, minutes) {
   const { times, failed } = all();
   const measured = [...loads.entries()].filter(([at]) => at > start + 60_000).map(([, ratio]) => ratio);
   const peak = measured.length ? Math.max(...measured) : null;
-  console.log(`\nCharge de l’hébergement pendant l’attente : ${measured.length ? measured.map((r) => `${Math.round(r * 100)} %`).join(', ') : 'non mesurée'}`);
+  const low = measured.length ? Math.round(Math.min(...measured) * 100) : null;
+  const high = peak === null ? null : Math.round(peak * 100);
+  console.log(`\nCharge de l’hébergement pendant l’attente : ${high === null ? 'non mesurée' : low === high ? `${high} %` : `de ${low} à ${high} %`}`);
   console.log(`(la plus haute des limites de la lune : connexions, processeur, mémoire… le détail est dans cPanel › Utilisation des ressources)`);
   const holds = failed / Math.max(1, times.length) <= 0.01 && pct(times, 95) <= 1000 && (peak ?? 0) < 0.75;
-  console.log(`\nVerdict : ${holds ? 'la lune tient' : 'la lune peine'} avec ${snacks} snacks × ${perSnack} clients : ${times.length} requêtes, ${failed} en échec, réponse en ${fmt(pct(times, 95))} ms (95 %), charge la plus haute ${peak === null ? '–' : `${Math.round(peak * 100)} %`}.`);
+  console.log(`\nVerdict : ${holds ? 'la lune tient' : 'la lune peine'} avec ${snacks} snack${snacks > 1 ? 's' : ''} × ${perSnack} clients : ${times.length} requêtes, ${failed} en échec, réponse en ${fmt(pct(times, 95))} ms (95 %), charge la plus haute ${peak === null ? '–' : `${Math.round(peak * 100)} %`}.`);
   console.log('Toutes les connexions sont fermées. Aucune file, aucun ticket, aucune donnée n’a été créé.\n');
 }
 

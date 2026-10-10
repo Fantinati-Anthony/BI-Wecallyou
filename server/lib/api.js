@@ -432,7 +432,7 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
   };
 
   const routes = [
-    ['GET', /^\/info$/, async () => ({ ok: true, brand: config.brand, domain: config.domain, contact: config.contact, allPro: Boolean(config.allPro), stats: await store.stats(), load: hostLoad?.view() ?? null })],
+    ['GET', /^\/info$/, async () => ({ ok: true, brand: config.brand, domain: config.domain, contact: config.contact, allPro: Boolean(config.allPro), stats: await store.stats(), load: hostLoad?.view() ?? null, live: { max: events.maxClients } })],
 
     // Création d'un lot : le navigateur a déjà fabriqué les clés, il n'envoie que les parties publiques
     // et les clés privées chiffrées avec la clé du lot (que le serveur ne reçoit jamais).
