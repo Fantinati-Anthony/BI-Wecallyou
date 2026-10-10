@@ -749,16 +749,22 @@ export default {
   don_impact_yearly: '{amount} € pro Jahr = {percent} % der Kosten eines Jahres.',
 
   // Encart de soutien : deux offres (juste soutenir, ou une licence avec le soutien moral en prime)
-  offer_moral_title: 'Einfach unterstützen',
-  offer_moral_text: 'Ohne Gegenleistung, einfach um „weiter so“ zu sagen.',
-  offer_moral_btn: 'Unterstützen',
-  offer_flee_1: 'Hoppla!',
-  offer_flee_2: 'Nicht so schnell …',
-  offer_flee_3: 'Wie wäre es mit einer Lizenz?',
-  offer_flee_done: 'Na gut. Danke!',
-  offer_licence_title: 'Eine Lizenz, und moralische Unterstützung obendrauf',
-  offer_licence_text: 'WeCall.You Pro: Marke ausgeblendet, Tickets bis zu 30 Tage, Statistiken über ein Jahr, Vorrang zu Stoßzeiten. Sie bezahlen einen echten Dienst, und das Projekt kommt voran.',
-  offer_licence_btn: 'Lizenz holen',
-  offer_licence_tag: 'Sie sind dran!',
   don_goal_year: '{raised} € von {goal} € gesammelt: 12 Monate Kosten im Voraus',
+
+  // Encart de soutien : « Juste l’outil ? » (bouton qui fuit toujours) et « Soutenir le projet » (la vision, licence en prime)
+  offer_tool_title: 'Nur das Werkzeug?',
+  offer_tool_text: 'Eine Lizenz für Ihre Warteschlangen, mehr nicht.',
+  offer_tool_btn: 'Lizenz holen',
+  offer_flee_1: 'Schauen Sie lieber nach rechts →',
+  offer_flee_2: 'Mehr als ein Werkzeug: ein Projekt →',
+  offer_flee_3: 'Der echte Knopf ist gleich daneben →',
+  offer_flee_4: 'Hier unterstützen wir die Vision →',
+  offer_vision_title: 'Das Projekt unterstützen, die Lizenz gibt es dazu',
+  offer_vision_text: 'Heute ein Werkzeug, morgen ein Verein, eine Vision für die Zukunft: KI im Dienst des Guten, mit Entscheidungen, die Menschen gleichberechtigt treffen.',
+  offer_vision_pro: 'Ihre Unterstützung schenkt Ihnen auch die Pro-Lizenz, im Verhältnis zum Betrag.',
+  offer_vision_btn: 'Das Projekt unterstützen',
+  offer_tag: 'Sie sind dran!',
+  offer_login_pro: 'Um die Pro-Lizenz mit Ihrer Unterstützung zu erhalten, melden Sie sich vor dem Bezahlen an.',
+  offer_login_link: 'Anmelden',
+  offer_pro_on: 'Die Pro-Lizenz wird in Ihrem Konto aktiviert.',
 };

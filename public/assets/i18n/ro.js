@@ -749,16 +749,22 @@ export default {
   don_impact_yearly: '{amount} € pe an = {percent} % din costurile unui an.',
 
   // Encart de soutien : deux offres (juste soutenir, ou une licence avec le soutien moral en prime)
-  offer_moral_title: 'Doar susțineți',
-  offer_moral_text: 'Fără nimic în schimb, doar ca să spuneți „continuați”.',
-  offer_moral_btn: 'Susțineți',
-  offer_flee_1: 'Hopa!',
-  offer_flee_2: 'Nu așa repede…',
-  offer_flee_3: 'Și dacă ați lua mai bine o licență?',
-  offer_flee_done: 'Bine, fie. Mulțumim!',
-  offer_licence_title: 'O licență, cu sprijin moral pe deasupra',
-  offer_licence_text: 'WeCall.You Pro: marcă ascunsă, tichete valabile până la 30 de zile, statistici pe un an, prioritate la orele de vârf. Plătiți un serviciu real, iar proiectul avansează.',
-  offer_licence_btn: 'Luați o licență',
-  offer_licence_tag: 'Este rândul dumneavoastră!',
   don_goal_year: '{raised} € strânși din {goal} €: costurile pe 12 luni în avans',
+
+  // Encart de soutien : « Juste l’outil ? » (bouton qui fuit toujours) et « Soutenir le projet » (la vision, licence en prime)
+  offer_tool_title: 'Doar instrumentul?',
+  offer_tool_text: 'O licență pentru cozile dumneavoastră, și atât.',
+  offer_tool_btn: 'Luați o licență',
+  offer_flee_1: 'Priviți mai bine la dreapta →',
+  offer_flee_2: 'Mai mult decât un instrument: un proiect →',
+  offer_flee_3: 'Butonul adevărat e chiar alături →',
+  offer_flee_4: 'Aici susținem viziunea →',
+  offer_vision_title: 'Susțineți proiectul, cu licența inclusă',
+  offer_vision_text: 'Astăzi un instrument, mâine o asociație, o viziune pentru viitor: IA în slujba binelui, cu decizii luate de oameni, în mod egal.',
+  offer_vision_pro: 'Susținerea dumneavoastră vă oferă și licența Pro, proporțional cu suma.',
+  offer_vision_btn: 'Susțineți proiectul',
+  offer_tag: 'Este rândul dumneavoastră!',
+  offer_login_pro: 'Pentru a primi licența Pro odată cu susținerea, conectați-vă la cont înainte de plată.',
+  offer_login_link: 'Conectați-vă',
+  offer_pro_on: 'Licența Pro va fi activată în contul dumneavoastră.',
 };

@@ -749,16 +749,22 @@ export default {
   don_impact_yearly: '{amount} € all’anno = {percent} % delle spese di un anno.',
 
   // Encart de soutien : deux offres (juste soutenir, ou une licence avec le soutien moral en prime)
-  offer_moral_title: 'Solo sostenere',
-  offer_moral_text: 'Senza nulla in cambio, per dire «continuate».',
-  offer_moral_btn: 'Sostenere',
-  offer_flee_1: 'Oplà!',
-  offer_flee_2: 'Non così in fretta…',
-  offer_flee_3: 'E se invece prendesse una licenza?',
-  offer_flee_done: 'E va bene. Grazie!',
-  offer_licence_title: 'Una licenza, e il sostegno morale in omaggio',
-  offer_licence_text: 'WeCall.You Pro: marchio nascosto, biglietti fino a 30 giorni, statistiche su un anno, priorità nelle ore di punta. Paga un vero servizio, e il progetto va avanti.',
-  offer_licence_btn: 'Prendere una licenza',
-  offer_licence_tag: 'Tocca a lei!',
   don_goal_year: '{raised} € raccolti su {goal} €: 12 mesi di spese in anticipo',
+
+  // Encart de soutien : « Juste l’outil ? » (bouton qui fuit toujours) et « Soutenir le projet » (la vision, licence en prime)
+  offer_tool_title: 'Solo lo strumento?',
+  offer_tool_text: 'Una licenza per le sue code, e basta.',
+  offer_tool_btn: 'Prendere una licenza',
+  offer_flee_1: 'Guardi piuttosto a destra →',
+  offer_flee_2: 'Più di uno strumento: un progetto →',
+  offer_flee_3: 'Il vero pulsante è qui accanto →',
+  offer_flee_4: 'Qui si sostiene la visione →',
+  offer_vision_title: 'Sostenere il progetto, licenza compresa',
+  offer_vision_text: 'Uno strumento oggi, un’associazione domani, una visione per il futuro: l’IA al servizio del bene, con scelte decise dalle persone, alla pari.',
+  offer_vision_pro: 'Il suo sostegno le offre anche la licenza Pro, in proporzione all’importo.',
+  offer_vision_btn: 'Sostenere il progetto',
+  offer_tag: 'Tocca a lei!',
+  offer_login_pro: 'Per ricevere la licenza Pro con il suo sostegno, acceda al suo account prima di pagare.',
+  offer_login_link: 'Accedere',
+  offer_pro_on: 'La licenza Pro sarà attivata sul suo account.',
 };

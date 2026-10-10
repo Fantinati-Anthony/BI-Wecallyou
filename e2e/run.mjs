@@ -769,26 +769,33 @@ try {
     assert.match(await p.locator('#ch-goal').textContent(), /sur 600\s€ : 12 mois de frais d’avance/); // espace fine insécable avant €
     assert.equal(await p.locator('#roadmap li.next').count(), 1);
     assert.match(await p.locator('#costs').textContent(), /2,50\s€/);
-    assert.equal(await p.locator('#licence-btn').getAttribute('href'), '/pro');
-    // « Juste soutenir » : le bouton esquive la souris trois fois, puis se laisse attraper.
+    assert.match(await p.locator('.story:not([hidden]) .motto').textContent(), /Un outil aujourd’hui, une association demain/);
+    // « Prendre une licence » fuit toujours la souris et désigne le vrai bouton ; il ne s'ouvre jamais.
     const runaway = p.locator('#runaway-btn');
     await runaway.scrollIntoViewIfNeeded();
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 4; i++) {
       const box = await runaway.boundingBox();
       await p.mouse.move(box.x + box.width / 2 + 40, box.y + box.height / 2);
       await p.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 4 });
-      await p.waitForTimeout(500);
+      await p.waitForTimeout(450);
     }
-    assert.equal(await p.locator('.offer-chooser').isHidden(), true);
-    await runaway.click();
-    await waitText(p.locator('.runaway-says'), 'Bon, d’accord. Merci !');
+    await runaway.click({ force: true });
+    assert.equal(await p.locator('#offer-chooser').isHidden(), true);
+    assert.match(await p.locator('.runaway-says').textContent(), /→/);
+    // Au clavier : il ne fuit pas, il envoie vers « Soutenir le projet ».
+    await runaway.focus();
+    await p.keyboard.press('Enter');
+    assert.equal(await p.evaluate(() => document.activeElement?.id), 'support-btn');
+    // Le vrai bouton : soutenir le projet, la licence en prime (se connecter pour la recevoir).
+    await p.click('#support-btn');
     await p.getByRole('button', { name: 'Chaque année' }).click();
     assert.match(await p.locator('.donate .impact').textContent(), /par an/);
+    assert.match(await p.locator('#offer-chooser').textContent(), /connectez-vous/);
     assert.match(await p.locator('.donate').textContent(), /micro-entreprise du fondateur/);
     await shot(p, '30-soutenir');
     await ctx.close();
   }
-  step('soutenir : objectif du mois, chapitre en cours, soutien une fois, mensuel ou annuel, mention de la micro-entreprise');
+  step('soutenir : objectif, devise, bouton licence qui fuit toujours, « Soutenir le projet » (licence en prime), mention de la micro-entreprise');
 
   // Barre du haut : le logo et le menu ne se chevauchent jamais, quelle que soit la page (étroite ou large) et l'écran.
   {

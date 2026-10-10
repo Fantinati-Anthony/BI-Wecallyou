@@ -749,16 +749,22 @@ export default {
   don_impact_yearly: '{amount} € par an = {percent} % des frais d’une année.',
 
   // Encart de soutien : deux offres (juste soutenir, ou une licence avec le soutien moral en prime)
-  offer_moral_title: 'Juste soutenir',
-  offer_moral_text: 'Sans rien en échange, pour dire « continuez ».',
-  offer_moral_btn: 'Soutenir',
-  offer_flee_1: 'Hop !',
-  offer_flee_2: 'Pas si vite…',
-  offer_flee_3: 'Et une licence, plutôt ?',
-  offer_flee_done: 'Bon, d’accord. Merci !',
-  offer_licence_title: 'Une licence, et le soutien moral en prime',
-  offer_licence_text: 'WeCall.You Pro : marque masquée, tickets jusqu’à 30 jours, statistiques sur un an, priorité aux heures de pointe. Vous payez un vrai service, et le projet avance.',
-  offer_licence_btn: 'Prendre une licence',
-  offer_licence_tag: 'C’est votre tour !',
   don_goal_year: '{raised} € réunis sur {goal} € : 12 mois de frais d’avance',
+
+  // Encart de soutien : « Juste l’outil ? » (bouton qui fuit toujours) et « Soutenir le projet » (la vision, licence en prime)
+  offer_tool_title: 'Juste l’outil ?',
+  offer_tool_text: 'Une licence pour vos files, et c’est tout.',
+  offer_tool_btn: 'Prendre une licence',
+  offer_flee_1: 'Regardez plutôt à droite →',
+  offer_flee_2: 'Plus qu’un outil : un projet →',
+  offer_flee_3: 'Le vrai bouton est juste à côté →',
+  offer_flee_4: 'Ici, on soutient la vision →',
+  offer_vision_title: 'Soutenir le projet, la licence en prime',
+  offer_vision_text: 'Un outil aujourd’hui, une association demain, une vision pour l’avenir : l’IA au service du bien, avec des choix décidés par les humains, à égalité.',
+  offer_vision_pro: 'Votre soutien vous offre aussi la licence Pro, en proportion du montant.',
+  offer_vision_btn: 'Soutenir le projet',
+  offer_tag: 'C’est votre tour !',
+  offer_login_pro: 'Pour recevoir la licence Pro avec votre soutien, connectez-vous à votre compte avant de payer.',
+  offer_login_link: 'Se connecter',
+  offer_pro_on: 'La licence Pro sera activée sur votre compte.',
 };

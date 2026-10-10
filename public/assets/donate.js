@@ -1,8 +1,8 @@
 // Encart de dons : sincère, chiffré, jamais bloquant.
 // Les paiements passent par des liens Stripe (Payment Links) déclarés dans /soutien.json :
 // notre serveur ne voit ni carte, ni montant, ni donateur.
-// Le DON est sans contrepartie : ses liens ne portent jamais d'identifiant de compte et n'activent rien.
-// Les options en plus relèvent de l'abonnement Pro (page /pro), une offre distincte.
+// Soutenir le projet donne aussi la licence Pro : si un compte est connecté, le lien porte son
+// identifiant et le serveur active le Pro en proportion du montant (sans compte, c'est un soutien pur).
 import { h, t, api, local, icon } from './common.js';
 import { session } from './account.js';
 
@@ -104,7 +104,7 @@ export async function supportCard({ context, count = 0, brand = 'WeCall.You' }) 
     }
     const label = amount === null ? t('don_cta_other') : t({ once: 'don_cta', monthly: 'don_cta_monthly', yearly: 'don_cta_yearly' }[mode], { amount: euros(amount) });
     cta.textContent = choice?.url ? label : t('don_soon');
-    if (choice?.url) cta.setAttribute('href', choice.url);
+    if (choice?.url) cta.setAttribute('href', withAccount(choice.url));
     else cta.removeAttribute('href');
     cta.classList.toggle('btn-soft', !choice?.url);
   }
@@ -138,23 +138,31 @@ export async function supportCard({ context, count = 0, brand = 'WeCall.You' }) 
     toggle.append(btn);
   }
 
-  // Deux offres : « Juste soutenir » (son bouton se fait prier), ou une licence Pro, le soutien moral en prime.
-  const chooser = h('div', { class: 'stack offer-chooser', hidden: true }, toggle, chips, impact, cta, fees);
+  // Deux offres qui mènent au même endroit. À gauche, « Juste l'outil ? » : son bouton licence fuit
+  // toujours et renvoie vers la droite. À droite, le vrai bouton : soutenir le projet, la licence en prime.
+  const account = session.get();
+  const chooser = h(
+    'div',
+    { class: 'stack offer-chooser', id: 'offer-chooser', hidden: true },
+    toggle,
+    chips,
+    impact,
+    cta,
+    fees,
+    account?.id
+      ? h('p', { class: 'small ok' }, icon('check-circle'), ' ', t('offer_pro_on'))
+      : h('p', { class: 'small muted' }, t('offer_login_pro'), ' ', h('a', { href: '/compte' }, t('offer_login_link'))),
+  );
+  const vision = visionOffer(() => {
+    chooser.hidden = false;
+    chips.querySelector('[aria-pressed="true"]')?.focus();
+  });
   card.append(
     h(
       'div',
       { class: 'support-offers' },
-      h(
-        'div',
-        { class: 'offer offer-moral' },
-        h('h4', {}, t('offer_moral_title')),
-        h('p', { class: 'small' }, t('offer_moral_text')),
-        runawayButton(() => {
-          chooser.hidden = false;
-          chips.querySelector('[aria-pressed="true"]')?.focus();
-        }),
-      ),
-      licenceOffer(),
+      h('div', { class: 'offer offer-tool' }, h('h4', {}, t('offer_tool_title')), h('p', { class: 'small' }, t('offer_tool_text')), fleeingLicence(vision.button)),
+      vision.element,
     ),
     chooser,
     h('p', { class: 'small muted' }, t('don_secure'), ' ', t(cfg.tax_deductible ? 'don_tax_yes' : 'don_tax_no')),
@@ -173,79 +181,79 @@ export async function supportCard({ context, count = 0, brand = 'WeCall.You' }) 
   return card;
 }
 
+// Paiement rattaché au compte connecté : le serveur active la licence Pro en proportion du montant.
+const withAccount = (url) => {
+  const id = session.get()?.id;
+  return id ? `${url}${url.includes('?') ? '&' : '?'}client_reference_id=${id}` : url;
+};
+
 /**
- * « Juste soutenir » : le bouton esquive la souris trois fois, avec une petite phrase, puis se laisse
- * attraper. Au doigt, il saute une fois. Au clavier, ou si l'on réduit les animations, il ne fuit pas.
+ * « Prendre une licence » : le bouton de celui qui ne voit que l'outil. Il fuit toujours la souris en
+ * montrant la droite ; au doigt ou au clavier, il ne s'ouvre pas non plus : il désigne le vrai bouton.
  */
-function runawayButton(onAccept) {
+function fleeingLicence(target) {
+  const lines = ['offer_flee_1', 'offer_flee_2', 'offer_flee_3', 'offer_flee_4'];
   const quiet = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const lines = ['offer_flee_1', 'offer_flee_2', 'offer_flee_3'];
-  let escapes = quiet ? lines.length : 0;
-  const button = h('button', { type: 'button', class: 'btn btn-soft runaway', id: 'runaway-btn' }, t('offer_moral_btn'));
+  let said = 0;
+  let resting = 0;
+  const button = h('button', { type: 'button', class: 'btn btn-soft runaway', id: 'runaway-btn' }, t('offer_tool_btn'));
   const says = h('span', { class: 'runaway-says', 'aria-live': 'polite' });
   const zone = h('div', { class: 'runaway-zone' }, button);
-  let resting = 0; // fin du saut en cours : on ne refuit pas pendant qu'il atterrit
-  let skipClick = false;
+  // Montrer le vrai bouton : une phrase, et le bouton de droite qui s'illumine.
+  const point = () => {
+    says.textContent = t(lines[said % lines.length]);
+    said++;
+    target.classList.remove('nudge');
+    void target.offsetWidth; // relance l'animation à chaque fois
+    target.classList.add('nudge');
+  };
   // Un saut ailleurs dans sa zone : parmi quelques places au hasard, la plus loin du pointeur.
   const jump = (pointerX, pointerY) => {
     const room = zone.getBoundingClientRect();
     const size = button.getBoundingClientRect();
     const spots = Array.from({ length: 8 }, () => ({ x: Math.random() * Math.max(0, room.width - size.width), y: Math.random() * Math.max(0, room.height - size.height) }));
-    const far = (s) => Math.hypot(room.left + s.x + size.width / 2 - pointerX, room.top + s.y + size.height / 2 - pointerY);
-    const spot = spots.reduce((a, b) => (far(b) > far(a) ? b : a));
+    const far = (spot) => Math.hypot(room.left + spot.x + size.width / 2 - pointerX, room.top + spot.y + size.height / 2 - pointerY);
+    const spot = spots.reduce((x, y) => (far(y) > far(x) ? y : x));
     button.style.setProperty('--run-x', `${spot.x}px`);
     button.style.setProperty('--run-y', `${spot.y}px`);
     zone.classList.add('running');
-    says.textContent = t(lines[escapes]);
-    escapes++;
-    resting = Date.now() + 400;
-    if (escapes === lines.length) setTimeout(() => (says.textContent = t('offer_flee_done')), 1100);
+    resting = Date.now() + 350;
+    point();
   };
-  // La souris approche (à moins de trois quarts de largeur de bouton) : il file.
   zone.addEventListener('pointermove', (event) => {
-    if (event.pointerType !== 'mouse' || escapes >= lines.length || Date.now() < resting) return;
+    if (event.pointerType !== 'mouse' || quiet || Date.now() < resting) return;
     const box = button.getBoundingClientRect();
-    if (Math.hypot(event.clientX - (box.left + box.width / 2), event.clientY - (box.top + box.height / 2)) < box.width * 0.75) jump(event.clientX, event.clientY);
-  });
-  // Au doigt : il saute une fois, ce premier appui ne compte pas, puis il se rend.
-  button.addEventListener('pointerdown', (event) => {
-    if (event.pointerType === 'mouse' || escapes > 0) return;
-    escapes = lines.length - 1;
-    skipClick = true;
-    jump(event.clientX, event.clientY);
+    if (Math.hypot(event.clientX - (box.left + box.width / 2), event.clientY - (box.top + box.height / 2)) < box.width * 0.8) jump(event.clientX, event.clientY);
   });
   button.addEventListener('click', (event) => {
-    if (skipClick) {
-      skipClick = false;
-      return;
-    }
-    if (escapes < lines.length && event.detail > 0) return; // attrapé avant la fin du jeu : ça ne compte pas
-    says.textContent = t('offer_flee_done');
-    onAccept();
+    event.preventDefault();
+    if (quiet || event.detail === 0) {
+      point(); // au clavier : pas de saut, on désigne le vrai bouton
+      target.focus();
+    } else jump(event.clientX, event.clientY);
   });
   return h('div', { class: 'runaway-wrap' }, zone, says);
 }
 
-/** La licence : le vrai bouton, avec le ticket « C'est votre tour ! » qui surgit au survol. */
-function licenceOffer() {
-  return h(
-    'div',
-    { class: 'offer offer-licence' },
-    h('h4', {}, t('offer_licence_title')),
-    h('p', { class: 'small' }, t('offer_licence_text')),
-    h(
-      'div',
-      { class: 'licence-wrap' },
-      h('span', { class: 'licence-halo', 'aria-hidden': 'true' }),
-      h(
-        'a',
-        { class: 'btn btn-big btn-block licence-btn', href: '/pro', id: 'licence-btn' },
-        h('span', { class: 'licence-tag', 'aria-hidden': 'true' }, h('b', {}, '001'), t('offer_licence_tag')),
-        h('span', { class: 'licence-bell' }, icon('bell-ringing')),
-        t('offer_licence_btn'),
-      ),
-    ),
+/** « Soutenir le projet » : la vision, et le vrai bouton (ticket « C'est votre tour ! » au survol). */
+function visionOffer(onChoose) {
+  const button = h(
+    'button',
+    { type: 'button', class: 'btn btn-big btn-block licence-btn', id: 'support-btn' },
+    h('span', { class: 'licence-tag', 'aria-hidden': 'true' }, h('b', {}, '001'), t('offer_tag')),
+    h('span', { class: 'licence-bell' }, icon('bell-ringing')),
+    t('offer_vision_btn'),
   );
+  button.addEventListener('click', onChoose);
+  const element = h(
+    'div',
+    { class: 'offer offer-vision' },
+    h('h4', {}, t('offer_vision_title')),
+    h('p', { class: 'vision-quote' }, t('offer_vision_text')),
+    h('p', { class: 'small muted' }, t('offer_vision_pro')),
+    h('div', { class: 'licence-wrap' }, h('span', { class: 'licence-halo', 'aria-hidden': 'true' }), button),
+  );
+  return { element, button };
 }
 
 /** Après l'impression : un rappel discret, une seule fois. */

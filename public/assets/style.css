@@ -939,6 +939,7 @@ dialog.catalog h2 { margin: 0; }
 .story { margin-bottom: 20px; }
 .story h1 { text-wrap: balance; }
 .story .signature { color: var(--muted); font-style: italic; text-align: right; }
+.story .motto { margin: 6px 0; padding: 14px 16px; border-radius: var(--r-ctl); background: var(--brand-soft); color: var(--text); font: 650 1.08rem/1.45 var(--font-display); letter-spacing: -0.01em; text-wrap: pretty; } /* la devise */
 .challenge { border-color: color-mix(in srgb, var(--brand) 45%, var(--line)); }
 .challenge h2 { margin-top: 0; text-wrap: balance; }
 .challenge-figures { margin: 6px 0 0; font-variant-numeric: tabular-nums; }
@@ -1019,18 +1020,19 @@ dialog.catalog h2 { margin: 0; }
 @media (prefers-reduced-motion: no-preference) { .donate.pulse { animation: pulse 1.6s ease 2; } }
 @keyframes pulse { 50% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--brand) 22%, transparent); } }
 .donor-thanks { display: flex; align-items: center; gap: 10px; }
-/* Deux offres : « Juste soutenir » sur un quart, la licence sur trois quarts */
+/* Deux offres : « Juste l’outil ? » sur un quart (son bouton fuit), « Soutenir le projet » sur trois quarts */
 .support-offers { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin-top: 4px; }
 @media (min-width: 560px) { .support-offers { grid-template-columns: minmax(0, 1fr) minmax(0, 3fr); } }
 .offer { display: grid; gap: 8px; align-content: start; padding: 14px; border-radius: var(--r-ctl); border: 1px solid var(--line); background: var(--surface); min-width: 0; }
 .offer h4 { margin: 0; font: 650 1rem/1.25 var(--font-display); letter-spacing: -0.01em; text-wrap: balance; }
 .offer p { margin: 0; }
-.offer-moral { background: color-mix(in srgb, var(--surface-2) 60%, var(--surface)); }
-.offer-licence { border-color: color-mix(in srgb, var(--brand) 55%, var(--line)); }
+.offer-tool { background: color-mix(in srgb, var(--surface-2) 60%, var(--surface)); }
+.offer-vision { border-color: color-mix(in srgb, var(--brand) 55%, var(--line)); }
+.vision-quote { font: 600 1.02rem/1.45 var(--font-display); letter-spacing: -0.01em; text-wrap: pretty; }
 .offer-chooser { padding: 14px; border-radius: var(--r-ctl); background: var(--surface); border: 1px dashed var(--line); }
-/* Le bouton qui se fait prier : il saute dans sa zone, puis se laisse attraper */
+/* Le bouton licence qui fuit toujours, en montrant le vrai bouton */
 .runaway-zone { position: relative; min-height: 104px; }
-.runaway { max-width: 100%; padding-inline: 12px; } /* tient dans son quart de largeur */
+.runaway { max-width: 100%; padding-inline: 12px; white-space: normal; text-align: center; line-height: 1.2; } /* tient dans son quart de largeur */
 .runaway-zone.running .runaway { position: absolute; left: 0; top: 0; transform: translate(var(--run-x, 0), var(--run-y, 0)); }
 @media (prefers-reduced-motion: no-preference) { .runaway-zone.running .runaway { transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1); } }
 .runaway-says { display: block; min-height: 1.3em; color: var(--brand-text); font-size: 0.85rem; font-weight: 650; }
@@ -1067,6 +1069,13 @@ dialog.catalog h2 { margin: 0; }
 }
 @keyframes halo { to { --halo: 360deg; } }
 @keyframes shine { to { background-position: -60% 0; } }
+/* Le vrai bouton s’illumine quand le bouton licence le désigne */
+.licence-wrap:has(.nudge) .licence-halo { opacity: 1; }
+@media (prefers-reduced-motion: no-preference) {
+  .licence-btn.nudge { animation: nudge 0.9s var(--ease); }
+  .licence-wrap:has(.nudge) .licence-halo { animation: halo 2.4s linear infinite; }
+}
+@keyframes nudge { 35% { transform: translateY(-3px) scale(1.04); box-shadow: 0 0 0 6px var(--brand-soft); } }
 @keyframes ring { 0%, 100% { transform: rotate(0); } 15% { transform: rotate(16deg); } 30% { transform: rotate(-14deg); } 45% { transform: rotate(10deg); } 60% { transform: rotate(-6deg); } 75% { transform: rotate(3deg); } }
 .cost-table { width: 100%; border-collapse: collapse; }
 .cost-table th { text-align: left; font-size: 0.85rem; color: var(--muted); font-weight: 600; padding: 6px 0; }

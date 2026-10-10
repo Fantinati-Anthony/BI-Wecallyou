@@ -749,16 +749,22 @@ export default {
   don_impact_yearly: '{amount} € al año = {percent} % de los gastos de un año.',
 
   // Encart de soutien : deux offres (juste soutenir, ou une licence avec le soutien moral en prime)
-  offer_moral_title: 'Solo apoyar',
-  offer_moral_text: 'Sin nada a cambio, para decir «seguid así».',
-  offer_moral_btn: 'Apoyar',
-  offer_flee_1: '¡Uy!',
-  offer_flee_2: 'No tan rápido…',
-  offer_flee_3: '¿Y si mejor una licencia?',
-  offer_flee_done: 'Vale, de acuerdo. ¡Gracias!',
-  offer_licence_title: 'Una licencia, y el apoyo moral de regalo',
-  offer_licence_text: 'WeCall.You Pro: marca oculta, tickets de hasta 30 días, estadísticas de un año, prioridad en horas punta. Paga un servicio real y el proyecto avanza.',
-  offer_licence_btn: 'Obtener una licencia',
-  offer_licence_tag: '¡Es su turno!',
   don_goal_year: '{raised} € reunidos de {goal} €: 12 meses de gastos por adelantado',
+
+  // Encart de soutien : « Juste l’outil ? » (bouton qui fuit toujours) et « Soutenir le projet » (la vision, licence en prime)
+  offer_tool_title: '¿Solo la herramienta?',
+  offer_tool_text: 'Una licencia para sus colas, y ya está.',
+  offer_tool_btn: 'Obtener una licencia',
+  offer_flee_1: 'Mire mejor a la derecha →',
+  offer_flee_2: 'Más que una herramienta: un proyecto →',
+  offer_flee_3: 'El botón de verdad está justo al lado →',
+  offer_flee_4: 'Aquí apoyamos la visión →',
+  offer_vision_title: 'Apoyar el proyecto, con la licencia incluida',
+  offer_vision_text: 'Una herramienta hoy, una asociación mañana, una visión de futuro: la IA al servicio del bien, con decisiones tomadas por las personas, en igualdad.',
+  offer_vision_pro: 'Su apoyo también le da la licencia Pro, en proporción al importe.',
+  offer_vision_btn: 'Apoyar el proyecto',
+  offer_tag: '¡Es su turno!',
+  offer_login_pro: 'Para recibir la licencia Pro con su apoyo, inicie sesión en su cuenta antes de pagar.',
+  offer_login_link: 'Iniciar sesión',
+  offer_pro_on: 'La licencia Pro se activará en su cuenta.',
 };

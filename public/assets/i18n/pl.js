@@ -749,16 +749,22 @@ export default {
   don_impact_yearly: '{amount} € rocznie = {percent}% kosztów całego roku.',
 
   // Encart de soutien : deux offres (juste soutenir, ou une licence avec le soutien moral en prime)
-  offer_moral_title: 'Po prostu wesprzyj',
-  offer_moral_text: 'Bez niczego w zamian, żeby powiedzieć „tak trzymać”.',
-  offer_moral_btn: 'Wesprzyj',
-  offer_flee_1: 'Hop!',
-  offer_flee_2: 'Nie tak szybko…',
-  offer_flee_3: 'A może jednak licencja?',
-  offer_flee_done: 'No dobrze. Dziękujemy!',
-  offer_licence_title: 'Licencja, a wsparcie moralne w gratisie',
-  offer_licence_text: 'WeCall.You Pro: ukryta marka, bilety ważne do 30 dni, statystyki z całego roku, pierwszeństwo w godzinach szczytu. Płacisz za prawdziwą usługę, a projekt idzie naprzód.',
-  offer_licence_btn: 'Kup licencję',
-  offer_licence_tag: 'Twoja kolej!',
   don_goal_year: 'Zebrano {raised} € z {goal} €: koszty na 12 miesięcy z góry',
+
+  // Encart de soutien : « Juste l’outil ? » (bouton qui fuit toujours) et « Soutenir le projet » (la vision, licence en prime)
+  offer_tool_title: 'Tylko narzędzie?',
+  offer_tool_text: 'Licencja na twoje kolejki i nic więcej.',
+  offer_tool_btn: 'Kup licencję',
+  offer_flee_1: 'Spójrz lepiej w prawo →',
+  offer_flee_2: 'Więcej niż narzędzie: projekt →',
+  offer_flee_3: 'Prawdziwy przycisk jest tuż obok →',
+  offer_flee_4: 'Tu wspieramy wizję →',
+  offer_vision_title: 'Wesprzyj projekt, licencja w zestawie',
+  offer_vision_text: 'Dziś narzędzie, jutro stowarzyszenie, wizja na przyszłość: AI w służbie dobra, a decyzje podejmują ludzie, na równych prawach.',
+  offer_vision_pro: 'Twoje wsparcie daje ci też licencję Pro, proporcjonalnie do kwoty.',
+  offer_vision_btn: 'Wesprzyj projekt',
+  offer_tag: 'Twoja kolej!',
+  offer_login_pro: 'Aby otrzymać licencję Pro razem ze wsparciem, zaloguj się na konto przed zapłatą.',
+  offer_login_link: 'Zaloguj się',
+  offer_pro_on: 'Licencja Pro zostanie aktywowana na twoim koncie.',
 };

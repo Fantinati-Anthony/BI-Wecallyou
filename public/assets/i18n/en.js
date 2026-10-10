@@ -749,16 +749,22 @@ export default {
   don_impact_yearly: '€{amount} a year = {percent}% of a year’s costs.',
 
   // Encart de soutien : deux offres (juste soutenir, ou une licence avec le soutien moral en prime)
-  offer_moral_title: 'Just support',
-  offer_moral_text: 'Nothing in return, just to say “keep going”.',
-  offer_moral_btn: 'Support',
-  offer_flee_1: 'Whoops!',
-  offer_flee_2: 'Not so fast…',
-  offer_flee_3: 'How about a licence instead?',
-  offer_flee_done: 'Fine, you win. Thank you!',
-  offer_licence_title: 'A licence, with moral support thrown in',
-  offer_licence_text: 'WeCall.You Pro: brand hidden, tickets for up to 30 days, one year of statistics, priority at peak times. You pay for a real service, and the project moves forward.',
-  offer_licence_btn: 'Get a licence',
-  offer_licence_tag: 'It’s your turn!',
   don_goal_year: '€{raised} raised of €{goal}: 12 months of costs ahead',
+
+  // Encart de soutien : « Juste l’outil ? » (bouton qui fuit toujours) et « Soutenir le projet » (la vision, licence en prime)
+  offer_tool_title: 'Just the tool?',
+  offer_tool_text: 'A licence for your queues, and that’s it.',
+  offer_tool_btn: 'Get a licence',
+  offer_flee_1: 'Look to the right instead →',
+  offer_flee_2: 'More than a tool: a project →',
+  offer_flee_3: 'The real button is right next door →',
+  offer_flee_4: 'Here, we support the vision →',
+  offer_vision_title: 'Support the project, licence included',
+  offer_vision_text: 'A tool today, an association tomorrow, a vision for the future: AI serving the common good, with choices made by people, as equals.',
+  offer_vision_pro: 'Your support also gives you the Pro licence, in proportion to the amount.',
+  offer_vision_btn: 'Support the project',
+  offer_tag: 'It’s your turn!',
+  offer_login_pro: 'To receive the Pro licence with your support, sign in to your account before paying.',
+  offer_login_link: 'Sign in',
+  offer_pro_on: 'The Pro licence will be activated on your account.',
 };

@@ -53,8 +53,12 @@ export async function applyEvent(event, accounts, pricing, now = Date.now()) {
   if (event?.type === 'invoice.paid') {
     const id = await accounts.accountOfCustomer(object.customer);
     if (!id) return 'unknown_customer'; // abonnement de don pur, ou client inconnu
-    const end = Math.max(now, ...(object.lines?.data ?? []).map((line) => (line.period?.end ?? 0) * 1000)) + GRACE;
-    const share = coverage(object.amount_paid ?? 0, await pricing.suggested(id));
+    const lines = object.lines?.data ?? [];
+    const end = Math.max(now, ...lines.map((line) => (line.period?.end ?? 0) * 1000)) + GRACE;
+    // Un soutien annuel couvre douze mois : il se compare à douze fois le prix conseillé.
+    const start = Math.min(...lines.map((line) => (line.period?.start ?? 0) * 1000).filter(Boolean));
+    const months = Number.isFinite(start) ? Math.max(1, Math.round((end - GRACE - start) / PRO_MONTH)) : 1;
+    const share = coverage(object.amount_paid ?? 0, (await pricing.suggested(id)) * months);
     await accounts.extendPro(id, Math.round(now + (end - now) * share));
     return 'pro';
   }

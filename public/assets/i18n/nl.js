@@ -749,16 +749,22 @@ export default {
   don_impact_yearly: '€ {amount} per jaar = {percent}% van de kosten van een jaar.',
 
   // Encart de soutien : deux offres (juste soutenir, ou une licence avec le soutien moral en prime)
-  offer_moral_title: 'Gewoon steunen',
-  offer_moral_text: 'Zonder iets terug, gewoon om „ga zo door” te zeggen.',
-  offer_moral_btn: 'Steunen',
-  offer_flee_1: 'Hup!',
-  offer_flee_2: 'Niet zo snel…',
-  offer_flee_3: 'Liever een licentie?',
-  offer_flee_done: 'Oké dan. Bedankt!',
-  offer_licence_title: 'Een licentie, met morele steun erbij',
-  offer_licence_text: 'WeCall.You Pro: merk verborgen, tickets tot 30 dagen, statistieken over een jaar, voorrang op drukke momenten. U betaalt voor een echte dienst, en het project gaat vooruit.',
-  offer_licence_btn: 'Licentie nemen',
-  offer_licence_tag: 'U bent aan de beurt!',
   don_goal_year: '€ {raised} opgehaald van € {goal}: 12 maanden kosten vooruit',
+
+  // Encart de soutien : « Juste l’outil ? » (bouton qui fuit toujours) et « Soutenir le projet » (la vision, licence en prime)
+  offer_tool_title: 'Alleen de tool?',
+  offer_tool_text: 'Een licentie voor uw wachtrijen, meer niet.',
+  offer_tool_btn: 'Licentie nemen',
+  offer_flee_1: 'Kijk liever naar rechts →',
+  offer_flee_2: 'Meer dan een tool: een project →',
+  offer_flee_3: 'De echte knop zit er vlak naast →',
+  offer_flee_4: 'Hier steunen we de visie →',
+  offer_vision_title: 'Steun het project, licentie inbegrepen',
+  offer_vision_text: 'Vandaag een tool, morgen een vereniging, een visie voor de toekomst: AI in dienst van het goede, met keuzes die mensen als gelijken maken.',
+  offer_vision_pro: 'Uw steun geeft u ook de Pro-licentie, naar verhouding van het bedrag.',
+  offer_vision_btn: 'Het project steunen',
+  offer_tag: 'U bent aan de beurt!',
+  offer_login_pro: 'Meld u aan voordat u betaalt om de Pro-licentie bij uw steun te krijgen.',
+  offer_login_link: 'Aanmelden',
+  offer_pro_on: 'De Pro-licentie wordt op uw account geactiveerd.',
 };
