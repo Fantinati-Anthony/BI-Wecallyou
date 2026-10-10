@@ -1,10 +1,10 @@
-// Charge de l'hébergement (cPanel) et priorité : la porte se resserre près du plafond, et seuls les
-// tickets couverts par un soutien passent devant.
+// Charge de l'hébergement (cPanel) et priorité : la porte se resserre près du plafond, le direct
+// laisse de la place au reste du site, et seuls les tickets couverts par un soutien passent devant.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { loadOf, squeeze, HostLoad } from '../lib/load.js';
+import { loadOf, entryLimit, squeeze, HostLoad } from '../lib/load.js';
 import { Gate } from '../lib/priority.js';
 import { Plans } from '../lib/pro.js';
 
@@ -29,6 +29,8 @@ test('charge cPanel : la limite la plus haute compte, la porte se resserre près
     { id: 'lvenproc', maximum: 400, usage: 3 },
   ] } };
   assert.equal(loadOf(lune), 1 / 80);
+  assert.equal(entryLimit(lune), 80);
+  assert.equal(entryLimit({ data: [] }), null);
   assert.equal(squeeze(40, 0.5), 40);
   assert.equal(squeeze(40, 0.9), 20);
   assert.equal(squeeze(40, 0.99), 10);
@@ -54,6 +56,10 @@ test('charge cPanel : la limite la plus haute compte, la porte se resserre près
   assert.equal(local.configured, true);
   await local.tick();
   assert.equal(localGate.capacity, 20);
+  // Le direct ne prend que la moitié des connexions du compte : le reste du site répond toujours.
+  const events = { maxClients: 2000 };
+  await new HostLoad({ cpanel: { local: true }, gate: new Gate(), events, runner: async () => lune }).tick();
+  assert.equal(events.maxClients, 40);
 });
 
 test('priorité : licence ouverte et tickets du mois dans ce que couvre le soutien', async () => {

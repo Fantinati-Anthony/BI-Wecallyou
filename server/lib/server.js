@@ -19,7 +19,7 @@ export async function createServer(config) {
   const events = new Events(store);
   const gate = new Gate({ capacity: config.capacity ?? 40 });
   // Charge mesurée chez l'hébergeur (facultatif : « cpanel » dans config.json).
-  const hostLoad = new HostLoad({ cpanel: config.cpanel, gate });
+  const hostLoad = new HostLoad({ cpanel: config.cpanel, gate, events });
   hostLoad.start();
   const plans = new Plans({ config, store, accounts });
   const api = createApi({ config, store, accounts, plans, tokens: new Tokens(config.tokenKey), events, gate, hostLoad });

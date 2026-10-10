@@ -6,7 +6,9 @@
 //   node charge.js --site https://…      sur le vrai site, en douceur : ouvre des connexions en direct
 //                                        par paliers (sans créer de file, de ticket ni de donnée),
 //                                        mesure les temps de réponse et la charge de l'hébergement,
-//                                        et s'arrête à la première erreur.
+//                                        et s'arrête au premier signe de fatigue (les pages que le
+//                                        serveur envoie vers la vérification toutes les 5 s sont
+//                                        comptées à part : c'est prévu).
 //
 // Résultat : un tableau par palier (clients en direct, temps de réponse, délai d'appel, erreurs,
 // processeur, mémoire) et une conclusion.
@@ -223,6 +225,7 @@ async function probeSite(site) {
   const STEPS = [10, 25, 50, 80, 120, 200, 300];
   const conns = [];
   const rows = [];
+  let fallback = 0; // pages que le serveur envoie vers la vérification toutes les 5 s (503) : c'est prévu
   console.log(`\nTest en douceur de ${site} : connexions en direct par paliers (environ une minute chacun),`);
   console.log('sans aucune donnée créée. Arrêt au premier signe de fatigue.\n');
   try {
@@ -234,7 +237,8 @@ async function probeSite(site) {
         const live = liveConnection(`${base}/events/${randomBytes(16).toString('hex')}`, {});
         conns.push(live);
         const result = await live.opened;
-        if (!result.ok) {
+        if (result.status === 503) fallback++;
+        else if (!result.ok) {
           refused++;
           statuses.add(result.status);
         }
@@ -259,6 +263,7 @@ async function probeSite(site) {
       const row = {
         live: step,
         held,
+        fallback,
         refused: `${refused}${statuses.size ? ` (${[...statuses].join(', ')})` : ''}`,
         p50: fmt(pct(times, 50)),
         p95: fmt(pct(times, 95)),
@@ -266,16 +271,17 @@ async function probeSite(site) {
         load: load === null ? '–' : `${Math.round(load * 100)} %`,
       };
       rows.push(row);
-      console.log(`  ${step} : ${held} tenues, réponse ${row.p95} ms, charge ${row.load}`);
-      if (refused || held < step || failed || pct(times, 95) > 1500 || (load ?? 0) >= 0.75) break;
+      console.log(`  ${step} : ${held} en direct, ${fallback} toutes les 5 s, réponse ${row.p95} ms, charge ${row.load}`);
+      if (refused || held + fallback < step || failed || pct(times, 95) > 1500 || (load ?? 0) >= 0.75) break;
     }
   } finally {
     for (const conn of conns) conn.close();
   }
   console.log('');
   table(rows, [
-    ['live', 'Connexions demandées'],
-    ['held', 'Tenues'],
+    ['live', 'Pages ouvertes'],
+    ['held', 'En direct'],
+    ['fallback', 'Toutes les 5 s'],
     ['refused', 'Refusées'],
     ['p50', 'Réponse (ms, médiane)'],
     ['p95', 'Réponse (ms, 95 %)'],
@@ -283,7 +289,7 @@ async function probeSite(site) {
     ['load', 'Charge de l’hébergement'],
   ]);
   const last = rows.at(-1);
-  console.log(`\nConclusion : ${last.held} connexions en direct tenues sur ${last.live}, réponse en ${last.p95} ms (95 %), charge ${last.load}.`);
+  console.log(`\nConclusion : sur ${last.live} pages, ${last.held} en direct et ${last.fallback} vérifiées toutes les 5 s ; réponse en ${last.p95} ms (95 %), charge ${last.load}.`);
   console.log('Toutes les connexions sont fermées. Aucune file, aucun ticket, aucune donnée n’a été créé.\n');
 }
 
