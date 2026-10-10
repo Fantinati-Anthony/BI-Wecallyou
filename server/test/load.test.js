@@ -15,6 +15,20 @@ test('charge cPanel : la limite la plus haute compte, la porte se resserre près
   assert.equal(loadOf(usages(20, 256)), 0.25); // le disque ne compte pas
   assert.equal(loadOf({ result: { data: [{ id: 'lveep', usage: 18, maximum: 20 }] } }), 0.9);
   assert.equal(loadOf({ data: [] }), null);
+  // Réponse réelle d'une lune o2switch (uapi en ligne de commande) : la plus haute limite est
+  // celle des processus démarrés, 1 sur 80.
+  const lune = { apiversion: 3, func: 'get_usages', module: 'ResourceUsage', result: { status: 1, data: [
+    { id: 'disk_usage', maximum: null, usage: 180224 },
+    { id: 'bandwidth', maximum: null, usage: '37488888' },
+    { id: 'mailing_lists', maximum: '10', usage: 0 },
+    { id: 'lvecpu', maximum: 100, usage: 0 },
+    { id: 'lveep', maximum: 80, usage: 1 },
+    { id: 'lvememphy', maximum: 51539607552, usage: 10678272 },
+    { id: 'lveiops', maximum: 1024, usage: 0 },
+    { id: 'lveio', maximum: 50331648, usage: 0 },
+    { id: 'lvenproc', maximum: 400, usage: 3 },
+  ] } };
+  assert.equal(loadOf(lune), 1 / 80);
   assert.equal(squeeze(40, 0.5), 40);
   assert.equal(squeeze(40, 0.9), 20);
   assert.equal(squeeze(40, 0.99), 10);
