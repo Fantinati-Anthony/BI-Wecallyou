@@ -2,6 +2,22 @@
 // la plus haute des limites du compte (processeur, mémoire, processus, entrées/sorties). Quand elle
 // approche du plafond, la porte d'entrée se resserre : les tickets des soutiens passent devant, les
 // autres attendent quelques secondes. Sans réglage « cpanel » dans config.json, rien ne change.
+// « cpanel »: { "local": true } : l'application tourne sur le même compte, elle lance la commande
+// uapi elle-même, sans jeton (le plus sûr). Sinon { host, user, token } : l'API par HTTPS.
+import { execFile } from 'node:child_process';
+
+/** Lecture locale : « uapi ResourceUsage get_usages », comme dans le terminal du compte. */
+const runUapi = () =>
+  new Promise((resolve, reject) => {
+    execFile('uapi', ['--output=json', 'ResourceUsage', 'get_usages'], { timeout: 8000 }, (err, stdout) => {
+      if (err) return reject(err);
+      try {
+        resolve(JSON.parse(stdout));
+      } catch (parseError) {
+        reject(parseError);
+      }
+    });
+  });
 
 const EVERY = 60_000; // une mesure par minute
 const STALE = 5 * EVERY; // une mesure trop ancienne ne resserre plus rien
@@ -26,16 +42,27 @@ export class HostLoad {
   ratio = null;
   at = 0;
 
-  /** cpanel : { host, user, token } (jeton d'API cPanel) ; gate : la porte dont on règle les places. */
-  constructor({ cpanel, gate, fetcher = globalThis.fetch }) {
+  /** cpanel : { local: true } ou { host, user, token } ; gate : la porte dont on règle les places. */
+  constructor({ cpanel, gate, fetcher = globalThis.fetch, runner = runUapi }) {
     this.cpanel = cpanel ?? null;
     this.gate = gate;
     this.base = gate.capacity;
     this.fetcher = fetcher;
+    this.runner = runner;
   }
 
   get configured() {
-    return Boolean(this.cpanel?.host && this.cpanel?.user && this.cpanel?.token);
+    return Boolean(this.cpanel?.local || (this.cpanel?.host && this.cpanel?.user && this.cpanel?.token));
+  }
+
+  async read() {
+    if (this.cpanel.local) return this.runner();
+    const { host, user, token } = this.cpanel;
+    const res = await this.fetcher(`https://${host}:2083/execute/ResourceUsage/get_usages`, {
+      headers: { Authorization: `cpanel ${user}:${token}` },
+      signal: AbortSignal.timeout(8000),
+    });
+    return res.json();
   }
 
   get fresh() {
@@ -55,12 +82,7 @@ export class HostLoad {
 
   async tick() {
     try {
-      const { host, user, token } = this.cpanel;
-      const res = await this.fetcher(`https://${host}:2083/execute/ResourceUsage/get_usages`, {
-        headers: { Authorization: `cpanel ${user}:${token}` },
-        signal: AbortSignal.timeout(8000),
-      });
-      const ratio = loadOf(await res.json());
+      const ratio = loadOf(await this.read());
       if (ratio !== null) {
         this.ratio = ratio;
         this.at = Date.now();

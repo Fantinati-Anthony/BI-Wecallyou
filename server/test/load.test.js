@@ -34,6 +34,12 @@ test('charge cPanel : la limite la plus haute compte, la porte se resserre près
   assert.equal(gate.capacity, 10);
   // Sans réglage cPanel : rien ne bouge.
   assert.equal(new HostLoad({ gate: new Gate() }).configured, false);
+  // Sur le même compte : la commande uapi, sans jeton (réponse en ligne de commande : « result »).
+  const localGate = new Gate({ capacity: 40 });
+  const local = new HostLoad({ cpanel: { local: true }, gate: localGate, runner: async () => ({ result: { data: [{ id: 'lvecpu', usage: 88, maximum: 100 }] } }) });
+  assert.equal(local.configured, true);
+  await local.tick();
+  assert.equal(localGate.capacity, 20);
 });
 
 test('priorité : licence ouverte et tickets du mois dans ce que couvre le soutien', async () => {
