@@ -15,13 +15,16 @@ export function loadConfig(file = process.env.TN_CONFIG ?? path.join(SERVER_DIR,
   }
   const dir = path.dirname(file);
   const resolve = (p) => (path.isAbsolute(p) ? p : path.resolve(dir, p));
+  const publicDir = resolve(raw.publicDir ?? '../public');
   return {
     domain: raw.domain,
     brand: raw.brand ?? raw.domain,
     // Adresse de contact transmise à Google/Apple avec chaque notification (exigé par le protocole).
     contact: raw.contact,
     dataDir: resolve(raw.dataDir ?? 'data'),
-    publicDir: resolve(raw.publicDir ?? '../public'),
+    publicDir,
+    // Fichiers « prêt » lus par les pages client (servis par Apache) ; ailleurs seulement pour les tests.
+    etatDir: raw.etatDir ? resolve(raw.etatDir) : path.join(publicDir, 'etat'),
     // En production Apache sert les pages ; en local Node les sert lui-même.
     serveStatic: raw.serveStatic ?? false,
     basePath: raw.basePath ?? '/api',

@@ -42,7 +42,7 @@ export class Store {
   #votesWrite = Promise.resolve(); // les votes s'écrivent l'un après l'autre
   #pendingStats = new Map(); // « lot|jour » → compteurs à ajouter (écrits par lots toutes les 10 s)
 
-  constructor({ dataDir, publicDir, statusKey }) {
+  constructor({ dataDir, publicDir, etatDir, statusKey }) {
     this.dataDir = dataDir;
     this.lotsDir = path.join(dataDir, 'lots');
     this.keysDir = path.join(dataDir, 'keys');
@@ -51,7 +51,7 @@ export class Store {
     this.callsDir = path.join(dataDir, 'calls');
     this.statsDir = path.join(dataDir, 'stats');
     this.lotStatsDir = path.join(dataDir, 'stats', 'lots');
-    this.etatDir = path.join(publicDir, 'etat');
+    this.etatDir = etatDir ?? path.join(publicDir, 'etat');
     this.#statusKey = statusKey;
   }
 

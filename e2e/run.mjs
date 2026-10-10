@@ -25,6 +25,7 @@ const { server } = await createServer({
   contact: 'mailto:contact@wecall.you',
   dataDir: path.join(tmp, 'data'),
   publicDir: path.resolve(here, '../public'),
+  etatDir: path.join(tmp, 'etat'), // les appels du test n'écrivent rien dans public/
   serveStatic: true,
   basePath: '/api',
   tokenKey: randomBytes(16),

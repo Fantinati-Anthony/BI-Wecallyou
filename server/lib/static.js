@@ -43,7 +43,7 @@ const REWRITES = [
   [/^\/[A-Za-z2-7]{26}\/manifest\.webmanifest$/, 'manifest.webmanifest'],
 ];
 
-export function createStatic(publicDir) {
+export function createStatic(publicDir, etatDir = path.join(publicDir, 'etat')) {
   return async function serve(req, res, pathname) {
     if (req.method !== 'GET' && req.method !== 'HEAD') return false;
     let rel = REWRITES.find(([pattern]) => pattern.test(pathname))?.[1];
@@ -51,7 +51,7 @@ export function createStatic(publicDir) {
       rel = decodeURIComponent(pathname).replace(/^\/+/, '');
       if (rel.split('/').some((part) => part === '..' || part.startsWith('.'))) return false;
     }
-    const file = path.join(publicDir, rel);
+    const file = rel.startsWith('etat/') ? path.join(etatDir, rel.slice(5)) : path.join(publicDir, rel);
     let body;
     try {
       body = await fs.readFile(file);

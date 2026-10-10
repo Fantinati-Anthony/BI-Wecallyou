@@ -23,7 +23,7 @@ export async function createServer(config) {
   hostLoad.start();
   const plans = new Plans({ config, store, accounts });
   const api = createApi({ config, store, accounts, plans, tokens: new Tokens(config.tokenKey), events, gate, hostLoad });
-  const serveStatic = config.serveStatic ? createStatic(config.publicDir) : null;
+  const serveStatic = config.serveStatic ? createStatic(config.publicDir, config.etatDir) : null;
 
   const server = http.createServer(async (req, res) => {
     try {

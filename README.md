@@ -173,7 +173,7 @@ node setup.js --local --domain=localhost:3000   # crée config.json (serveStatic
 node start.js                                    # http://localhost:3000
 npm test                                         # tests serveur, cryptographie, mise en page
 npm run charge                                   # test de charge en local (un processus, jusqu’à 1 600 clients en direct)
-node charge.js --site https://wecall.you         # sur le site, en douceur : connexions en direct seulement, rien n’est créé
+node charge.js --site https://wecall.you         # sur le site : 3 snacks × 50 clients en accéléré (--snacks, --clients, --minutes), rien n’est créé
 cd ../e2e && npm install && node run.mjs         # parcours complet dans Chromium
 node shots.mjs                                   # captures de l’accueil (public/assets/img)
 ```

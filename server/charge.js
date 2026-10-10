@@ -3,15 +3,14 @@
 //   node charge.js                       en local : lance un serveur à part, simule des clients qui
 //                                        attendent (page ouverte, connexion en direct) et des appels,
 //                                        palier par palier, et mesure ce qu'un seul cœur encaisse.
-//   node charge.js --site https://…      sur le vrai site, en douceur : ouvre des connexions en direct
-//                                        par paliers (sans créer de file, de ticket ni de donnée),
-//                                        mesure les temps de réponse et la charge de l'hébergement,
-//                                        et s'arrête au premier signe de fatigue (les pages que le
-//                                        serveur envoie vers la vérification toutes les 5 s sont
-//                                        comptées à part : c'est prévu).
+//   node charge.js --site https://…      sur le vrai site, une vraie journée en accéléré : 3 snacks
+//     [--snacks 3] [--clients 50]        de 50 clients (réglable) arrivent en une minute et attendent
+//     [--minutes 3]                      3 min, avec exactement les requêtes des vraies pages ; mesure
+//                                        les temps de réponse et la charge de l'hébergement. Rien
+//                                        n'est créé, et le test refuse de tourner si le site ne
+//                                        limite pas le direct.
 //
-// Résultat : un tableau par palier (clients en direct, temps de réponse, délai d'appel, erreurs,
-// processeur, mémoire) et une conclusion.
+// Résultat : un tableau et une conclusion.
 import { fork } from 'node:child_process';
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -106,6 +105,7 @@ async function benchLocal() {
       contact: 'mailto:test@example.org',
       dataDir: path.join(tmp, 'data'),
       publicDir: path.resolve(HERE, '../public'),
+      etatDir: path.join(tmp, 'etat'),
       serveStatic: false,
       basePath: '/api',
       port,
@@ -216,80 +216,116 @@ async function benchLocal() {
 
 /* ------------------------------------------------------------------- sur le vrai site */
 
-async function probeSite(site) {
-  if (!/^https?:\/\/[^/]+$/.test(site ?? '')) {
-    console.error('Usage : node charge.js --site https://wecall.you');
+/** Ticket au bon format mais inconnu : le serveur fait le même chemin et répond « invalide », sans rien écrire. */
+const fakeToken = () => Array.from({ length: 26 }, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'[randomInt(32)]).join('');
+const fakeStatus = () => randomBytes(16).toString('hex');
+const KINDS = [
+  ['page', 'Arrivée : page du ticket (Apache)'],
+  ['ticket', 'Ticket et place dans la file (Node)'],
+  ['etat', 'Vérification toutes les 5 s (Apache)'],
+  ['shop', 'Page du commerçant (Node)'],
+];
+
+async function scenario(site, snacks, perSnack, minutes) {
+  if (!/^https?:\/\/[^/]+$/.test(site ?? '') || !(snacks >= 1) || !(perSnack >= 1) || !(minutes > 0)) {
+    console.error('Usage : node charge.js --site https://wecall.you [--snacks 3] [--clients 50] [--minutes 3]');
     process.exit(1);
   }
-  const base = `${site}/api`;
-  const STEPS = [10, 25, 50, 80, 120, 200, 300];
+  const api = `${site}/api`;
+  const total = snacks * perSnack;
+  const stats = new Map(KINDS.map(([kind]) => [kind, { times: [], failed: 0 }]));
+  const loads = new Map(); // mesures de l'hébergement, une par minute : date → part de la limite la plus haute
+  const timers = [];
   const conns = [];
-  const rows = [];
-  let fallback = 0; // pages que le serveur envoie vers la vérification toutes les 5 s (503) : c'est prévu
-  console.log(`\nTest en douceur de ${site} : connexions en direct par paliers (environ une minute chacun),`);
-  console.log('sans aucune donnée créée. Arrêt au premier signe de fatigue.\n');
+  let polling = 0;
+
+  /** Une requête comme celles des vraies pages ; `expected` : statuts normaux (404 = ticket inconnu ou pas encore appelé). */
+  const hit = async (kind, url, expected = [200]) => {
+    const t0 = now();
+    const res = await fetch(url).catch(() => null);
+    const body = res?.headers.get('content-type')?.includes('json') ? await res.json().catch(() => null) : await res?.arrayBuffer().catch(() => null);
+    stats.get(kind).times.push(ms(t0));
+    if (!res || !expected.includes(res.status)) stats.get(kind).failed++;
+    if (body?.load) loads.set(body.load.at, body.load.ratio);
+  };
+  const all = () => [...stats.values()].reduce((sum, s) => ({ times: sum.times.concat(s.times), failed: sum.failed + s.failed }), { times: [], failed: 0 });
+
+  // Sécurité : sans plafond du direct, des centaines de pages en direct prendraient toutes les
+  // connexions de la lune et le site ne répondrait plus. On vérifie d'abord, sans danger (45 au plus).
+  const check = [];
+  for (let i = 0; i < 45; i++) {
+    const live = liveConnection(`${api}/events/${fakeStatus()}`, {});
+    check.push(live);
+    if (!(await live.opened).ok) break;
+  }
+  const uncapped = check.filter((live) => live.open).length > 40;
+  for (const live of check) live.close();
+  if (uncapped) {
+    console.error('\nLe site ne limite pas encore le direct : mettez la lune à jour (git pull, puis redémarrer l’application) avant ce test.\n');
+    process.exit(1);
+  }
+  await pause(2000);
+
+  console.log(`\n${snacks} snacks × ${perSnack} clients sur ${site} : les ${total} clients arrivent en une minute, puis attendent ${minutes} min.`);
+  console.log('Chaque client fait comme la vraie page ; chaque commerçant rafraîchit la sienne toutes les 10 s.');
+  console.log('Rien n’est créé : tickets et fichiers d’état sont inconnus du serveur, qui répond sans rien écrire.\n');
+
+  const client = async () => {
+    const token = fakeToken();
+    const status = fakeStatus();
+    await Promise.all([hit('page', `${site}/${token}`), hit('page', `${site}/assets/t.js`), hit('page', `${site}/assets/style.css`)]);
+    await hit('ticket', `${api}/t/${token}`, [404]);
+    const live = liveConnection(`${api}/events/${status}`, {});
+    conns.push(live);
+    if (!(await live.opened).ok) {
+      // Direct plein : la page vérifie toutes les 5 s le fichier d'état (404 tant que le client n'est pas appelé).
+      polling++;
+      timers.push(setInterval(() => hit('etat', `${site}/etat/${status}.txt`, [200, 404]), 5000));
+    }
+    timers.push(setInterval(() => hit('ticket', `${api}/t/${token}`, [404]), 30_000));
+  };
+
+  const start = Date.now();
+  const progress = setInterval(() => {
+    const { times, failed } = all();
+    const latest = [...loads.entries()].sort(([a], [b]) => b - a)[0]?.[1];
+    console.log(`  ${Math.round((Date.now() - start) / 1000)} s : ${conns.length} clients (${conns.filter((c) => c.open).length} en direct, ${polling} toutes les 5 s), ${times.length} requêtes, ${failed} en échec, réponse ${fmt(pct(times, 95))} ms (95 %), charge ${latest === undefined ? '–' : `${Math.round(latest * 100)} %`}`);
+  }, 20_000);
   try {
-    for (const step of STEPS) {
-      let refused = 0;
-      const statuses = new Set();
-      await pool(step - conns.length, 10, async () => {
-        // Une connexion en direct comme celle d'une page de client (identifiant au hasard : rien n'est écrit).
-        const live = liveConnection(`${base}/events/${randomBytes(16).toString('hex')}`, {});
-        conns.push(live);
-        const result = await live.opened;
-        if (result.status === 503) fallback++;
-        else if (!result.ok) {
-          refused++;
-          statuses.add(result.status);
-        }
-      });
-      // Temps de réponse d'une requête ordinaire pendant que les connexions sont ouvertes, jusqu'à
-      // une mesure de charge prise avec elles (l'hébergement n'est relu qu'une fois par minute).
-      const reached = Date.now();
-      const times = [];
-      let failed = 0;
-      let load = null;
-      for (;;) {
-        const t0 = now();
-        const info = await fetch(`${base}/info`).then((res) => (res.ok ? res.json() : null)).catch(() => null);
-        times.push(ms(t0));
-        if (!info) failed++;
-        const fresh = info?.load && info.load.at > reached;
-        if (fresh) load = info.load.ratio;
-        if (times.length >= 5 && (fresh || !info?.load || Date.now() - reached > 75_000)) break;
-        await pause(3000);
-      }
-      const held = conns.filter((conn) => conn.open).length;
-      const row = {
-        live: step,
-        held,
-        fallback,
-        refused: `${refused}${statuses.size ? ` (${[...statuses].join(', ')})` : ''}`,
-        p50: fmt(pct(times, 50)),
-        p95: fmt(pct(times, 95)),
-        failed,
-        load: load === null ? '–' : `${Math.round(load * 100)} %`,
-      };
-      rows.push(row);
-      console.log(`  ${step} : ${held} en direct, ${fallback} toutes les 5 s, réponse ${row.p95} ms, charge ${row.load}`);
-      if (refused || held + fallback < step || failed || pct(times, 95) > 1500 || (load ?? 0) >= 0.75) break;
+    for (let s = 0; s < snacks; s++) timers.push(setInterval(() => Promise.all([hit('shop', `${api}/info`), hit('shop', `${api}/info`)]), 10_000));
+    const arrivals = [];
+    for (let i = 0; i < total; i++) {
+      arrivals.push(client());
+      await pause(60_000 / total);
+    }
+    await Promise.all(arrivals);
+    const hold = Date.now();
+    while (Date.now() - hold < minutes * 60_000) {
+      await pause(1000);
+      const { times, failed } = all();
+      if (times.length >= 100 && failed / times.length > 0.02) break; // ça décroche : on arrête tout de suite
     }
   } finally {
+    clearInterval(progress);
+    for (const timer of timers) clearInterval(timer);
     for (const conn of conns) conn.close();
   }
+
   console.log('');
-  table(rows, [
-    ['live', 'Pages ouvertes'],
-    ['held', 'En direct'],
-    ['fallback', 'Toutes les 5 s'],
-    ['refused', 'Refusées'],
-    ['p50', 'Réponse (ms, médiane)'],
-    ['p95', 'Réponse (ms, 95 %)'],
-    ['failed', 'Requêtes en échec'],
-    ['load', 'Charge de l’hébergement'],
-  ]);
-  const last = rows.at(-1);
-  console.log(`\nConclusion : sur ${last.live} pages, ${last.held} en direct et ${last.fallback} vérifiées toutes les 5 s ; réponse en ${last.p95} ms (95 %), charge ${last.load}.`);
+  table(
+    KINDS.map(([kind, title]) => {
+      const { times, failed } = stats.get(kind);
+      return { title, count: times.length, p50: fmt(pct(times, 50)), p95: fmt(pct(times, 95)), failed };
+    }),
+    [['title', 'Requêtes'], ['count', 'Nombre'], ['p50', 'Réponse (ms, médiane)'], ['p95', 'Réponse (ms, 95 %)'], ['failed', 'En échec']],
+  );
+  const { times, failed } = all();
+  const measured = [...loads.entries()].filter(([at]) => at > start + 60_000).map(([, ratio]) => ratio);
+  const peak = measured.length ? Math.max(...measured) : null;
+  console.log(`\nCharge de l’hébergement pendant l’attente : ${measured.length ? measured.map((r) => `${Math.round(r * 100)} %`).join(', ') : 'non mesurée'}`);
+  console.log(`(la plus haute des limites de la lune : connexions, processeur, mémoire… le détail est dans cPanel › Utilisation des ressources)`);
+  const holds = failed / Math.max(1, times.length) <= 0.01 && pct(times, 95) <= 1000 && (peak ?? 0) < 0.75;
+  console.log(`\nVerdict : ${holds ? 'la lune tient' : 'la lune peine'} avec ${snacks} snacks × ${perSnack} clients : ${times.length} requêtes, ${failed} en échec, réponse en ${fmt(pct(times, 95))} ms (95 %), charge la plus haute ${peak === null ? '–' : `${Math.round(peak * 100)} %`}.`);
   console.log('Toutes les connexions sont fermées. Aucune file, aucun ticket, aucune donnée n’a été créé.\n');
 }
 
@@ -302,7 +338,8 @@ if (args.includes('--serve')) {
   });
   await import('./start.js');
 } else if (args.includes('--site')) {
-  await probeSite(args[args.indexOf('--site') + 1]);
+  const opt = (name, fallback) => (args.includes(`--${name}`) ? Number(args[args.indexOf(`--${name}`) + 1]) : fallback);
+  await scenario(args[args.indexOf('--site') + 1], opt('snacks', 3), opt('clients', 50), opt('minutes', 3));
 } else {
   await benchLocal();
 }
