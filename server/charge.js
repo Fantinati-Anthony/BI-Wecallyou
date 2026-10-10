@@ -12,6 +12,8 @@
 //
 // Résultat : un tableau et une conclusion.
 import { fork } from 'node:child_process';
+import http from 'node:http';
+import https from 'node:https';
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -219,6 +221,24 @@ async function benchLocal() {
 /** Ticket au bon format mais inconnu : le serveur fait le même chemin et répond « invalide », sans rien écrire. */
 const fakeToken = () => Array.from({ length: 26 }, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'[randomInt(32)]).join('');
 const fakeStatus = () => randomBytes(16).toString('hex');
+
+// Connexions gardées ouvertes entre deux requêtes, comme un téléphone. Sans cela (fetch les ferme
+// après 4 s, les pages vérifient toutes les 5 s), l'ordinateur du test ouvre des centaines de
+// connexions sécurisées par seconde et mesure son propre réseau : des réponses à 3 s pile, quand
+// Windows retente une connexion perdue par la box ou Cloudflare. La lune, elle, ne voit que Cloudflare.
+const agents = { 'http:': new http.Agent({ keepAlive: true, maxSockets: 64 }), 'https:': new https.Agent({ keepAlive: true, maxSockets: 64 }) };
+const get = (url) =>
+  new Promise((resolve) => {
+    const { protocol } = new URL(url);
+    const req = (protocol === 'https:' ? https : http).get(url, { agent: agents[protocol] }, (res) => {
+      const chunks = [];
+      res.on('data', (chunk) => chunks.push(chunk));
+      res.on('end', () => resolve({ status: res.statusCode, type: res.headers['content-type'] ?? '', body: Buffer.concat(chunks) }));
+      res.on('error', () => resolve(null));
+    });
+    req.on('error', () => resolve(null));
+    req.setTimeout(30_000, () => req.destroy());
+  });
 const KINDS = [
   ['page', 'Arrivée : page du ticket (Apache)'],
   ['ticket', 'Ticket et place dans la file (Node)'],
@@ -242,11 +262,17 @@ async function scenario(site, snacks, perSnack, minutes) {
   /** Une requête comme celles des vraies pages ; `expected` : statuts normaux (404 = ticket inconnu ou pas encore appelé). */
   const hit = async (kind, url, expected = [200]) => {
     const t0 = now();
-    const res = await fetch(url).catch(() => null);
-    const body = res?.headers.get('content-type')?.includes('json') ? await res.json().catch(() => null) : await res?.arrayBuffer().catch(() => null);
+    const res = await get(url);
     stats.get(kind).times.push(ms(t0));
     if (!res || !expected.includes(res.status)) stats.get(kind).failed++;
-    if (body?.load) loads.set(body.load.at, body.load.ratio);
+    if (res?.type.includes('json')) {
+      try {
+        const body = JSON.parse(res.body);
+        if (body.load) loads.set(body.load.at, body.load.ratio);
+      } catch {
+        // réponse tronquée : seule la mesure de charge manque
+      }
+    }
   };
   const all = () => [...stats.values()].reduce((sum, s) => ({ times: sum.times.concat(s.times), failed: sum.failed + s.failed }), { times: [], failed: 0 });
 
@@ -304,6 +330,7 @@ async function scenario(site, snacks, perSnack, minutes) {
     clearInterval(progress);
     for (const timer of timers) clearInterval(timer);
     for (const conn of conns) conn.close();
+    for (const agent of Object.values(agents)) agent.destroy();
   }
 
   console.log('');
