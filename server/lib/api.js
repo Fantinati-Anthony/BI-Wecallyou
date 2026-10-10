@@ -163,9 +163,34 @@ const pick = (object, keys) => Object.fromEntries(keys.map((k) => [k, object[k]]
 
 /* ------------------------------------------------------------------ API */
 
-export function createApi({ config, store, accounts, plans, tokens, events, gate, hostLoad = null }) {
+export function createApi({ config, store, accounts, plans, tokens, events, gate, hostLoad = null, health = null }) {
   const limits = new RateLimit();
   const ipOf = (req) => clientIp(req, config.ipHeader);
+
+  // Bulletin de santé du mois (page Soutenir), en chiffres anonymes : relu au plus une fois par minute.
+  let healthCache = null;
+  const healthView = async () => {
+    if (healthCache && Date.now() - healthCache.at < MINUTE) return healthCache.view;
+    const month = new Date().toISOString().slice(0, 7);
+    const [usage, host] = await Promise.all([store.totals(month), health?.month()]);
+    const hundredths = (ratio) => Math.round(ratio * 100) / 100;
+    const view = {
+      month,
+      queues: usage.queues ?? 0, // files actives ce mois-ci
+      tickets: (usage.scan ?? 0) + (usage.scan_desk ?? 0), // clients entrés dans une file
+      calls: usage.call ?? 0,
+      wait: usage.waits ? Math.round(usage.wait_ms / usage.waits / MINUTE) : null, // attente moyenne, en minutes
+      // Charge de l'hébergement mesurée ce mois-ci (la plus haute, la moyenne), si le serveur la connaît.
+      host: host?.samples ? { peak: hundredths(host.peak), average: hundredths(host.sum / host.samples), minutes: host.samples } : null,
+      limits: host?.limits ?? 0, // minutes où une limite a été touchée
+      priority: host?.priority ?? 0, // demandes des files prioritaires passées devant
+      full: host?.full ?? 0, // pages envoyées vers la vérification toutes les 5 s
+      live: host?.live ?? 0, // le plus de pages en direct à la fois
+      load: hostLoad?.view() ?? null, // en ce moment
+    };
+    healthCache = { at: Date.now(), view };
+    return view;
+  };
 
   /* ---------------------------------------------------- comptes et priorité */
 
@@ -433,6 +458,7 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
   };
 
   const routes = [
+    ['GET', /^\/health$/, async () => ({ ok: true, ...(await healthView()) })],
     ['GET', /^\/info$/, async () => ({ ok: true, brand: config.brand, domain: config.domain, contact: config.contact, allPro: Boolean(config.allPro), stats: await store.stats(), load: hostLoad?.view() ?? null, live: { max: events.maxClients } })],
 
     // Création d'un lot : le navigateur a déjà fabriqué les clés, il n'envoie que les parties publiques
@@ -881,7 +907,10 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
       // alors en vérification périodique (même résultat, quelques secondes plus tard).
       const reserved = events.clients >= events.maxClients * 0.8;
       const pro = reserved ? await lotPriority(Number(new URL(req.url, 'http://x').searchParams.get('l'))) : true;
-      if (!pro || !events.subscribe(sse[1], req, res)) sendJson(res, 503, { ok: false, error: 'busy' });
+      if (!pro || !events.subscribe(sse[1], req, res)) {
+        health?.full();
+        sendJson(res, 503, { ok: false, error: 'busy' });
+      } else if (reserved) health?.priority(); // une place gardée aux soutiens
       return true;
     }
     // Une même adresse peut avoir plusieurs méthodes (GET /account, POST /account).
@@ -892,7 +921,13 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
     try {
       if (req.method !== method) fail(405, 'method');
       // Priorité seulement si le serveur sature : sinon, personne ne paie le coût de la vérification.
-      entered = await gate.enter(gate.saturated ? await priorityOf(req, pathname) : false);
+      let priority = false;
+      if (gate.saturated) {
+        health?.limit();
+        priority = await priorityOf(req, pathname);
+        if (priority) health?.priority();
+      }
+      entered = await gate.enter(priority);
       if (!entered) fail(503, 'busy');
       sendJson(res, 200, await handler(req, pattern.exec(pathname).slice(1)));
     } catch (err) {

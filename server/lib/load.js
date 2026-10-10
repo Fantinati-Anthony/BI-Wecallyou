@@ -70,12 +70,13 @@ export class HostLoad {
   at = 0;
 
   /** cpanel : { local: true } ou { host, user, token } ; gate : la porte dont on règle les places ;
-   *  events : le temps réel, dont on règle le nombre de pages en direct. */
-  constructor({ cpanel, gate, events = null, fetcher = globalThis.fetch, runner = runUapi }) {
+   *  events : le temps réel, dont on règle le nombre de pages en direct ; health : le bulletin du mois. */
+  constructor({ cpanel, gate, events = null, health = null, fetcher = globalThis.fetch, runner = runUapi }) {
     this.cpanel = cpanel ?? null;
     this.gate = gate;
     this.base = gate.capacity;
     this.events = events;
+    this.health = health;
     this.live = events?.maxClients;
     this.fetcher = fetcher;
     this.runner = runner;
@@ -117,6 +118,7 @@ export class HostLoad {
       if (ratio !== null) {
         this.ratio = ratio;
         this.at = Date.now();
+        this.health?.load(ratio);
       }
       const entries = entryLimit(json);
       if (entries && this.events) this.events.maxClients = Math.max(1, Math.min(this.live, Math.floor(entries / 2)));

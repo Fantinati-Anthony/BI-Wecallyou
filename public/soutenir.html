@@ -92,6 +92,33 @@
       <p class="small muted" id="updated"></p>
     </section>
 
+    <section class="card health" id="health" hidden>
+      <!-- Bulletin du mois (GET /api/health, chiffres anonymes) et simulateur (modèle dans soutien.json). -->
+      <h2 data-lang="fr">Le service tient-il la route ?</h2>
+      <h2 data-lang="en" hidden>Is the service holding up?</h2>
+      <p class="health-verdict" id="h-verdict" hidden></p>
+      <p id="h-month" hidden></p>
+      <p class="small muted" id="h-capacity"></p>
+      <h3 data-lang="fr">Simulez une journée chargée</h3>
+      <h3 data-lang="en" hidden>Simulate a busy day</h3>
+      <div class="sim-fields">
+        <div class="cap num">
+          <label for="sim-queues"><span data-lang="fr">Files ouvertes en même temps</span><span data-lang="en" hidden>Queues open at the same time</span></label>
+          <input id="sim-queues" type="number" min="1" max="500" value="3" inputmode="numeric">
+        </div>
+        <div class="cap num">
+          <label for="sim-clients"><span data-lang="fr">Clients en attente par file</span><span data-lang="en" hidden>Customers waiting per queue</span></label>
+          <input id="sim-clients" type="number" min="1" max="500" value="50" inputmode="numeric">
+        </div>
+        <div class="cap num">
+          <label for="sim-hours"><span data-lang="fr">Heures d’affluence par jour</span><span data-lang="en" hidden>Busy hours per day</span></label>
+          <input id="sim-hours" type="number" min="1" max="24" value="4" inputmode="numeric">
+        </div>
+      </div>
+      <div class="sim-result" id="sim-result" aria-live="polite"></div>
+      <p class="small muted" id="sim-note"></p>
+    </section>
+
     <section class="card" data-lang="fr">
       <h2>Questions fréquentes</h2>
       <h3>Est-ce que je dois payer pour utiliser le service ?</h3>

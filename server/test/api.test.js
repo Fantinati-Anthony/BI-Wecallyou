@@ -14,6 +14,8 @@ import * as wc from '../../public/assets/crypto.js';
 let base;
 let server;
 let store;
+let events;
+let health;
 let tmp;
 
 before(async () => {
@@ -29,7 +31,7 @@ before(async () => {
     tokenKey: randomBytes(16),
     statusKey: randomBytes(32),
   };
-  ({ server, store } = await createServer(config));
+  ({ server, store, events, health } = await createServer(config));
   await new Promise((resolve) => server.listen(0, resolve));
   base = `http://127.0.0.1:${server.address().port}/api`;
 });
@@ -483,4 +485,23 @@ test('le commerçant fait entrer un ticket dans la file : numéro tapé ou QR cl
   assert.equal((await call('POST', '/lot/arrive', { n: printed[7] }, mixed.authToken)).added, true);
   const stranger = Array.from({ length: 999 }, (_, i) => i + 1).find((n) => !printed.includes(n));
   assert.equal((await call('POST', '/lot/arrive', { n: stranger }, mixed.authToken)).error, 'not_issued');
+});
+
+test('bulletin de santé : files actives, clients du mois, direct plein compté, rien de personnel', async () => {
+  const before = (await health.month()).full;
+  const max = events.maxClients;
+  events.maxClients = 0; // plus aucune place en direct
+  const res = await fetch(`${base}/events/${'a'.repeat(32)}`);
+  assert.equal(res.status, 503);
+  await res.body?.cancel();
+  events.maxClients = max;
+  assert.equal((await health.month()).full, before + 1);
+  const view = await call('GET', '/health');
+  assert.equal(view.ok, true);
+  assert.equal(view.month, new Date().toISOString().slice(0, 7));
+  assert.ok(view.queues >= 1); // les files des tests précédents
+  assert.ok(view.tickets >= 1);
+  assert.equal(view.host, null); // sans hébergeur cPanel, pas de mesure de charge
+  assert.equal(view.load, null);
+  assert.deepEqual(Object.keys(view).filter((key) => key !== 'status').sort(), ['calls', 'full', 'host', 'limits', 'live', 'load', 'month', 'ok', 'priority', 'queues', 'tickets', 'wait']);
 });

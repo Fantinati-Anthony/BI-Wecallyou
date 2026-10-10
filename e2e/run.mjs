@@ -772,6 +772,18 @@ try {
     assert.match(await p.locator('#ch-title').textContent(), /serveurs à la demande/);
     assert.equal(await p.locator('#roadmap li.next').count(), 1);
     assert.match(await p.locator('#costs').textContent(), /2,50\s€/);
+    // Le service tient-il la route ? Le bulletin du mois (files et clients des parcours précédents) et le simulateur.
+    await p.waitForSelector('#h-month:not([hidden])');
+    assert.match(await p.locator('#h-month').textContent(), /^Ce mois-ci, \d+ files? (a|ont) accueilli \d+ clients?/);
+    assert.match(await p.locator('#h-verdict').textContent(), /tient la route|besoin de vous/);
+    assert.match(await p.locator('#h-capacity').textContent(), /environ 1\s700 clients en attente/);
+    assert.match(await p.locator('#sim-result').textContent(), /150 clients en attente/); // 3 files de 50, par défaut
+    assert.match(await p.locator('.sim-verdict').textContent(), /Le serveur actuel suffit/);
+    await p.fill('#sim-queues', '200');
+    await p.fill('#sim-clients', '100');
+    assert.match(await p.locator('#sim-result').textContent(), /20\s000 clients en attente/);
+    assert.match(await p.locator('.sim-verdict').textContent(), /il faut le serveur évolutif/);
+    assert.match(await p.locator('#sim-result').textContent(), /≈ \d[\d\s]*(,\d+)?\s€ \/ mois/);
     assert.match(await p.locator('.story:not([hidden]) .motto').textContent(), /Un outil aujourd’hui, une association demain/);
     // « Prendre une licence » fuit toujours la souris et désigne le vrai bouton ; il ne s'ouvre jamais.
     const runaway = p.locator('#runaway-btn');
@@ -798,7 +810,7 @@ try {
     await shot(p, '30-soutenir');
     await ctx.close();
   }
-  step('soutenir : objectif, devise, bouton licence qui fuit toujours, « Soutenir le projet » (licence en prime), mention de la micro-entreprise');
+  step('soutenir : objectif, bulletin de santé et simulateur, devise, bouton licence qui fuit toujours, « Soutenir le projet » (licence en prime), mention de la micro-entreprise');
 
   // Barre du haut : le logo et le menu ne se chevauchent jamais, quelle que soit la page (étroite ou large) et l'écran.
   {

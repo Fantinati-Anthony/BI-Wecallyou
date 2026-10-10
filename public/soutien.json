@@ -93,6 +93,28 @@
     { "fr": "Courriers officiels et petites dépenses", "en": "Official mail and small expenses", "month": 10 },
     { "fr": "Temps du fondateur (bénévole)", "en": "The founder’s time (volunteer)", "month": 0 }
   ],
+  "capacity": {
+    "measured_fr": "le 10 octobre 2026",
+    "measured_en": "on 10 October 2026",
+    "waiting": 1000,
+    "queues": 20,
+    "load": 0.43,
+    "client_rps": 0.233,
+    "queue_rps": 0.2,
+    "live": 32,
+    "connections": 80,
+    "month": 2.5,
+    "elastic": {
+      "fr": "Scaleway (France), conteneurs à la demande",
+      "en": "Scaleway (France), on-demand containers",
+      "vcpu_100k": 1,
+      "gb_100k": 0.1,
+      "free_vcpu_s": 200000,
+      "free_gb_s": 400000,
+      "gb": 2,
+      "checked": "2026-10"
+    }
+  },
   "once": [
     { "amount": 3, "url": "" },
     { "amount": 5, "url": "", "preferred": true },

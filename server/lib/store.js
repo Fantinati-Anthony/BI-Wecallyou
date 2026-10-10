@@ -34,6 +34,8 @@ const today = (ms = Date.now()) => new Date(ms).toISOString().slice(0, 10);
  *   data/calls/<lot>/<n>               heure d'appel d'un ticket
  *   data/stats/lots/<lot>/<jour>.json  statistiques anonymes du lot, gardées 90 jours
  *   data/stats/<AAAA-MM>.json          compteurs globaux (lots et tickets créés dans le mois)
+ *   data/stats/total/<AAAA-MM>.json    totaux du mois, toutes files confondues (scans, appels, files actives)
+ *   data/stats/health/<AAAA-MM>.json   bulletin de santé du mois (charge, limites, priorité), anonyme
  *   public/etat/<id>.txt               « prêt » : lu directement par la page client (secours)
  */
 export class Store {
@@ -41,6 +43,7 @@ export class Store {
   #queueCache = new Map();
   #votesWrite = Promise.resolve(); // les votes s'écrivent l'un après l'autre
   #pendingStats = new Map(); // « lot|jour » → compteurs à ajouter (écrits par lots toutes les 10 s)
+  #flushing = Promise.resolve(); // une écriture des statistiques à la fois : aucun compteur perdu
 
   constructor({ dataDir, publicDir, etatDir, statusKey }) {
     this.dataDir = dataDir;
@@ -157,22 +160,60 @@ export class Store {
     this.#pendingStats.set(id, pending);
   }
 
-  async flushStats() {
+  /** Totaux du service pour un mois (« 2026-10 ») : compteurs de toutes les files, et files actives. */
+  totalsFile(month) {
+    return path.join(this.statsDir, 'total', `${month}.json`);
+  }
+
+  flushStats() {
+    this.#flushing = this.#flushing.catch(() => {}).then(() => this.#flushStats());
+    return this.#flushing;
+  }
+
+  async #flushStats() {
     const batch = [...this.#pendingStats];
     this.#pendingStats.clear();
+    const totals = new Map(); // mois → compteurs à ajouter
     for (const [id, delta] of batch) {
       const [lot, day] = id.split('|');
+      const month = day.slice(0, 7);
       const dir = path.join(this.lotStatsDir, lot);
       const file = path.join(dir, `${day}.json`);
       await fs.mkdir(dir, { recursive: true, mode: 0o700 });
-      let stats = {};
+      let stats = null;
       try {
         stats = JSON.parse(await fs.readFile(file, 'utf8'));
       } catch (err) {
         ignoreMissing(err);
       }
-      for (const [key, value] of Object.entries(delta)) stats[key] = (stats[key] ?? 0) + value;
+      const sum = totals.get(month) ?? {};
+      totals.set(month, sum);
+      // Premier jour d'activité de la file ce mois-ci : une file active de plus.
+      if (!stats && !(await fs.readdir(dir)).some((name) => name.startsWith(month))) sum.queues = (sum.queues ?? 0) + 1;
+      stats ??= {};
+      for (const [key, value] of Object.entries(delta)) {
+        stats[key] = (stats[key] ?? 0) + value;
+        sum[key] = (sum[key] ?? 0) + value;
+      }
       await fs.writeFile(file, JSON.stringify(stats), { mode: 0o600 });
+    }
+    for (const [month, delta] of totals) {
+      const file = this.totalsFile(month);
+      await fs.mkdir(path.dirname(file), { recursive: true, mode: 0o700 });
+      const sum = await this.totals(month, false);
+      for (const [key, value] of Object.entries(delta)) sum[key] = (sum[key] ?? 0) + value;
+      await fs.writeFile(file, JSON.stringify(sum), { mode: 0o600 });
+    }
+  }
+
+  /** Totaux d'un mois, après avoir écrit ce qui attend (sauf pendant l'écriture elle-même). */
+  async totals(month, flush = true) {
+    if (flush) await this.flushStats();
+    try {
+      return JSON.parse(await fs.readFile(this.totalsFile(month), 'utf8'));
+    } catch (err) {
+      ignoreMissing(err);
+      return {};
     }
   }
 
