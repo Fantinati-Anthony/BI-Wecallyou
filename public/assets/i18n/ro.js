@@ -641,8 +641,8 @@ export default {
   don_impact_monthly: '{amount} € pe lună = {percent} % din costurile lunare ale serverului.',
   don_impact_other: 'Fiecare euro merge mai întâi la server, apoi la dezvoltare.',
   don_fees: 'Comisioane bancare ≈ {fee} €, restul merge la proiect.',
-  don_secure: 'Plată securizată prin Stripe: card, Apple Pay sau Google Pay. Donația lunară se poate anula oricând.',
-  don_tax_no: 'Contribuție voluntară, fără chitanță pentru deducere fiscală.',
+  don_secure: 'Plată securizată prin Stripe: card, Apple Pay sau Google Pay. Susținerea lunară sau anuală poate fi anulată oricând.',
+  don_tax_no: 'Contribuție încasată de microîntreprinderea fondatorului până la înființarea asociației, fără chitanță fiscală.',
   don_tax_yes: 'Donație către o asociație: veți primi o chitanță pentru deducere fiscală.',
   don_later: 'Nu acum',
   don_soon: 'Donațiile se deschid foarte curând. Vă mulțumim că v-ați gândit!',
@@ -742,4 +742,9 @@ export default {
 
   // Aperçu : l'explication de la pastille « Exemple », dans un « ? »
   pv_sample_hint: 'Codurile QR reale sunt create odată cu coada.',
+
+  // Soutien annuel
+  don_yearly: 'În fiecare an',
+  don_cta_yearly: 'Susțineți cu {amount} € / an',
+  don_impact_yearly: '{amount} € pe an = {percent} % din costurile unui an.',
 };

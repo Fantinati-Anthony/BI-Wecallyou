@@ -641,8 +641,8 @@ export default {
   don_impact_monthly: '€ {amount} per maand = {percent}% van de maandelijkse serverkosten.',
   don_impact_other: 'Elke euro gaat eerst naar de server, daarna naar de ontwikkeling.',
   don_fees: 'Bankkosten ≈ € {fee}, de rest gaat naar het project.',
-  don_secure: 'Veilig betalen via Stripe: kaart, Apple Pay of Google Pay. Maandelijkse donatie altijd opzegbaar.',
-  don_tax_no: 'Vrijwillige bijdrage, zonder fiscaal ontvangstbewijs.',
+  don_secure: 'Veilig betalen via Stripe: kaart, Apple Pay of Google Pay. Maandelijkse of jaarlijkse steun is op elk moment op te zeggen.',
+  don_tax_no: 'Bijdrage ontvangen door de eenmanszaak van de oprichter tot de vereniging bestaat, zonder fiscaal attest.',
   don_tax_yes: 'Donatie aan een vereniging: u ontvangt een fiscaal ontvangstbewijs.',
   don_later: 'Niet nu',
   don_soon: 'Doneren is binnenkort mogelijk. Bedankt dat u eraan denkt!',
@@ -742,4 +742,9 @@ export default {
 
   // Aperçu : l'explication de la pastille « Exemple », dans un « ? »
   pv_sample_hint: 'De echte QR-codes worden met de wachtrij aangemaakt.',
+
+  // Soutien annuel
+  don_yearly: 'Elk jaar',
+  don_cta_yearly: 'Steunen met € {amount} / jaar',
+  don_impact_yearly: '€ {amount} per jaar = {percent}% van de kosten van een jaar.',
 };

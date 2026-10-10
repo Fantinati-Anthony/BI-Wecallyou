@@ -759,31 +759,23 @@ try {
   }
   step('« les deux » : numéros des tickets mélangés dans l’aperçu, pas de premier numéro ; vues Client et Tout sans promo');
 
-  // Soutenir : le défi du mois, les chapitres, et « Faisons les comptes » qui se recalcule au curseur.
+  // Soutenir : l'objectif du mois, les chapitres, et le soutien une fois, chaque mois ou chaque année.
   {
     const ctx = await browser.newContext({ locale: 'fr-FR', viewport: { width: 390, height: 844 } });
     const p = await ctx.newPage();
     p.on('pageerror', (err) => errors.push(err.message));
     await p.goto(`${BASE}/soutenir`);
     await p.waitForSelector('#challenge:not([hidden]) #ch-raised');
+    assert.match(await p.locator('#ch-goal').textContent(), /sur 50\s€ par mois/); // espace fine insécable avant €
     assert.equal(await p.locator('#roadmap li.next').count(), 1);
-    await p.waitForSelector('#sim:not([hidden]) #sim-capacity');
-    const before = await p.locator('#sim-capacity').textContent();
-    assert.match(await p.locator('.sim-out').textContent(), /chiffres réels/);
-    const slide = (id, value) => p.locator(id).evaluate((el, v) => {
-      el.value = v;
-      el.dispatchEvent(new Event('input', { bubbles: true }));
-    }, value);
-    await slide('#sim-hours', '152'); // un temps plein : l'atelier produit davantage
-    assert.notEqual(await p.locator('#sim-capacity').textContent(), before);
-    await slide('#sim-orders', '800');
-    assert.match(await p.locator('.sim-out').textContent(), /second poste/);
-    await p.click('#sim-reset');
-    assert.equal(await p.locator('#sim-capacity').textContent(), before);
-    await shot(p, '30-soutenir-comptes');
+    assert.match(await p.locator('#costs').textContent(), /2,50\s€/);
+    await p.getByRole('button', { name: 'Chaque année' }).click();
+    assert.match(await p.locator('.donate .impact').textContent(), /par an/);
+    assert.match(await p.locator('.donate').textContent(), /micro-entreprise du fondateur/);
+    await shot(p, '30-soutenir');
     await ctx.close();
   }
-  step('soutenir : défi du mois, chapitre en cours, simulateur de l’atelier recalculé au curseur');
+  step('soutenir : objectif du mois, chapitre en cours, soutien une fois, mensuel ou annuel, mention de la micro-entreprise');
 
   // Barre du haut : le logo et le menu ne se chevauchent jamais, quelle que soit la page (étroite ou large) et l'écran.
   {

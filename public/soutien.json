@@ -1,6 +1,6 @@
 {
   "updated": "2026-10",
-  "goal_month": 21,
+  "goal_month": 50,
   "raised_month": 0,
   "tax_deductible": false,
   "fee_percent": 1.5,
@@ -25,112 +25,77 @@
   },
   "roadmap": [
     {
-      "act_fr": "Acte 1 · Le service",
-      "act_en": "Act 1 · The service",
-      "month": 21,
-      "fr": "Chapitre 1 · Aujourd’hui : un serveur mutualisé en France (o2switch)",
-      "en": "Chapter 1 · Today: a shared server in France (o2switch)",
-      "detail_fr": "Gratuit pour tous. Sa capacité est limitée : en cas d’affluence, les files des donateurs (Pro) passent en priorité, les autres attendent quelques secondes.",
-      "detail_en": "Free for everyone. Its capacity is limited: when it gets busy, donors’ queues (Pro) go first, others wait a few seconds."
+      "act_fr": "Acte 1 · Aujourd’hui",
+      "act_en": "Act 1 · Today",
+      "when_fr": "En cours",
+      "when_en": "Under way",
+      "fr": "Chapitre 1 · Un outil, un fondateur, quelques euros",
+      "en": "Chapter 1 · One tool, one founder, a few euros",
+      "detail_fr": "WeCall.You tourne sur un petit serveur en France. Le fondateur avance les frais ; vos contributions les couvrent.",
+      "detail_en": "WeCall.You runs on a small server in France. The founder advances the costs; your contributions cover them."
     },
     {
-      "month": 60,
+      "month": 50,
       "challenge": true,
-      "fr": "Chapitre 2 · Le défi : des serveurs à la demande (Scaleway, France)",
-      "en": "Chapter 2 · The challenge: on-demand servers (Scaleway, France)",
-      "detail_fr": "Des conteneurs serverless qui se multiplient seuls aux heures de pointe et se mettent en veille au calme. Leur nombre suit les dons, les abonnements Pro et l’affluence réelle. Base de données Neon, en Europe.",
-      "detail_en": "Serverless containers that multiply on their own at peak times and go to sleep when it’s quiet. Their number follows donations, Pro subscriptions and real traffic. Neon database, in Europe."
-    },
-    {
-      "month": 150,
       "approx": true,
-      "fr": "Chapitre 3 · Un secours, et l’entretien",
-      "en": "Chapter 3 · A backup, and upkeep",
-      "detail_fr": "Une copie du service dans une seconde zone, des sauvegardes et une surveillance : il tient même si un centre de données tombe. Et quelques heures payées chaque mois pour l’entretien.",
-      "detail_en": "A copy of the service in a second zone, backups and monitoring: it keeps running even if a data centre fails. And a few paid hours each month for upkeep."
+      "fr": "Chapitre 2 · L’objectif : couvrir les frais du mois",
+      "en": "Chapter 2 · The goal: cover the month’s costs",
+      "detail_fr": "Hébergement, nom de domaine, téléphone, IA et petites dépenses. Atteint, le projet ne coûte plus rien à son fondateur.",
+      "detail_en": "Hosting, domain name, phone, AI and small expenses. Once reached, the project no longer costs its founder anything."
     },
     {
-      "when_fr": "Sans surcoût",
-      "when_en": "No extra cost",
-      "fr": "Chapitre 4 · Les vrais chiffres, en direct",
-      "en": "Chapter 4 · The real numbers, live",
-      "detail_fr": "Une liaison directe avec Scaleway : le coût réel du mois et le nombre de copies du service en marche s’affichent ici, sans retouche.",
-      "detail_en": "A direct link with Scaleway: the real cost of the month and the number of running copies of the service show up here, untouched."
+      "when_fr": "Dès que possible",
+      "when_en": "As soon as possible",
+      "fr": "Chapitre 3 · L’association : c’est vous qui décidez",
+      "en": "Chapter 3 · The association: you decide",
+      "detail_fr": "Une association loi 1901 reprend le projet. Ses membres votent les prochaines fonctions et la vie de l’association. WeCall.You marche dans les deux sens : on vous appelle quand c’est votre tour, et on vous appelle à décider.",
+      "detail_en": "A non-profit association takes over the project. Its members vote on the next features and the life of the association. WeCall.You works both ways: we call you when it’s your turn, and we call on you to decide."
     },
     {
-      "month": 500,
+      "act_fr": "Acte 2 · Grandir ensemble",
+      "act_en": "Act 2 · Growing together",
+      "month": 100,
       "approx": true,
-      "fr": "Chapitre 5 · Des fonctions en plus, choisies avec vous",
-      "en": "Chapter 5 · More features, chosen with you",
-      "detail_fr": "Un à deux jours de développement payés chaque mois. Chaque défi atteint débloque une fonction votée par la communauté : fiche ticket au scan, relances automatiques, plusieurs guichets, message de fin…",
-      "detail_en": "One to two paid development days each month. Each challenge met unlocks a feature voted by the community: ticket card on scan, automatic reminders, several counters, end-of-service message…"
+      "fr": "Chapitre 4 · Bénévoles et IA, main dans la main",
+      "en": "Chapter 4 · Volunteers and AI, hand in hand",
+      "detail_fr": "Plus d’IA pour développer vite, des bénévoles pour choisir, tester et accompagner. Les fonctions votées arrivent plus tôt.",
+      "detail_en": "More AI to build fast, volunteers to choose, test and help others. The voted features arrive sooner."
     },
     {
-      "act_fr": "Acte 2 · L’entreprise",
-      "act_en": "Act 2 · The company",
-      "once": 500,
-      "month": 150,
-      "approx": true,
-      "fr": "Chapitre 6 · Une structure dédiée",
-      "en": "Chapter 6 · A dedicated company",
-      "detail_fr": "Une société créée pour porter WeCall.You, ses services et ses emplois : statuts, annonce légale et immatriculation pour démarrer, puis comptable, banque et assurance chaque mois. Le fondateur reste fondateur ; la gestion peut être confiée à d’autres.",
-      "detail_en": "A company created to run WeCall.You, its services and its jobs: articles, legal notice and registration to start, then an accountant, a bank and insurance each month. The founder stays the founder; management can be handed to others."
+      "when_fr": "Notre recherche",
+      "when_en": "What we’re looking for",
+      "fr": "Chapitre 5 · Un hébergeur mécène",
+      "en": "Chapter 5 · A sponsoring host",
+      "detail_fr": "Un hébergeur européen offre les serveurs et la montée en charge, pour que le service tienne même les jours d’affluence : « Hébergé grâce à X ».",
+      "detail_en": "A European host provides the servers and scaling, so the service holds even on the busiest days: “Hosted thanks to X”."
     },
     {
-      "once": 800,
-      "approx": true,
-      "by_fr": "puis financé par les ventes",
-      "by_en": "then funded by sales",
-      "fr": "Chapitre 7 · La boutique",
-      "en": "Chapter 7 · The shop",
-      "detail_fr": "Papiers, rouleaux et étiquettes compatibles, prêts à imprimer, et des kits pour démarrer en dix minutes. Le stock de départ, puis chaque vente finance la suivante.",
-      "detail_en": "Compatible paper, rolls and labels, ready to print, and kits to get started in ten minutes. The starting stock, then each sale funds the next."
-    },
-    {
-      "once": 1200,
-      "approx": true,
-      "by_fr": "puis financé par les commandes",
-      "by_en": "then funded by orders",
-      "fr": "Chapitre 8 · Vous ne voulez pas imprimer ? On s’en occupe",
-      "en": "Chapter 8 · Don’t want to print? We’ll do it",
-      "detail_fr": "Tickets, affiches et étiquettes imprimés et expédiés sous 24 à 48 heures selon la quantité et la destination, avec un objectif : moins cher qu’une imprimerie de quartier. Pour démarrer, deux imprimantes à réservoirs (A3 et A4) et des imprimantes thermiques pour les rouleaux et les étiquettes autocollantes.",
-      "detail_en": "Tickets, posters and labels printed and shipped within 24 to 48 hours depending on quantity and destination, with one goal: cheaper than a local print shop. To start, two ink-tank printers (A3 and A4) and thermal printers for rolls and sticker labels."
-    },
-    {
-      "month": 1100,
-      "approx": true,
-      "by_fr": "financé par les commandes",
-      "by_en": "funded by orders",
-      "fr": "Chapitre 9 · Un premier emploi",
-      "en": "Chapter 9 · A first job",
-      "detail_fr": "Une personne pour imprimer, préparer et expédier les commandes, à mi-temps pour commencer. Un vrai emploi créé par un outil gratuit.",
-      "detail_en": "Someone to print, pack and ship orders, part-time to begin with. A real job created by a free tool."
-    },
-    {
-      "once": 5000,
-      "approx": true,
-      "by_fr": "financé par les commandes",
-      "by_en": "funded by orders",
-      "fr": "Chapitre 10 · Qualité et automatisation",
-      "en": "Chapter 10 · Quality and automation",
-      "detail_fr": "Contrôle à chaque étape et flux automatisés, de la commande à l’expédition, avec du matériel professionnel : les coûts d’impression baissent, la qualité monte.",
-      "detail_en": "Checks at every step and automated flows, from order to shipping, with professional equipment: printing costs go down, quality goes up."
+      "when_fr": "Ensuite",
+      "when_en": "Next",
+      "fr": "Chapitre 6 · D’autres outils que la file d’attente",
+      "en": "Chapter 6 · Other tools than the queue",
+      "detail_fr": "Le même esprit pour d’autres services, choisis par les membres : toujours libres, gratuits et respectueux de vos données.",
+      "detail_en": "The same spirit for other services, chosen by the members: always free software, free of charge and respectful of your data."
     },
     {
       "act_fr": "Acte 3 · Le rêve",
       "act_en": "Act 3 · The dream",
-      "when_fr": "Quand les ventes couvrent ≈ 2 000 € / mois",
-      "when_en": "When sales cover ≈ €2,000 / month",
-      "fr": "Chapitre 11 · Tout gratuit, pour tout le monde",
-      "en": "Chapter 11 · Everything free, for everyone",
-      "detail_fr": "Quand la boutique et l’impression couvrent les frais du service, de la structure et de l’emploi, l’offre Pro devient gratuite pour tous. Les dons restent possibles, mais plus nécessaires.",
-      "detail_en": "When the shop and printing cover the costs of the service, the company and the job, Pro becomes free for everyone. Donations stay possible, but no longer necessary."
+      "when_fr": "Le rêve",
+      "when_en": "The dream",
+      "fr": "Chapitre 7 · Changer les choses, à petite échelle puis à grande",
+      "en": "Chapter 7 · Change things, on a small scale then a large one",
+      "detail_fr": "Des bénévoles, un jour peut-être des salariés, et des outils qui font gagner du temps et du confort à beaucoup de monde, sans jamais vendre leurs données.",
+      "detail_en": "Volunteers, maybe one day employees, and tools that save time and comfort for many people, without ever selling their data."
     }
   ],
   "costs": [
-    { "fr": "Hébergement (o2switch Cloud, prix normal)", "en": "Hosting (o2switch Cloud, regular price)", "month": 16, "server": true },
-    { "fr": "Noms de domaine", "en": "Domain names", "month": 5, "server": true },
-    { "fr": "Développement (bénévole pour l’instant)", "en": "Development (volunteer for now)", "month": 0 }
+    { "fr": "Hébergement (o2switch, France)", "en": "Hosting (o2switch, France)", "month": 2.5, "server": true },
+    { "fr": "Nom de domaine", "en": "Domain name", "month": 5, "server": true },
+    { "fr": "Ligne téléphonique", "en": "Phone line", "month": 2 },
+    { "fr": "IA pour développer les fonctions votées", "en": "AI to build the voted features", "month": 20 },
+    { "fr": "Compte bancaire de l’association (dès sa création)", "en": "The association’s bank account (once created)", "month": 10.8 },
+    { "fr": "Courriers officiels et petites dépenses", "en": "Official mail and small expenses", "month": 10 },
+    { "fr": "Temps du fondateur (bénévole)", "en": "The founder’s time (volunteer)", "month": 0 }
   ],
   "once": [
     { "amount": 3, "url": "" },
@@ -144,27 +109,9 @@
     { "amount": 5, "url": "", "preferred": true },
     { "amount": 10, "url": "" }
   ],
-  "sim": {
-    "orders": 120,
-    "price": 18,
-    "sheetsA4": 10,
-    "postersA3": 1,
-    "rollTickets": 0,
-    "speedA4": 240,
-    "speedA3": 150,
-    "speedRoll": 1500,
-    "supervision": 0.1,
-    "minutesOrder": 12,
-    "minutesDay": 45,
-    "days": 21,
-    "hours": 76,
-    "wage": 1100,
-    "company": 150,
-    "dev": 500,
-    "costA4": 0.12,
-    "costA3": 0.3,
-    "costRoll": 0.01,
-    "packaging": 0.7,
-    "invest": 2500
-  }
+  "yearly": [
+    { "amount": 12, "url": "" },
+    { "amount": 30, "url": "", "preferred": true },
+    { "amount": 60, "url": "" }
+  ]
 }

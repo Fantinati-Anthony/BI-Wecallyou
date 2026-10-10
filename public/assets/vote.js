@@ -137,7 +137,7 @@ if (cfg) {
     h('li', {}, say(`Un jour de développeur indépendant : ≈ ${euros(cfg.rates.dev_day)}.`, `One day of a freelance developer: ≈ ${euros(cfg.rates.dev_day)}.`)),
     h('li', {}, say(`Quand je la code moi-même avec un assistant IA : ≈ ${euros(cfg.rates.ai_day)} d’IA par jour de travail. Mon temps, lui, n’est pas compté.`, `When I code it myself with an AI assistant: ≈ ${euros(cfg.rates.ai_day)} of AI per day of work. My own time isn’t counted.`)),
     h('li', {}, say('Les durées sont estimées et arrondies au demi-jour : tests et traductions compris.', 'Durations are estimated and rounded to half a day: tests and translations included.')),
-    h('li', {}, h('a', { href: '/soutenir' }, say('Vos dons accélèrent la liste : le chapitre 5 de l’aventure (≈ 500 € par mois) paie environ un jour de développeur par mois.', 'Your donations speed up the list: chapter 5 of the adventure (≈ €500 a month) pays for about one developer day a month.'))),
+    h('li', {}, h('a', { href: '/soutenir' }, say('Vos contributions accélèrent la liste : une fois les frais du mois couverts, chaque euro paie de l’IA pour développer plus vite les idées votées.', 'Your contributions speed up the list: once the month’s costs are covered, every euro pays for AI to build the voted ideas faster.'))),
   );
   const res = await api('/votes', { auth });
   if (res.ok) state = res;

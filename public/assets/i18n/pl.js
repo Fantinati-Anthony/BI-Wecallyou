@@ -641,8 +641,8 @@ export default {
   don_impact_monthly: '{amount} € miesięcznie = {percent}% miesięcznych kosztów serwera.',
   don_impact_other: 'Każde euro trafia najpierw na serwer, potem na rozwój.',
   don_fees: 'Opłaty bankowe ≈ {fee} €, reszta trafia do projektu.',
-  don_secure: 'Bezpieczna płatność przez Stripe: karta, Apple Pay lub Google Pay. Comiesięczną darowiznę można anulować w każdej chwili.',
-  don_tax_no: 'Dobrowolna wpłata, bez pokwitowania do celów podatkowych.',
+  don_secure: 'Bezpieczna płatność przez Stripe: karta, Apple Pay lub Google Pay. Wsparcie miesięczne lub roczne można anulować w każdej chwili.',
+  don_tax_no: 'Wpłata trafia do jednoosobowej firmy założyciela do czasu powstania stowarzyszenia, bez pokwitowania podatkowego.',
   don_tax_yes: 'Darowizna na rzecz stowarzyszenia: otrzymasz pokwitowanie do celów podatkowych.',
   don_later: 'Nie teraz',
   don_soon: 'Darowizny ruszą już wkrótce. Dziękujemy, że o tym pamiętasz!',
@@ -742,4 +742,9 @@ export default {
 
   // Aperçu : l'explication de la pastille « Exemple », dans un « ? »
   pv_sample_hint: 'Prawdziwe kody QR powstaną razem z kolejką.',
+
+  // Soutien annuel
+  don_yearly: 'Co roku',
+  don_cta_yearly: 'Wesprzyj kwotą {amount} € / rok',
+  don_impact_yearly: '{amount} € rocznie = {percent}% kosztów całego roku.',
 };

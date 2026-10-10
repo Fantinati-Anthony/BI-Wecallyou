@@ -80,7 +80,7 @@ export async function supportCard({ context, count = 0, brand = 'WeCall.You' }) 
   const cta = h('a', { class: 'btn btn-gold btn-block btn-big', target: '_blank', rel: 'noopener' });
   const toggle = h('div', { class: 'segmented', role: 'group' });
 
-  const optionsFor = (m) => (m === 'once' ? cfg.once : cfg.monthly);
+  const optionsFor = (m) => ({ once: cfg.once, monthly: cfg.monthly, yearly: cfg.yearly })[m];
 
   function update() {
     const amount = choice?.amount ?? null;
@@ -91,11 +91,14 @@ export async function supportCard({ context, count = 0, brand = 'WeCall.You' }) 
     } else if (mode === 'once') {
       impact.textContent = t('don_impact_once', { amount: euros(amount), days: Math.max(1, Math.round((net / monthly) * 30)) });
       fees.textContent = t('don_fees', { fee: euros(Math.round((amount - net) * 100) / 100) });
+    } else if (mode === 'yearly') {
+      impact.textContent = t('don_impact_yearly', { amount: euros(amount), percent: Math.round((net / (monthly * 12)) * 100) });
+      fees.textContent = t('don_fees', { fee: euros(Math.round((amount - net) * 100) / 100) });
     } else {
       impact.textContent = t('don_impact_monthly', { amount: euros(amount), percent: Math.round((net / monthly) * 100) });
       fees.textContent = t('don_fees', { fee: euros(Math.round((amount - net) * 100) / 100) });
     }
-    const label = amount === null ? t('don_cta_other') : t(mode === 'once' ? 'don_cta' : 'don_cta_monthly', { amount: euros(amount) });
+    const label = amount === null ? t('don_cta_other') : t({ once: 'don_cta', monthly: 'don_cta_monthly', yearly: 'don_cta_yearly' }[mode], { amount: euros(amount) });
     cta.textContent = choice?.url ? label : t('don_soon');
     if (choice?.url) cta.setAttribute('href', choice.url);
     else cta.removeAttribute('href');
@@ -119,9 +122,10 @@ export async function supportCard({ context, count = 0, brand = 'WeCall.You' }) 
     update();
   }
 
-  for (const m of ['once', 'monthly']) {
+  // Une fois (montant libre possible), chaque mois ou chaque année (montants fixes : un abonnement Stripe n'a pas de montant libre).
+  for (const m of ['once', 'monthly', 'yearly']) {
     if (!optionsFor(m)?.length) continue;
-    const btn = h('button', { type: 'button', 'aria-pressed': String(m === mode) }, t(m === 'once' ? 'don_once' : 'don_monthly'));
+    const btn = h('button', { type: 'button', 'aria-pressed': String(m === mode) }, t({ once: 'don_once', monthly: 'don_monthly', yearly: 'don_yearly' }[m]));
     btn.addEventListener('click', () => {
       mode = m;
       for (const b of toggle.children) b.setAttribute('aria-pressed', String(b === btn));

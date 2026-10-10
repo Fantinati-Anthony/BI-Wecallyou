@@ -1,7 +1,6 @@
 // Page « Soutenir » : encart de dons + tableau transparent des frais (depuis /soutien.json).
 import { h, t, LANG, render, translatePage } from './common.js';
 import { supportCard, loadSupport } from './donate.js';
-import { simulator } from './simulator.js';
 
 translatePage();
 
@@ -13,14 +12,15 @@ const said = (entry, key = '') => {
   const field = (lang) => entry[key ? `${key}_${lang}` : lang];
   return field(LANG) ?? field('en') ?? field('fr');
 };
-const euros = (n) => new Intl.NumberFormat(LANG === 'fr' ? 'fr' : 'en', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n); // la langue des blocs affichés
+// Montants dans la langue des blocs affichés ; les centimes seulement quand il y en a (2,50 €).
+const euros = (n) => new Intl.NumberFormat(LANG === 'fr' ? 'fr' : 'en', { style: 'currency', currency: 'EUR', minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 }).format(n);
 const grow = (bar, ratio) => requestAnimationFrame(() => {
   bar.style.width = `${Math.min(100, Math.round(ratio * 100))}%`;
 });
 
 if (cfg) {
-  // Chapitres : ceux qui ont un montant se débloquent quand les dons et le Pro du mois l'atteignent ;
-  // les suivants (chiffres en direct, boutique, impression, tout gratuit) viendront ensuite.
+  // Chapitres : ceux qui ont un montant se débloquent quand les contributions et le Pro du mois l'atteignent ;
+  // les autres (association, hébergeur mécène, autres outils) viendront quand les membres le décideront.
   const stages = cfg.roadmap ?? [];
   // Chapitres suivis par une jauge : un montant mensuel payé par les dons et le Pro (pas les ventes).
   const gauged = (s) => s.month && !s.once && !s.by_fr;
@@ -56,38 +56,32 @@ if (cfg) {
     }),
   );
 
-  // Le défi du mois : la jauge du chapitre marqué « challenge » (ou du prochain palier).
+  // L'objectif du mois : la jauge du chapitre marqué « challenge » (ou du prochain palier).
   const challenge = stages.find((s) => s.challenge) ?? stages[nextIndex];
   if (challenge?.month) {
     const done = cfg.raised_month >= challenge.month;
     document.getElementById('ch-raised').textContent = euros(cfg.raised_month);
     document.getElementById('ch-goal').textContent = LANG === 'fr' ? `sur ${euros(challenge.month)} par mois` : `of ${euros(challenge.month)} a month`;
     document.getElementById('ch-note').textContent = [
-      LANG === 'fr' ? 'Dons et abonnements Pro du mois.' : 'Donations and Pro subscriptions this month.',
-      done ? (LANG === 'fr' ? 'Défi relevé : merci à tous !' : 'Challenge met: thank you all!') : '',
+      LANG === 'fr' ? 'Contributions et accès Pro du mois.' : 'Contributions and Pro access this month.',
+      done ? (LANG === 'fr' ? 'Objectif atteint : merci à tous !' : 'Goal reached: thank you all!') : '',
       t('sup_updated', { date: cfg.updated }),
     ].filter(Boolean).join(' ');
     grow(document.getElementById('ch-bar'), cfg.raised_month / challenge.month);
     document.getElementById('challenge').hidden = false;
   }
 
-  // Faisons les comptes : l'atelier simulé, à partir des vrais chiffres du mois.
-  if (cfg.sim) {
-    document.getElementById('sim-slot').append(simulator(cfg));
-    document.getElementById('sim').hidden = false;
-  }
-
   const total = cfg.costs.reduce((sum, c) => sum + c.month, 0);
   render(
     document.getElementById('costs'),
-    cfg.costs.map((c) => h('tr', {}, h('td', {}, c[LANG] ?? c.en ?? c.fr), h('td', {}, t('sup_per_month', { n: c.month })))),
-    h('tr', {}, h('td', {}, h('strong', {}, t('sup_total'))), h('td', {}, t('sup_per_month', { n: total }))),
+    cfg.costs.map((c) => h('tr', {}, h('td', {}, c[LANG] ?? c.en ?? c.fr), h('td', {}, `${euros(c.month)} ${LANG === 'fr' ? '/ mois' : '/ month'}`))),
+    h('tr', {}, h('td', {}, h('strong', {}, t('sup_total'))), h('td', {}, `${euros(total)} ${LANG === 'fr' ? '/ mois' : '/ month'}`)),
   );
   document.getElementById('updated').textContent = t('sup_updated', { date: cfg.updated });
   document.getElementById('tax-fr').textContent = cfg.tax_deductible
     ? 'Oui : WeCall.You est porté par une association, un reçu fiscal vous est envoyé.'
-    : 'Non, pas pour l’instant : c’est une contribution volontaire, sans reçu fiscal. Si une association reprend le projet, cela changera.';
+    : 'Non. Pour l’instant, les contributions sont encaissées par la micro-entreprise du fondateur et déclarées comme recettes : elles ne donnent pas droit à une réduction d’impôt. Quand l’association existera, elle pourra peut-être délivrer des reçus fiscaux.';
   document.getElementById('tax-en').textContent = cfg.tax_deductible
     ? 'Yes: WeCall.You is run by a non-profit, you receive a tax receipt.'
-    : 'Not for now: it is a voluntary contribution, without a tax receipt. This will change if a non-profit takes over the project.';
+    : 'No. For now, contributions are received by the founder’s sole-trader business and declared as income: they give no tax reduction. Once the association exists, it may be able to issue tax receipts.';
 }

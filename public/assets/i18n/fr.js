@@ -641,8 +641,8 @@ export default {
   don_impact_monthly: '{amount} € par mois = {percent} % des frais mensuels du serveur.',
   don_impact_other: 'Chaque euro sert d’abord au serveur, puis au développement.',
   don_fees: 'Frais bancaires ≈ {fee} €, le reste va au projet.',
-  don_secure: 'Paiement sécurisé par Stripe : carte, Apple Pay ou Google Pay. Don mensuel résiliable à tout moment.',
-  don_tax_no: 'Contribution volontaire, sans reçu fiscal.',
+  don_secure: 'Paiement sécurisé par Stripe : carte, Apple Pay ou Google Pay. Soutien mensuel ou annuel résiliable à tout moment.',
+  don_tax_no: 'Contribution encaissée par la micro-entreprise du fondateur en attendant l’association, sans reçu fiscal.',
   don_tax_yes: 'Don à une association : un reçu fiscal vous est envoyé.',
   don_later: 'Pas maintenant',
   don_soon: 'Les dons ouvrent très bientôt. Merci d’y penser !',
@@ -742,4 +742,9 @@ export default {
 
   // Aperçu : l'explication de la pastille « Exemple », dans un « ? »
   pv_sample_hint: 'Les vrais QR codes sont créés avec la file.',
+
+  // Soutien annuel
+  don_yearly: 'Chaque année',
+  don_cta_yearly: 'Soutenir avec {amount} € / an',
+  don_impact_yearly: '{amount} € par an = {percent} % des frais d’une année.',
 };
