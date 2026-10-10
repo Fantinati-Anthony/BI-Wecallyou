@@ -6,7 +6,13 @@ import { fileURLToPath } from 'node:url';
 export const SERVER_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 export function loadConfig(file = process.env.TN_CONFIG ?? path.join(SERVER_DIR, 'config.json')) {
-  const raw = JSON.parse(readFileSync(file, 'utf8'));
+  let raw;
+  try {
+    raw = JSON.parse(readFileSync(file, 'utf8'));
+  } catch (err) {
+    // Une virgule oubliée suffit à empêcher le démarrage : on dit où regarder.
+    throw new Error(`config.json illisible (${file}) : ${err.message}`);
+  }
   const dir = path.dirname(file);
   const resolve = (p) => (path.isAbsolute(p) ? p : path.resolve(dir, p));
   return {
@@ -30,5 +36,7 @@ export function loadConfig(file = process.env.TN_CONFIG ?? path.join(SERVER_DIR,
     allPro: raw.allPro ?? false,
     // Requêtes traitées en même temps par processus avant que la priorité Pro n'entre en jeu.
     capacity: raw.capacity ?? 40,
+    // Charge de l'hébergement : { "local": true } (commande uapi, sans jeton) ou { host, user, token }.
+    cpanel: raw.cpanel ?? null,
   };
 }
