@@ -7,9 +7,9 @@
 import { execFile } from 'node:child_process';
 
 /** Lecture locale : « uapi ResourceUsage get_usages », comme dans le terminal du compte. */
-const runUapi = () =>
+const runOne = (bin) =>
   new Promise((resolve, reject) => {
-    execFile('uapi', ['--output=json', 'ResourceUsage', 'get_usages'], { timeout: 8000 }, (err, stdout) => {
+    execFile(bin, ['--output=json', 'ResourceUsage', 'get_usages'], { timeout: 8000 }, (err, stdout) => {
       if (err) return reject(err);
       try {
         resolve(JSON.parse(stdout));
@@ -18,6 +18,20 @@ const runUapi = () =>
       }
     });
   });
+// L'application lancée par cPanel n'a pas toujours le même PATH que le terminal : chemins complets d'abord.
+const UAPI = ['/usr/bin/uapi', '/usr/local/cpanel/bin/uapi', 'uapi'];
+const runUapi = async () => {
+  let last;
+  for (const bin of UAPI) {
+    try {
+      return await runOne(bin);
+    } catch (err) {
+      last = err;
+      if (err.code !== 'ENOENT') throw err;
+    }
+  }
+  throw last;
+};
 
 const EVERY = 60_000; // une mesure par minute
 const STALE = 5 * EVERY; // une mesure trop ancienne ne resserre plus rien
