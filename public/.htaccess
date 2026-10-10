@@ -45,7 +45,7 @@ AddType image/webp .webp
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
   Header always set Strict-Transport-Security "max-age=31536000"
 
-  <FilesMatch "\.(html|webmanifest)$|^(sw\.js|soutien\.json|papiers\.json)$">
+  <FilesMatch "\.(html|webmanifest)$|^(sw\.js|soutien\.json|papiers\.json|idees\.json)$">
     Header set Cache-Control "no-cache"
   </FilesMatch>
   # Scripts et styles : toujours revalidés (réponse 304 si rien n'a changé), pour qu'une mise à
