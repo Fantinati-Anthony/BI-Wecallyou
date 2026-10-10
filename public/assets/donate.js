@@ -7,12 +7,20 @@
 import { h, t, api, local, icon } from './common.js';
 import { session } from './account.js';
 import { amounts, scenarioOf, targetOf, loadUsage } from './plan.js';
+import { loadCosts } from './couts.js';
 
 let configPromise = null;
 
+/**
+ * soutien.json, avec les frais mesurés : la ligne « measured » (l'IA) prend ce qu'elle a réellement
+ * coûté sur les 30 derniers jours (couts.json). Frais du mois, paliers et encart suivent.
+ */
 export function loadSupport() {
-  configPromise ??= fetch('/soutien.json', { cache: 'no-cache' })
-    .then((r) => r.json())
+  configPromise ??= Promise.all([fetch('/soutien.json', { cache: 'no-cache' }).then((r) => r.json()), loadCosts()])
+    .then(([cfg, costs]) => {
+      if (costs?.month != null) for (const line of cfg.costs) if (line.measured) line.month = costs.month;
+      return cfg;
+    })
     .catch(() => null);
   return configPromise;
 }

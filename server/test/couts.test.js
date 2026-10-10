@@ -53,7 +53,7 @@ test('coûts : réponses comptées une fois, projet seul, pauses exclues, abonne
     ];
     // 20 $ le million en sortie ; abonnement de 365/12 € par mois : 1 € par jour.
     const ai = { subscription_month: 365 / 12, prices: { m: { input: 4, output: 20, cacheWrite: 8, cacheRead: 0.2 } } };
-    const costs = summarize({ logs, repo, commits, ai });
+    const costs = summarize({ logs, repo, commits, ai, now: T0 + 3_600_000 });
 
     assert.equal(costs.replies, 5); // r1 une fois, r2, r3, r4 (sous-agent), r6 ; pas r5 (autre projet)
     assert.equal(costs.tokens.output, 1000 + 2000 + 3000 + 4000 + 500);
@@ -64,6 +64,8 @@ test('coûts : réponses comptées une fois, projet seul, pauses exclues, abonne
     assert.equal(costs.since, '2026-10-09');
     // Le jour : 10 500 jetons pour le projet, 10 000 pour l'autre ; 1 € partagé selon l'usage.
     assert.equal(costs.subscription, Math.round((10_500 / 20_500) * 100) / 100);
+    assert.equal(costs.month, costs.subscription); // tout s'est passé dans les 30 derniers jours
+    assert.equal(summarize({ logs, repo, commits, ai, now: T0 + 40 * 86_400_000 }).month, 0); // plus rien sur les 30 derniers jours
     assert.deepEqual(costs.evolutions.map((e) => [e.commit, e.usd, e.tokens]), [['c1', 0.02, 1000], ['c2', 0.18, 9000]]);
     assert.equal(costs.evolutions[0].date, '2026-10-09');
     assert.deepEqual(costs.current, { usd: 0.01, tokens: 500 });

@@ -780,6 +780,9 @@ try {
     await p.waitForSelector('#frugal:not([hidden])');
     assert.match(await p.locator('#f-summary').textContent(), /^En \d+ jours?, \d+ évolutions? et [\d\s]+ lignes de code : \d+ h \d\d du fondateur et [\d,]+\s€ d’intelligence artificielle/);
     assert.match(await p.locator('#f-table').textContent(), /30\s€ par an.*36\s€ par an/);
+    // Ce qui a été payé et la valeur du travail de l'IA, à ne pas confondre : c'est expliqué.
+    assert.match(await p.locator('#f-why').textContent(), /^Pourquoi [\d,]+\s€ et pas [\d\s,]+ \$ \?.*d’un mois d’abonnement/);
+    assert.match(await p.locator('#costs').textContent(), /IA pour développer les fonctions votées \(réellement payée, 30 derniers jours\)/);
     assert.equal(await p.locator('#f-last li').count(), 5);
     // Le service tient-il la route ? Le bulletin du mois (files et clients des parcours précédents) et le simulateur.
     await p.waitForSelector('#h-month:not([hidden])');

@@ -274,26 +274,40 @@ function frugal(cfg, costs) {
   const dearest = evolutions.reduce((a, b) => (b.usd > a.usd ? b : a));
   const checked = new Date(`${ai.checked}-01T12:00:00`).toLocaleDateString(fr ? 'fr' : 'en', { month: 'long', year: 'numeric' });
   const perYear = fr ? 'par an' : 'a year';
+  // Deux montants à ne pas confondre : ce qui a été réellement payé (la part du projet dans un abonnement
+  // à prix fixe) et la valeur du travail de l'IA (les mêmes jetons payés un par un, au tarif de l'API).
+  const daily = (ai.subscription_month * 12) / 365;
+  const paid = (usd) => cents(usd * calib.eurPerUsd);
+  const tenths = (ratio) => `${new Intl.NumberFormat(fr ? 'fr' : 'en', { maximumFractionDigits: 1 }).format(ratio * 100)}${fr ? ' %' : '%'}`;
 
   document.getElementById('f-summary').textContent = fr
-    ? `En ${plural(costs.days, 'jour', 'jours')}, ${plural(evolutions.length, 'évolution', 'évolutions')} et ${count(costs.lines)} lignes de code : ${time} du fondateur et ${cents(costs.subscription)} d’intelligence artificielle. Le seul vrai besoin, ce sont les serveurs.`
-    : `In ${plural(costs.days, 'day', 'days')}, ${plural(evolutions.length, 'change', 'changes')} and ${count(costs.lines)} lines of code: ${time} of the founder’s time and ${cents(costs.subscription)} of artificial intelligence. The only real need is servers.`;
+    ? `En ${plural(costs.days, 'jour', 'jours')}, ${plural(evolutions.length, 'évolution', 'évolutions')} et ${count(costs.lines)} lignes de code : ${time} du fondateur et ${cents(costs.subscription)} d’intelligence artificielle réellement payés. Le seul vrai besoin, ce sont les serveurs.`
+    : `In ${plural(costs.days, 'day', 'days')}, ${plural(evolutions.length, 'change', 'changes')} and ${count(costs.lines)} lines of code: ${time} of the founder’s time and ${cents(costs.subscription)} of artificial intelligence actually paid. The only real need is servers.`;
   const row = (label, value) => h('tr', {}, h('td', {}, label), h('td', {}, value));
   render(
     document.getElementById('f-table'),
     row(fr ? `Temps du fondateur (bénévole, ${plural(costs.messages, 'message', 'messages')})` : `The founder’s time (volunteer, ${plural(costs.messages, 'message', 'messages')})`, time),
-    row(`${fr ? 'Intelligence artificielle' : 'Artificial intelligence'} (${said(ai)})`, cents(costs.subscription)),
-    row(fr ? `Jetons d’IA utilisés (≈ ${dollars(costs.usd)} au tarif de l’API)` : `AI tokens used (≈ ${dollars(costs.usd)} at API prices)`, millions(tokens)),
+    row(fr ? `IA réellement payée (part de l’${said(ai)})` : `AI actually paid (share of the ${said(ai)})`, cents(costs.subscription)),
+    row(fr ? `Valeur du travail de l’IA : ${millions(tokens)} de jetons au tarif de l’API` : `Value of the AI’s work: ${millions(tokens)} tokens at API prices`, dollars(costs.usd)),
     row(fr ? 'Hébergement (o2switch)' : 'Hosting (o2switch)', `${euros(yearly('hosting'))} ${perYear}`),
     row(fr ? 'Noms de domaine' : 'Domain names', `${euros(yearly('domains'))} ${perYear}`),
   );
+  const share = costs.subscription / (costs.days * daily);
+  document.getElementById('f-why').textContent = fr
+    ? `Pourquoi ${cents(costs.subscription)} et pas ${dollars(costs.usd)} ? L’abonnement coûte ${euros(ai.subscription_month)} par mois quoi qu’il arrive, soit ${cents(daily)} par jour. Sur ces ${plural(costs.days, 'jour', 'jours')} (${cents(costs.days * daily)}), WeCall.You en a utilisé ${percent(share)}, les autres projets du fondateur le reste : ${cents(costs.subscription)}, soit ${tenths(costs.subscription / ai.subscription_month)} d’un mois d’abonnement. Ses quotas (par 5 heures et par semaine) se rechargent tout seuls : tant qu’ils ne sont pas atteints, un jeton de plus ne coûte rien de plus. Les montants en dollars sont ce qu’auraient coûté les mêmes jetons payés un par un : la valeur du travail de l’IA, pas ce qui a été payé.`
+    : `Why ${cents(costs.subscription)} and not ${dollars(costs.usd)}? The subscription costs ${euros(ai.subscription_month)} a month whatever happens, that is ${cents(daily)} a day. Over these ${plural(costs.days, 'day', 'days')} (${cents(costs.days * daily)}), WeCall.You used ${percent(share)} of it, the founder’s other projects the rest: ${cents(costs.subscription)}, that is ${tenths(costs.subscription / ai.subscription_month)} of a month’s subscription. Its quotas (per 5 hours and per week) refill on their own: as long as they are not reached, one more token costs nothing more. The dollar amounts are what the same tokens would have cost paid one by one: the value of the AI’s work, not what was paid.`;
   document.getElementById('f-evolution').textContent = fr
-    ? `Une évolution coûte de ${dollars(cheapest.usd)} (un réglage) à ${dollars(dearest.usd)} (un module entier) au tarif de l’API, ${dollars(calib.median)} en médiane, soit ${cents(calib.median * calib.eurPerUsd)} de l’abonnement réellement payé et environ ${calib.minutes} min du fondateur. L’IA fait le travail ; les humains proposent, choisissent et votent.`
-    : `A change costs from ${dollars(cheapest.usd)} (a tweak) to ${dollars(dearest.usd)} (a whole module) at API prices, ${dollars(calib.median)} in the median, that is ${cents(calib.median * calib.eurPerUsd)} of the subscription actually paid and about ${calib.minutes} min of the founder’s time. AI does the work; people propose, choose and vote.`;
+    ? `Une évolution représente de ${dollars(cheapest.usd)} (un réglage) à ${dollars(dearest.usd)} (un module entier) de travail d’IA, ${dollars(calib.median)} en médiane ; payée par l’abonnement, elle revient à environ ${paid(calib.median)}, plus une quinzaine de minutes du fondateur. Quelques minutes de concertation suffisent, l’IA fait le travail : chaque évolution est chiffrée en jetons avant (page Voter) et après (ici).`
+    : `A change represents from ${dollars(cheapest.usd)} (a tweak) to ${dollars(dearest.usd)} (a whole module) of AI work, ${dollars(calib.median)} in the median; paid through the subscription, it comes to about ${paid(calib.median)}, plus around a quarter of an hour of the founder’s time. A few minutes of discussion are enough, AI does the work: each change is costed in tokens before (Vote page) and after (here).`;
   render(
     document.getElementById('f-last'),
     evolutions.slice(-5).reverse().map((e) =>
-      h('li', {}, h('strong', {}, e.title), h('span', { class: 'small muted' }, ` ${new Date(`${e.date}T12:00:00`).toLocaleDateString(fr ? 'fr' : 'en', { day: 'numeric', month: 'long' })} · ${dollars(e.usd)} · ${millions(e.tokens)} ${fr ? 'de jetons' : 'tokens'}`)),
+      h(
+        'li',
+        {},
+        h('strong', {}, e.title),
+        h('span', { class: 'small muted' }, ` ${new Date(`${e.date}T12:00:00`).toLocaleDateString(fr ? 'fr' : 'en', { day: 'numeric', month: 'long' })} · ${millions(e.tokens)} ${fr ? 'de jetons' : 'tokens'} · ${fr ? `${dollars(e.usd)} de travail d’IA, ≈ ${paid(e.usd)} payés` : `${dollars(e.usd)} of AI work, ≈ ${paid(e.usd)} paid`}`),
+      ),
     ),
   );
   const updated = new Date(costs.updated).toLocaleDateString(fr ? 'fr' : 'en', { day: 'numeric', month: 'long', year: 'numeric' });

@@ -74,9 +74,10 @@ const day = (ms) => new Date(ms).toISOString().slice(0, 10);
 
 /**
  * Le bilan : logs (lus, avec session et subagent), repo (dossier du dépôt), commits ([{ at, hash,
- * title }] du plus ancien au plus récent), ai (« ai » de soutien.json : prix par million, abonnement).
+ * title }] du plus ancien au plus récent), ai (« ai » de soutien.json : prix par million, abonnement),
+ * now (pour les 30 derniers jours).
  */
-export function summarize({ logs, repo, commits, ai }) {
+export function summarize({ logs, repo, commits, ai, now = Date.now() }) {
   const home = normalize(repo);
   const inRepo = (cwd) => cwd === home || cwd.startsWith(`${home}/`);
   const sessions = new Set(logs.filter((log) => [...log.cwds].some(inRepo)).map((log) => log.session));
@@ -122,7 +123,11 @@ export function summarize({ logs, repo, commits, ai }) {
   }
   // Abonnement : chaque jour en coûte 1/365 de l'année ; le projet en prend sa part selon l'usage du jour.
   const daily = (ai.subscription_month * 12) / 365;
-  const subscription = [...perDay.values()].reduce((sum, d) => sum + (d.ours ? (daily * d.ours) / d.all : 0), 0);
+  const shareOf = (d) => (d.ours ? (daily * d.ours) / d.all : 0);
+  const subscription = [...perDay.values()].reduce((sum, d) => sum + shareOf(d), 0);
+  // Ce que l'IA a réellement coûté au projet sur les 30 derniers jours (la ligne « IA » des frais du mois).
+  const recent = day(now - 30 * 86_400_000);
+  const month = [...perDay].reduce((sum, [date, d]) => sum + (date > recent ? shareOf(d) : 0), 0);
   // Temps du fondateur : les sessions principales, pauses de plus de 10 min exclues.
   const stamps = logs.filter((log) => ours(log) && !log.subagent).flatMap((log) => log.stamps).sort((a, b) => a - b);
   const active = stamps.slice(1).reduce((sum, at, i) => sum + (at - stamps[i] <= IDLE ? at - stamps[i] : 0), 0);
@@ -136,6 +141,7 @@ export function summarize({ logs, repo, commits, ai }) {
     tokens,
     usd: round(usd),
     subscription: round(subscription),
+    month: round(month),
     evolutions: evolutions.map((e) => ({ ...e, usd: round(e.usd) })),
     current: { usd: round(current.usd), tokens: current.tokens },
   };

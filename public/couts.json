@@ -1,18 +1,19 @@
 {
- "updated": "2026-10-10T19:59:48.431Z",
+ "updated": "2026-10-10T20:13:45.258Z",
  "since": "2026-10-08",
  "days": 3,
- "hours": 13.8,
- "messages": 92,
- "replies": 1816,
+ "hours": 14,
+ "messages": 93,
+ "replies": 1834,
  "tokens": {
-  "input": 3634,
-  "output": 2762871,
-  "cacheWrite": 7146179,
-  "cacheRead": 830315050
+  "input": 3670,
+  "output": 2789561,
+  "cacheWrite": 7180111,
+  "cacheRead": 840781007
  },
- "usd": 278.5,
- "subscription": 1.77,
+ "usd": 281.4,
+ "subscription": 1.8,
+ "month": 1.8,
  "evolutions": [
   {
    "commit": "63eed2c",
@@ -391,11 +392,18 @@
    "title": "Plan chiffré : montants des paliers calculés d'après l'affluence, simulateur à curseurs",
    "usd": 4.69,
    "tokens": 13935186
+  },
+  {
+   "commit": "801b43f",
+   "date": "2026-10-10",
+   "title": "Ce que le projet a coûté, mesuré et publié : temps, jetons d'IA, coût réel de chaque évolution",
+   "usd": 7.1,
+   "tokens": 24106194
   }
  ],
  "current": {
-  "usd": 6.83,
-  "tokens": 22969392
+  "usd": 2.63,
+  "tokens": 9389813
  },
- "lines": 26018
+ "lines": 26773
 }

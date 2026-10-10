@@ -88,7 +88,7 @@
     { "id": "hosting", "fr": "Hébergement (o2switch, France), 30 € par an", "en": "Hosting (o2switch, France), €30 a year", "month": 2.5, "server": true },
     { "id": "domains", "fr": "Noms de domaine : wecall.you pour l’association, webeep.you pour l’outil (2 × 18 € par an)", "en": "Domain names: wecall.you for the association, webeep.you for the tool (2 × €18 a year)", "month": 3, "server": true },
     { "fr": "Ligne téléphonique", "en": "Phone line", "month": 2 },
-    { "fr": "IA pour développer les fonctions votées", "en": "AI to build the voted features", "month": 20 },
+    { "id": "ai", "measured": true, "fr": "IA pour développer les fonctions votées (réellement payée, 30 derniers jours)", "en": "AI to build the voted features (actually paid, last 30 days)", "month": 1.78 },
     { "fr": "Compte bancaire de l’association (dès sa création)", "en": "The association’s bank account (once created)", "month": 10.8 },
     { "fr": "Courriers officiels et petites dépenses", "en": "Official mail and small expenses", "month": 10 },
     { "fr": "Temps du fondateur (bénévole)", "en": "The founder’s time (volunteer)", "month": 0 }
