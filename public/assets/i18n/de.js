@@ -749,7 +749,7 @@ export default {
   don_impact_yearly: '{amount} € pro Jahr = {percent} % der Kosten eines Jahres.',
 
   // Encart de soutien : deux offres (juste soutenir, ou une licence avec le soutien moral en prime)
-  don_goal_year: '{raised} € von {goal} € gesammelt: 12 Monate Kosten im Voraus',
+  don_goal_year: '{raised} € von {goal} € für die nächste Stufe gesammelt',
 
   // Encart de soutien : « Juste l’outil ? » (bouton qui fuit toujours) et « Soutenir le projet » (la vision, licence en prime)
   offer_tool_title: 'Nur das Werkzeug?',
@@ -761,10 +761,21 @@ export default {
   offer_flee_4: 'Hier unterstützen wir die Vision →',
   offer_vision_title: 'Das Projekt unterstützen, die Lizenz gibt es dazu',
   offer_vision_text: 'Heute ein Werkzeug, morgen ein Verein, eine Vision für die Zukunft: KI im Dienst des Guten, mit Entscheidungen, die Menschen gleichberechtigt treffen.',
-  offer_vision_pro: 'Ihre Unterstützung schenkt Ihnen auch die Pro-Lizenz, im Verhältnis zum Betrag.',
+  offer_vision_pro: 'Ihre Unterstützung öffnet die Pro-Lizenz. Nur die Zahl der Tickets mit Vorrang richtet sich nach Ihrer Unterstützung und den echten Serverkosten: Bei Überlastung kommen sie zuerst dran.',
   offer_vision_btn: 'Das Projekt unterstützen',
   offer_tag: 'Sie sind dran!',
   offer_login_pro: 'Um die Pro-Lizenz mit Ihrer Unterstützung zu erhalten, melden Sie sich vor dem Bezahlen an.',
   offer_login_link: 'Anmelden',
   offer_pro_on: 'Die Pro-Lizenz wird in Ihrem Konto aktiviert.',
+
+  // Accueil : ce que c'est aujourd'hui, ce que ce sera demain
+  home_vision_kicker: 'WeCall.You, das Abenteuer',
+  home_vision_title: 'Heute ein Werkzeug. Morgen ein Verein. Danach das, was wir gemeinsam entscheiden.',
+  home_vision_today: 'Heute',
+  home_vision_today_text: 'Ein kostenloses Werkzeug, das Ihre Kunden ruft, wenn sie dran sind.',
+  home_vision_tomorrow: 'Morgen',
+  home_vision_tomorrow_text: 'Ein Verein, in dem jedes Mitglied über die nächsten Werkzeuge abstimmt.',
+  home_vision_after: 'Und danach',
+  home_vision_after_text: 'KI im Dienst des Guten, mit Entscheidungen, die Menschen gleichberechtigt treffen.',
+  home_vision_cta: 'Beim Abenteuer mitmachen',
 };

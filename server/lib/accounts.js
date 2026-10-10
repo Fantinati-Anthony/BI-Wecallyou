@@ -148,6 +148,20 @@ export class Accounts {
     return pro;
   }
 
+  /**
+   * Soutien du compte, ramené au mois (€), valable jusqu'à `until` : il fixe les tickets prioritaires.
+   * Un soutien encore en cours n'est jamais revu à la baisse par un plus petit.
+   */
+  async setSupport(id, eurosPerMonth, until) {
+    const account = await this.get(id);
+    if (!account) return false;
+    const running = (account.supportUntil ?? 0) > Date.now() ? (account.support ?? 0) : 0;
+    account.support = Math.round(Math.max(running, eurosPerMonth) * 100) / 100;
+    account.supportUntil = Math.max(account.supportUntil ?? 0, until);
+    await this.save(account);
+    return true;
+  }
+
   /** Prolonge le Pro jusqu'à `until` (jamais de raccourcissement). */
   async extendPro(id, until) {
     const account = await this.get(id);

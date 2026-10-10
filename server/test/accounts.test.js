@@ -109,7 +109,7 @@ test('fiche de secours : nouveau mot de passe sans rien perdre, ancienne fiche r
   assert.equal((await call('GET', '/account/recover', undefined, `Recovery ${rec2.token}`)).ok, true);
 });
 
-test('don pur : aucune contrepartie ; abonnement Pro : durée selon le montant et l’usage', async () => {
+test('soutien sans compte : rien à activer ; avec un compte : licence ouverte, tickets prioritaires selon le soutien', async () => {
   const created = await wc.createAccount('boulangerie', 'mot de passe du four');
   const { id } = await call('POST', '/account', created.request);
   const auth = `Account ${created.session.token}`;
@@ -148,13 +148,16 @@ test('don pur : aucune contrepartie ; abonnement Pro : durée selon le montant e
   const pro = { id: 'evt_1', type: 'checkout.session.completed', data: { object: { client_reference_id: id, mode: 'payment', amount_total: 300, customer: null } } };
   assert.equal((await stripe(pro, 'whsec_autre')).status, 400);
 
-  // Pro en paiement unique : 3 € pour un usage conseillé à 1 €/mois = 3 mois ; jamais compté deux fois.
+  // Soutien ponctuel : la licence s'ouvre un an ; les 3 €, répartis sur douze mois (0,25 €/mois),
+  // couvrent 125 tickets prioritaires par mois (1 € = 500 tickets). Jamais compté deux fois.
   assert.equal((await stripe(pro)).result, 'pro');
   assert.equal((await stripe(pro)).duplicate, true);
   const me = await call('GET', '/account', undefined, auth);
   assert.equal(me.pro, true);
   const days = (me.premiumUntil - Date.now()) / 86_400_000;
-  assert.ok(days > 92 && days < 94, `${days} jours`);
+  assert.ok(days > 360 && days < 375, `${days} jours`); // douze « mois » de licence de 31 jours
+  assert.equal(me.support, 0.25);
+  assert.equal(me.allowance, 125);
 
   // En Pro, plusieurs lots sur le compte ; détacher un lot libère sa place.
   assert.equal((await call('POST', '/account/link', { lotAuth: other.authToken }, auth)).ok, true);
@@ -205,24 +208,26 @@ test('don pur : aucune contrepartie ; abonnement Pro : durée selon le montant e
   assert.equal((await call('GET', '/lot', undefined, lotAuth)).ttlApplied, 48);
 });
 
-test('prix proportionnel : payer sous le conseillé raccourcit le Pro ; liens Pro distincts des dons', async () => {
+test('soutien : la licence s’ouvre pour toute la durée payée ; liens Pro distincts des autres liens', async () => {
   const fake = new Map([['A', { premiumUntil: 0 }]]);
   const store = {
     get: async (id) => fake.get(id) ?? null,
     extendPro: async (id, until) => fake.set(id, { ...fake.get(id), premiumUntil: Math.max(fake.get(id)?.premiumUntil ?? 0, until) }),
+    setSupport: async (id, euros, until) => fake.set(id, { ...fake.get(id), support: euros, supportUntil: until }),
     linkCustomer: async () => {},
     accountOfCustomer: async () => 'A',
   };
   const now = Date.now();
-  const pricing = { suggested: async () => 3, proLinks: ['plink_pro'] };
-  // Un paiement par un autre lien (un don) n'active rien, même avec un compte.
-  const don = { type: 'checkout.session.completed', data: { object: { client_reference_id: 'A', payment_link: 'plink_don', amount_total: 900 } } };
-  assert.equal(await applyEvent(don, store, pricing, now), 'not_pro');
-  // 1 € pour un usage conseillé à 3 €/mois : un tiers de mois.
+  const pricing = { proLinks: ['plink_pro'] };
+  // Un paiement par un autre lien n'active rien, même avec un compte.
+  const other = { type: 'checkout.session.completed', data: { object: { client_reference_id: 'A', payment_link: 'plink_don', amount_total: 900 } } };
+  assert.equal(await applyEvent(other, store, pricing, now), 'not_pro');
+  // 1 € une fois : la licence s'ouvre un an, le montant est réparti sur douze mois.
   const small = { type: 'checkout.session.completed', data: { object: { client_reference_id: 'A', payment_link: 'plink_pro', mode: 'payment', amount_total: 100 } } };
   await applyEvent(small, store, pricing, now);
   const days = (fake.get('A').premiumUntil - now) / 86_400_000;
-  assert.ok(days > 10 && days < 11, `${days} jours`);
+  assert.ok(days > 360 && days < 375, `${days} jours`); // douze « mois » de licence de 31 jours
+  assert.ok(Math.abs(fake.get('A').support - 1 / 12) < 1e-9);
 });
 
 test('suppression d’un compte', async () => {

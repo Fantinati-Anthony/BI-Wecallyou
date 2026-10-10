@@ -163,7 +163,7 @@ const pick = (object, keys) => Object.fromEntries(keys.map((k) => [k, object[k]]
 
 /* ------------------------------------------------------------------ API */
 
-export function createApi({ config, store, accounts, plans, tokens, events, gate }) {
+export function createApi({ config, store, accounts, plans, tokens, events, gate, hostLoad = null }) {
   const limits = new RateLimit();
 
   /* ---------------------------------------------------- comptes et priorité */
@@ -194,6 +194,9 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
     version: account.version,
     pro: accounts.isPro(account),
     premiumUntil: account.premiumUntil || null,
+    // Tickets prioritaires couverts par le soutien sur 30 jours (null : sans limite).
+    allowance: await plans.allowanceOf(account),
+    support: account.support ?? null,
   });
 
   const lotIsPro = async (lotId) => {
@@ -203,18 +206,26 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
     return lot?.owner ? accounts.isProId(lot.owner) : false;
   };
 
+  /** Priorité d'un lot en affluence : licence de son compte ouverte, et tickets dans ce que couvre le soutien. */
+  const lotPriority = async (lotId) => {
+    if (config.allPro) return true;
+    if (!Number.isInteger(lotId) || lotId < 1) return false;
+    const lot = await store.lot(lotId);
+    return lot?.owner ? plans.prioritized(await accounts.get(lot.owner)) : false;
+  };
+
   /** Lot (ou compte) concerné par une requête, pour savoir s'il passe en priorité. */
   const priorityOf = async (req, pathname) => {
     try {
       const header = req.headers.authorization ?? '';
-      if (header.startsWith('Account ')) return accounts.isPro(await accounts.byToken('acc', header.slice(8)));
+      if (header.startsWith('Account ')) return plans.prioritized(await accounts.byToken('acc', header.slice(8)));
       let lotId = header.startsWith('Lot ') ? (await store.lotByAuth(header.slice(4)))?.id : undefined;
       const ticket = /^\/t\/([A-Za-z2-7]{26})$/.exec(pathname)?.[1];
       if (!lotId && ticket) lotId = tokens.decode(ticket.toUpperCase())?.lot;
       const screen = /^\/screen\/([A-Za-z2-7]{23})$/.exec(pathname)?.[1];
       if (!lotId && screen) lotId = base32.decode(screen.toUpperCase())?.readUInt32BE(0);
       lotId ??= Number(req.headers['x-lot']); // simple indice envoyé par la page d'un ticket
-      return lotIsPro(lotId);
+      return lotPriority(lotId);
     } catch {
       return false;
     }
@@ -421,7 +432,7 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
   };
 
   const routes = [
-    ['GET', /^\/info$/, async () => ({ ok: true, brand: config.brand, domain: config.domain, contact: config.contact, allPro: Boolean(config.allPro), stats: await store.stats() })],
+    ['GET', /^\/info$/, async () => ({ ok: true, brand: config.brand, domain: config.domain, contact: config.contact, allPro: Boolean(config.allPro), stats: await store.stats(), load: hostLoad?.view() ?? null })],
 
     // Création d'un lot : le navigateur a déjà fabriqué les clés, il n'envoie que les parties publiques
     // et les clés privées chiffrées avec la clé du lot (que le serveur ne reçoit jamais).
@@ -850,10 +861,7 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
         fail(400, 'bad_json');
       }
       if (await accounts.alreadyHandled(event.id)) return { ok: true, duplicate: true };
-      const pricing = {
-        proLinks: config.stripeProLinks ?? [],
-        suggested: async (id) => (await plans.usage(await accounts.get(id))).suggested,
-      };
+      const pricing = { proLinks: config.stripeProLinks ?? [] };
       return { ok: true, result: await applyEvent(event, accounts, pricing) };
     }],
   ];
@@ -871,7 +879,7 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
       // Les dernières places de temps réel sont gardées pour les lots Pro ; les autres pages passent
       // alors en vérification périodique (même résultat, quelques secondes plus tard).
       const reserved = events.clients >= events.maxClients * 0.8;
-      const pro = reserved ? await lotIsPro(Number(new URL(req.url, 'http://x').searchParams.get('l'))) : true;
+      const pro = reserved ? await lotPriority(Number(new URL(req.url, 'http://x').searchParams.get('l'))) : true;
       if (!pro || !events.subscribe(sse[1], req, res)) sendJson(res, 503, { ok: false, error: 'busy' });
       return true;
     }

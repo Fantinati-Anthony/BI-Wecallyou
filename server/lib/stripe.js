@@ -1,13 +1,14 @@
-// Paiements Stripe. Deux offres bien séparées :
-//  - le DON : sans contrepartie, il n'active rien (lien sans identifiant de compte) ;
-//  - l'abonnement PRO : il active les options Pro du compte (client_reference_id + lien Pro).
+// Paiements Stripe. Soutenir le projet ouvre la licence Pro du compte connecté (le lien porte son
+// identifiant : client_reference_id). Sans compte, c'est un soutien pur : rien à activer.
+// La licence s'ouvre pour toute la durée payée ; le montant, ramené au mois, fixe seulement combien
+// de tickets passent en priorité quand le serveur sature (table des coûts de soutien.json).
 // Stripe prévient le serveur (webhook signé). Le serveur ne voit ni carte, ni nom, ni adresse.
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { PRO_MONTH } from './accounts.js';
 
 const TOLERANCE_S = 300;
-const GRACE = 3 * 86_400_000; // un renouvellement en retard de quelques jours ne coupe pas le Pro
-const MAX_MONTHS = 12;
+const GRACE = 3 * 86_400_000; // un renouvellement en retard de quelques jours ne coupe pas la licence
+const YEAR = 12; // un soutien ponctuel ouvre la licence pour un an, réparti sur douze mois
 
 /** Vérifie l'en-tête Stripe-Signature (t=…,v1=…) sur le corps brut de la requête. */
 export function verifySignature(rawBody, header, secret, now = Date.now()) {
@@ -21,45 +22,44 @@ export function verifySignature(rawBody, header, secret, now = Date.now()) {
     .some(([, sig]) => sig?.length === expected.length && timingSafeEqual(Buffer.from(sig), expected));
 }
 
-/**
- * Part de période Pro couverte par un paiement : montant payé / prix conseillé pour l'usage du compte.
- * Payer moins que le conseillé raccourcit le Pro en proportion ; personne n'est bloqué.
- */
-const coverage = (amountCents, suggestedEuros, max = 1) => Math.min(max, Math.max(0, amountCents / 100 / Math.max(suggestedEuros, 0.01)));
+const euros = (cents) => Math.max(0, Number(cents) || 0) / 100;
 
 /**
  * Applique un événement Stripe :
- *  - paiement Pro unique (prix libre) : durée = montant / prix conseillé mensuel, cumulable, 12 mois max ;
- *  - abonnement Pro : chaque facture payée prolonge jusqu'à la fin de la période (en proportion si
- *    le palier choisi est sous le prix conseillé) ; arrêté, le Pro s'éteint à la fin de la période payée.
- *  `pricing` : { suggested(accountId) → €/mois, proLinks: [plink_…] (vide = tout lien portant un compte) }.
+ *  - soutien ponctuel : licence ouverte un an, montant réparti sur douze mois ;
+ *  - abonnement (mensuel ou annuel) : chaque facture payée ouvre la licence jusqu'à la fin de sa
+ *    période ; le montant est ramené au mois (une facture annuelle compte pour douze mois).
+ *  `pricing` : { proLinks: [plink_…] } (vide = tout lien portant un compte).
  */
 export async function applyEvent(event, accounts, pricing, now = Date.now()) {
   const object = event?.data?.object ?? {};
   if (event?.type === 'checkout.session.completed') {
     const id = object.client_reference_id;
-    if (!id || !(await accounts.get(id))) return 'no_account'; // un don pur : rien à activer
-    if (pricing.proLinks.length && !pricing.proLinks.includes(object.payment_link)) return 'not_pro';
+    if (!id || !(await accounts.get(id))) return 'no_account'; // un soutien sans compte : rien à activer
+    if (pricing.proLinks?.length && !pricing.proLinks.includes(object.payment_link)) return 'not_pro';
     if (typeof object.customer === 'string') await accounts.linkCustomer(object.customer, id);
-    const suggested = await pricing.suggested(id);
-    const current = (await accounts.get(id)).premiumUntil ?? 0;
-    const until =
-      object.mode === 'subscription'
-        ? now + PRO_MONTH * coverage(object.amount_total ?? 0, suggested)
-        : Math.max(now, current) + PRO_MONTH * coverage(object.amount_total ?? 0, suggested, MAX_MONTHS);
-    await accounts.extendPro(id, Math.round(until));
+    if (object.mode === 'subscription') {
+      // La facture qui suit fixe la vraie période ; d'ici là, un mois au montant payé.
+      const until = now + PRO_MONTH;
+      await accounts.extendPro(id, until);
+      await accounts.setSupport(id, euros(object.amount_total), until);
+    } else {
+      const current = (await accounts.get(id)).premiumUntil ?? 0;
+      const until = Math.max(now, current) + YEAR * PRO_MONTH;
+      await accounts.extendPro(id, until);
+      await accounts.setSupport(id, euros(object.amount_total) / YEAR, until);
+    }
     return 'pro';
   }
   if (event?.type === 'invoice.paid') {
     const id = await accounts.accountOfCustomer(object.customer);
-    if (!id) return 'unknown_customer'; // abonnement de don pur, ou client inconnu
+    if (!id) return 'unknown_customer'; // abonnement sans compte, ou client inconnu
     const lines = object.lines?.data ?? [];
-    const end = Math.max(now, ...lines.map((line) => (line.period?.end ?? 0) * 1000)) + GRACE;
-    // Un soutien annuel couvre douze mois : il se compare à douze fois le prix conseillé.
+    const end = Math.max(now, ...lines.map((line) => (line.period?.end ?? 0) * 1000));
     const start = Math.min(...lines.map((line) => (line.period?.start ?? 0) * 1000).filter(Boolean));
-    const months = Number.isFinite(start) ? Math.max(1, Math.round((end - GRACE - start) / PRO_MONTH)) : 1;
-    const share = coverage(object.amount_paid ?? 0, (await pricing.suggested(id)) * months);
-    await accounts.extendPro(id, Math.round(now + (end - now) * share));
+    const months = Number.isFinite(start) ? Math.max(1, Math.round((end - start) / PRO_MONTH)) : 1;
+    await accounts.extendPro(id, end + GRACE);
+    await accounts.setSupport(id, euros(object.amount_paid) / months, end + GRACE);
     return 'pro';
   }
   return 'ignored';

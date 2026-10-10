@@ -749,7 +749,7 @@ export default {
   don_impact_yearly: '{amount} € rocznie = {percent}% kosztów całego roku.',
 
   // Encart de soutien : deux offres (juste soutenir, ou une licence avec le soutien moral en prime)
-  don_goal_year: 'Zebrano {raised} € z {goal} €: koszty na 12 miesięcy z góry',
+  don_goal_year: 'Zebrano {raised} € z {goal} € na następny próg',
 
   // Encart de soutien : « Juste l’outil ? » (bouton qui fuit toujours) et « Soutenir le projet » (la vision, licence en prime)
   offer_tool_title: 'Tylko narzędzie?',
@@ -761,10 +761,21 @@ export default {
   offer_flee_4: 'Tu wspieramy wizję →',
   offer_vision_title: 'Wesprzyj projekt, licencja w zestawie',
   offer_vision_text: 'Dziś narzędzie, jutro stowarzyszenie, wizja na przyszłość: AI w służbie dobra, a decyzje podejmują ludzie, na równych prawach.',
-  offer_vision_pro: 'Twoje wsparcie daje ci też licencję Pro, proporcjonalnie do kwoty.',
+  offer_vision_pro: 'Twoje wsparcie otwiera licencję Pro. Od wsparcia i realnego kosztu serwera zależy tylko liczba biletów z pierwszeństwem: przy przeciążeniu to one idą pierwsze.',
   offer_vision_btn: 'Wesprzyj projekt',
   offer_tag: 'Twoja kolej!',
   offer_login_pro: 'Aby otrzymać licencję Pro razem ze wsparciem, zaloguj się na konto przed zapłatą.',
   offer_login_link: 'Zaloguj się',
   offer_pro_on: 'Licencja Pro zostanie aktywowana na twoim koncie.',
+
+  // Accueil : ce que c'est aujourd'hui, ce que ce sera demain
+  home_vision_kicker: 'WeCall.You, przygoda',
+  home_vision_title: 'Dziś narzędzie. Jutro stowarzyszenie. Potem to, co razem postanowimy.',
+  home_vision_today: 'Dziś',
+  home_vision_today_text: 'Darmowe narzędzie, które wzywa twoich klientów, gdy przyjdzie ich kolej.',
+  home_vision_tomorrow: 'Jutro',
+  home_vision_tomorrow_text: 'Stowarzyszenie, w którym każdy członek głosuje na kolejne narzędzia.',
+  home_vision_after: 'A potem',
+  home_vision_after_text: 'AI w służbie dobra, a decyzje podejmują ludzie, na równych prawach.',
+  home_vision_cta: 'Dołącz do przygody',
 };

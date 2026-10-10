@@ -23,7 +23,7 @@
     </nav>
   </header>
 
-  <main class="wrap">
+  <main class="wrap wrap-support">
     <!-- L'histoire du projet, puis l'objectif du mois : le récit d'abord, les chiffres ensuite. -->
     <article class="story" data-lang="fr">
       <p class="eyebrow">L’histoire</p>
@@ -49,15 +49,14 @@
     </article>
 
     <section class="card challenge" id="challenge" hidden>
-      <p class="eyebrow" data-lang="fr">L’objectif</p>
-      <p class="eyebrow" data-lang="en" hidden>The goal</p>
-      <h2 data-lang="fr">Douze mois de frais d’avance, puis l’association</h2>
-      <h2 data-lang="en" hidden>Twelve months of costs ahead, then the association</h2>
+      <!-- Le prochain palier du plan : titre, montant et explication remplis depuis soutien.json. -->
+      <p class="eyebrow" data-lang="fr">Le prochain palier</p>
+      <p class="eyebrow" data-lang="en" hidden>The next step</p>
+      <h2 id="ch-title"></h2>
       <p class="challenge-figures"><strong id="ch-raised"></strong> <span id="ch-goal"></span></p>
       <div class="progress progress-big"><span id="ch-bar"></span></div>
       <p class="small muted" id="ch-note"></p>
-      <p data-lang="fr">Environ 50 € par mois : hébergement, nom de domaine, téléphone, IA et petites dépenses, tout est détaillé plus bas. Dès que douze mois sont réunis, WeCall.You passe en association, avec un an de frais couverts : le temps d’un exercice complet et de sa déclaration annuelle, sans risque. Ensuite viennent un hébergement qui ne dépend plus du fondateur, et vos votes.</p>
-      <p data-lang="en" hidden>About €50 a month: hosting, domain name, phone, AI and small expenses, all detailed below. As soon as twelve months are raised, WeCall.You becomes an association with a year of costs covered: the time of a full financial year and its annual declaration, without risk. Then come hosting that no longer depends on the founder, and your votes.</p>
+      <p id="ch-detail"></p>
       <a class="btn btn-block" href="#card"><span data-icon="hand-heart"></span><span data-lang="fr">Je soutiens le projet</span><span data-lang="en" hidden>I support the project</span></a>
     </section>
 
@@ -66,13 +65,13 @@
     <section class="card" data-lang="fr">
       <h2>Une licence, ou le projet ?</h2>
       <p>Prendre une licence, c’est payer un outil. <strong>Soutenir le projet</strong>, c’est construire la suite : une association ouverte à tous, où les membres décident ensemble de l’évolution de WeCall.You et des outils à venir.</p>
-      <p>Et soutenir vous offre aussi <strong>la licence Pro</strong>, en proportion du montant, si vous êtes connecté à votre compte au moment de payer : marque masquée, tickets jusqu’à 30 jours, statistiques sur un an, priorité en cas d’affluence.</p>
+      <p>Et soutenir <strong>ouvre la licence Pro</strong> si vous êtes connecté à votre compte au moment de payer : marque masquée, tickets jusqu’à 30 jours, statistiques sur un an. Seul le nombre de tickets prioritaires suit votre soutien et le coût réel du serveur : en cas de surcharge, ce sont eux qui passent en premier.</p>
       <p>Pour l’instant, les deux sont encaissés par la micro-entreprise du fondateur et déclarés comme recettes. Dès sa création, l’association prendra le relais. Dans tous les cas, l’outil reste gratuit, sans limite, et le code reste libre.</p>
     </section>
     <section class="card" data-lang="en" hidden>
       <h2>A licence, or the project?</h2>
       <p>Getting a licence means paying for a tool. <strong>Supporting the project</strong> means building what comes next: an association open to everyone, where members decide together how WeCall.You evolves and which tools come next.</p>
-      <p>And supporting also gives you <strong>the Pro licence</strong>, in proportion to the amount, if you are signed in to your account when paying: brand hidden, tickets for up to 30 days, one year of statistics, priority when busy.</p>
+      <p>And supporting <strong>opens the Pro licence</strong> if you are signed in to your account when paying: brand hidden, tickets for up to 30 days, one year of statistics. Only the number of priority tickets follows your support and the server’s real cost: when it’s overloaded, they go first.</p>
       <p>For now, both are received by the founder’s sole-trader business and declared as income. Once created, the association will take over. Either way, the tool stays free, unlimited, and the code stays free software.</p>
     </section>
 

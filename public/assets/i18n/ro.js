@@ -749,7 +749,7 @@ export default {
   don_impact_yearly: '{amount} € pe an = {percent} % din costurile unui an.',
 
   // Encart de soutien : deux offres (juste soutenir, ou une licence avec le soutien moral en prime)
-  don_goal_year: '{raised} € strânși din {goal} €: costurile pe 12 luni în avans',
+  don_goal_year: '{raised} € strânși din {goal} € pentru următorul prag',
 
   // Encart de soutien : « Juste l’outil ? » (bouton qui fuit toujours) et « Soutenir le projet » (la vision, licence en prime)
   offer_tool_title: 'Doar instrumentul?',
@@ -761,10 +761,21 @@ export default {
   offer_flee_4: 'Aici susținem viziunea →',
   offer_vision_title: 'Susțineți proiectul, cu licența inclusă',
   offer_vision_text: 'Astăzi un instrument, mâine o asociație, o viziune pentru viitor: IA în slujba binelui, cu decizii luate de oameni, în mod egal.',
-  offer_vision_pro: 'Susținerea dumneavoastră vă oferă și licența Pro, proporțional cu suma.',
+  offer_vision_pro: 'Susținerea dumneavoastră deschide licența Pro. Doar numărul de tichete prioritare depinde de susținere și de costul real al serverului: la suprasolicitare, ele trec primele.',
   offer_vision_btn: 'Susțineți proiectul',
   offer_tag: 'Este rândul dumneavoastră!',
   offer_login_pro: 'Pentru a primi licența Pro odată cu susținerea, conectați-vă la cont înainte de plată.',
   offer_login_link: 'Conectați-vă',
   offer_pro_on: 'Licența Pro va fi activată în contul dumneavoastră.',
+
+  // Accueil : ce que c'est aujourd'hui, ce que ce sera demain
+  home_vision_kicker: 'WeCall.You, aventura',
+  home_vision_title: 'Astăzi un instrument. Mâine o asociație. Apoi, ce vom decide împreună.',
+  home_vision_today: 'Astăzi',
+  home_vision_today_text: 'Un instrument gratuit care vă cheamă clienții când le vine rândul.',
+  home_vision_tomorrow: 'Mâine',
+  home_vision_tomorrow_text: 'O asociație în care fiecare membru votează următoarele instrumente.',
+  home_vision_after: 'Și apoi',
+  home_vision_after_text: 'IA în slujba binelui, cu decizii luate de oameni, în mod egal.',
+  home_vision_cta: 'Alăturați-vă aventurii',
 };

@@ -64,7 +64,9 @@ export async function supportCard({ context, count = 0, brand = 'WeCall.You' }) 
   // Transparence : l'objectif (12 mois de frais d'avance, sinon le mois) et ce qui est déjà réuni
   // (mis à jour à la main dans soutien.json).
   const yearly = cfg.goal_total != null;
-  const target = yearly ? cfg.goal_total : goal;
+  // Le prochain palier du plan (150 €, puis ≈ 900 €…), sinon le dernier.
+  const next = (cfg.roadmap ?? []).find((s) => s.total && s.total > (cfg.raised_total ?? 0));
+  const target = yearly ? (next?.total ?? cfg.goal_total) : goal;
   const raised = yearly ? (cfg.raised_total ?? 0) : cfg.raised_month;
   const bar = h('span');
   card.append(

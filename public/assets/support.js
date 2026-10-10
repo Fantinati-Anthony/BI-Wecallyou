@@ -1,5 +1,5 @@
 // Page « Soutenir » : encart de dons + tableau transparent des frais (depuis /soutien.json).
-import { h, t, LANG, render, translatePage } from './common.js';
+import { h, t, LANG, api, render, translatePage } from './common.js';
 import { supportCard, loadSupport } from './donate.js';
 
 translatePage();
@@ -60,21 +60,23 @@ if (cfg) {
     }),
   );
 
-  // L'objectif du mois : la jauge du chapitre marqué « challenge » (ou du prochain palier).
-  const challenge = stages.find((s) => s.challenge) ?? stages[nextIndex];
-  if (challenge && targetOf(challenge)) {
+  // Le prochain palier du plan (ou le dernier, une fois tout atteint) : titre, jauge, explication.
+  const challenge = stages[nextIndex] ?? [...stages].reverse().find(gauged);
+  if (challenge) {
     const raised = raisedFor(challenge);
     const target = targetOf(challenge);
     const done = raised >= target;
+    document.getElementById('ch-title').textContent = said(challenge);
+    document.getElementById('ch-detail').textContent = said(challenge, 'detail');
     document.getElementById('ch-raised').textContent = euros(raised);
     document.getElementById('ch-goal').textContent = challenge.total
-      ? (LANG === 'fr' ? `sur ${euros(target)} : 12 mois de frais d’avance` : `of ${euros(target)}: 12 months of costs ahead`)
-      : (LANG === 'fr' ? `sur ${euros(target)} par mois` : `of ${euros(target)} a month`);
+      ? (fr ? `sur ${euros(target)} pour ce palier` : `of ${euros(target)} for this step`)
+      : (fr ? `sur ${euros(target)} par mois` : `of ${euros(target)} a month`);
     document.getElementById('ch-note').textContent = [
       challenge.total
-        ? (LANG === 'fr' ? 'Contributions et licences réunies depuis le début.' : 'Contributions and licences raised since the start.')
-        : (LANG === 'fr' ? 'Contributions et licences du mois.' : 'Contributions and licences this month.'),
-      done ? (LANG === 'fr' ? 'Objectif atteint : merci à tous !' : 'Goal reached: thank you all!') : '',
+        ? (fr ? 'Soutiens et licences réunis depuis le début.' : 'Support and licences raised since the start.')
+        : (fr ? 'Soutiens et licences du mois.' : 'Support and licences this month.'),
+      done ? (fr ? 'Palier atteint : merci à tous !' : 'Step reached: thank you all!') : '',
       t('sup_updated', { date: cfg.updated }),
     ].filter(Boolean).join(' ');
     grow(document.getElementById('ch-bar'), raised / target);
@@ -88,6 +90,12 @@ if (cfg) {
     h('tr', {}, h('td', {}, h('strong', {}, t('sup_total'))), h('td', {}, `${euros(total)} ${LANG === 'fr' ? '/ mois' : '/ month'}`)),
   );
   document.getElementById('updated').textContent = t('sup_updated', { date: cfg.updated });
+  // La charge mesurée chez l'hébergeur, en direct, quand le serveur la connaît.
+  api('/info').then((info) => {
+    if (!info.ok || !info.load) return;
+    const percent = Math.round(info.load.ratio * 100);
+    document.getElementById('updated').textContent += fr ? ` Charge du serveur en ce moment : ${percent} %.` : ` Server load right now: ${percent}%.`;
+  });
   document.getElementById('tax-fr').textContent = cfg.tax_deductible
     ? 'Oui : WeCall.You est porté par une association, un reçu fiscal vous est envoyé.'
     : 'Non. Pour l’instant, les contributions sont encaissées par la micro-entreprise du fondateur et déclarées comme recettes : elles ne donnent pas droit à une réduction d’impôt. Quand l’association existera, elle pourra peut-être délivrer des reçus fiscaux.';

@@ -749,7 +749,7 @@ export default {
   don_impact_yearly: '{amount} € al año = {percent} % de los gastos de un año.',
 
   // Encart de soutien : deux offres (juste soutenir, ou une licence avec le soutien moral en prime)
-  don_goal_year: '{raised} € reunidos de {goal} €: 12 meses de gastos por adelantado',
+  don_goal_year: '{raised} € reunidos de {goal} € para el próximo escalón',
 
   // Encart de soutien : « Juste l’outil ? » (bouton qui fuit toujours) et « Soutenir le projet » (la vision, licence en prime)
   offer_tool_title: '¿Solo la herramienta?',
@@ -761,10 +761,21 @@ export default {
   offer_flee_4: 'Aquí apoyamos la visión →',
   offer_vision_title: 'Apoyar el proyecto, con la licencia incluida',
   offer_vision_text: 'Una herramienta hoy, una asociación mañana, una visión de futuro: la IA al servicio del bien, con decisiones tomadas por las personas, en igualdad.',
-  offer_vision_pro: 'Su apoyo también le da la licencia Pro, en proporción al importe.',
+  offer_vision_pro: 'Su apoyo abre la licencia Pro. Solo el número de tickets prioritarios depende de su apoyo y del coste real del servidor: en caso de saturación, pasan primero.',
   offer_vision_btn: 'Apoyar el proyecto',
   offer_tag: '¡Es su turno!',
   offer_login_pro: 'Para recibir la licencia Pro con su apoyo, inicie sesión en su cuenta antes de pagar.',
   offer_login_link: 'Iniciar sesión',
   offer_pro_on: 'La licencia Pro se activará en su cuenta.',
+
+  // Accueil : ce que c'est aujourd'hui, ce que ce sera demain
+  home_vision_kicker: 'WeCall.You, la aventura',
+  home_vision_title: 'Hoy una herramienta. Mañana una asociación. Después, lo que decidamos juntos.',
+  home_vision_today: 'Hoy',
+  home_vision_today_text: 'Una herramienta gratuita que avisa a sus clientes cuando es su turno.',
+  home_vision_tomorrow: 'Mañana',
+  home_vision_tomorrow_text: 'Una asociación donde cada miembro vota las próximas herramientas.',
+  home_vision_after: 'Y después',
+  home_vision_after_text: 'La IA al servicio del bien, con decisiones tomadas por las personas, en igualdad.',
+  home_vision_cta: 'Unirse a la aventura',
 };

@@ -553,7 +553,8 @@ try {
     const visitor = await (await browser.newContext({ locale: 'fr-FR' })).newPage();
     visitor.on('pageerror', (err) => errors.push(err.message));
     await visitor.goto(`${BASE}/voter`);
-    await visitor.waitForSelector('#ideas li');
+    await visitor.waitForSelector('#projet-file .ideas-open li');
+    assert.equal(await visitor.locator('#rankings .ranking').count(), 3); // file d'attente, communauté, prochain outil
     assert.match(await visitor.locator('#vote-status').textContent(), /il faut un compte/);
     assert.match(await visitor.locator('#idea-stats .idea-cost').textContent(), /avec un développeur/);
     await visitor.close();
@@ -561,7 +562,7 @@ try {
     await waitText(p4.locator('#votes-left'), 'Il vous reste 3 voix sur 3.');
     await p4.click('#idea-stats .vote-btn');
     await waitText(p4.locator('#votes-left'), 'Il vous reste 2 voix sur 3.');
-    assert.equal(await p4.locator('#ideas li').first().getAttribute('id'), 'idea-stats'); // en tête du classement
+    assert.equal(await p4.locator('#projet-file .ideas-open li').first().getAttribute('id'), 'idea-stats'); // en tête de son classement
     assert.equal(await p4.locator('#idea-stats .vote-btn').getAttribute('aria-pressed'), 'true');
     assert.ok((await p4.locator('#ideas-done li').count()) >= 1);
     await shot(p4, '31-votez');
@@ -766,7 +767,8 @@ try {
     p.on('pageerror', (err) => errors.push(err.message));
     await p.goto(`${BASE}/soutenir`);
     await p.waitForSelector('#challenge:not([hidden]) #ch-raised');
-    assert.match(await p.locator('#ch-goal').textContent(), /sur 600\s€ : 12 mois de frais d’avance/); // espace fine insécable avant €
+    assert.match(await p.locator('#ch-goal').textContent(), /sur 150\s€ pour ce palier/); // espace fine insécable avant €
+    assert.match(await p.locator('#ch-title').textContent(), /serveurs à la demande/);
     assert.equal(await p.locator('#roadmap li.next').count(), 1);
     assert.match(await p.locator('#costs').textContent(), /2,50\s€/);
     assert.match(await p.locator('.story:not([hidden]) .motto').textContent(), /Un outil aujourd’hui, une association demain/);

@@ -21,6 +21,7 @@ export const DEFAULT_TIERS = [
  */
 export class Plans {
   #tiers = null;
+  #priority = new Map(); // compte → priorité en affluence (5 minutes)
 
   constructor({ config, store, accounts }) {
     this.config = config;
@@ -54,6 +55,40 @@ export class Plans {
   async lifetimeHours(lot, ttl) {
     if (!PRO_LIFETIMES.includes(ttl)) return ttl;
     return (await this.status(lot)).grace ? ttl : 48;
+  }
+
+  /**
+   * Tickets prioritaires par 30 jours que couvre un soutien de `euros` par mois, d'après la table des
+   * coûts publiée (soutien.json) : le palier le plus haut payé, ou une part du premier en dessous.
+   * null : sans limite.
+   */
+  async allowance(euros) {
+    const tiers = await this.tiers();
+    const paid = tiers.filter((tier) => tier.month <= euros);
+    if (paid.length) return paid.at(-1).upTo ?? null;
+    return Math.floor((tiers[0].upTo ?? 0) * (euros / tiers[0].month));
+  }
+
+  /** Tickets prioritaires du compte : sans limite pour une licence achetée avant les soutiens chiffrés. */
+  async allowanceOf(account) {
+    if (this.config.allPro) return null;
+    if (account?.support == null) return null;
+    return this.allowance((account.supportUntil ?? 0) > Date.now() ? account.support : 0);
+  }
+
+  /**
+   * Priorité quand le serveur sature : licence ouverte, et tickets du mois dans ce que couvre le
+   * soutien. Gardée 5 minutes en mémoire (vérifiée seulement en cas d'affluence).
+   */
+  async prioritized(account) {
+    if (this.config.allPro) return true;
+    if (!account || (account.premiumUntil ?? 0) <= Date.now()) return false;
+    const cached = this.#priority.get(account.id);
+    if (cached && Date.now() - cached.at < 5 * 60_000) return cached.value;
+    const allowance = await this.allowanceOf(account);
+    const value = allowance === null || (await this.usage(account)).active <= allowance;
+    this.#priority.set(account.id, { at: Date.now(), value });
+    return value;
   }
 
   /** Tickets actifs (premier scan) sur 30 jours, tous les lots du compte confondus, et prix conseillé. */

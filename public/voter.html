@@ -28,14 +28,16 @@
       <p class="eyebrow">La suite, c’est vous</p>
       <h1>Votez pour la suite</h1>
       <p class="lead">J’ai bien plus d’idées que de soirées pour les coder. Plutôt que de choisir seul, je vous donne la main : chaque compte a trois voix, et les idées les mieux votées passent en premier.</p>
-      <p>Chaque idée affiche ce qu’elle coûte vraiment : les jours de travail, le prix si l’on embauche un développeur, et ce que coûte l’IA quand je la code moi-même. Quand une idée passe en développement, vos voix se libèrent pour la suivante.</p>
+      <p>Trois chantiers se votent ici : <strong>la file d’attente</strong>, le premier outil ; <strong>le projet communautaire</strong>, les outils de l’association elle-même ; et <strong>le prochain outil</strong>, choisi tous les trois mois, puis lancé dès que les adhésions couvrent ses besoins, simples et peu coûteux.</p>
+      <p>Chaque idée affiche ce qu’elle coûte vraiment : les jours de travail, le prix si l’on embauche un développeur, et ce que coûte l’IA. Quand une idée passe en développement, vos voix se libèrent pour la suivante.</p>
       <p class="signature">Le fondateur de WeCall.You</p>
     </article>
     <article class="story" data-lang="en" hidden>
       <p class="eyebrow">What’s next is up to you</p>
       <h1>Vote for what’s next</h1>
       <p class="lead">I have far more ideas than evenings to code them. Rather than choosing alone, I’m handing it to you: each account has three votes, and the best-voted ideas come first.</p>
-      <p>Each idea shows what it really costs: the days of work, the price if we hire a developer, and what AI costs when I code it myself. When an idea goes into development, your votes are freed for the next one.</p>
+      <p>Three projects are voted on here: <strong>the queue</strong>, the first tool; <strong>the community project</strong>, the association’s own tools; and <strong>the next tool</strong>, chosen every three months, then launched as soon as memberships cover its needs, simple and low-cost.</p>
+      <p>Each idea shows what it really costs: the days of work, the price if we hire a developer, and what AI costs. When an idea goes into development, your votes are freed for the next one.</p>
       <p class="signature">The founder of WeCall.You</p>
     </article>
 
@@ -48,12 +50,8 @@
     <div id="vote-status" role="status"></div>
     <p class="error" id="vote-error" role="alert" hidden></p>
 
-    <section class="card" id="open-ideas">
-      <h2 data-lang="fr">Le classement</h2>
-      <h2 data-lang="en" hidden>The ranking</h2>
-      <p class="small muted" id="top-sum"></p>
-      <ol class="ideas" id="ideas"></ol>
-    </section>
+    <!-- Un classement par chantier, rempli depuis idees.json. -->
+    <div class="stack" id="rankings"></div>
 
     <section class="card" id="next-ideas" hidden>
       <h2 data-lang="fr">En cours de développement</h2>

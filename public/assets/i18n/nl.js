@@ -749,7 +749,7 @@ export default {
   don_impact_yearly: '€ {amount} per jaar = {percent}% van de kosten van een jaar.',
 
   // Encart de soutien : deux offres (juste soutenir, ou une licence avec le soutien moral en prime)
-  don_goal_year: '€ {raised} opgehaald van € {goal}: 12 maanden kosten vooruit',
+  don_goal_year: '€ {raised} opgehaald van € {goal} voor de volgende stap',
 
   // Encart de soutien : « Juste l’outil ? » (bouton qui fuit toujours) et « Soutenir le projet » (la vision, licence en prime)
   offer_tool_title: 'Alleen de tool?',
@@ -761,10 +761,21 @@ export default {
   offer_flee_4: 'Hier steunen we de visie →',
   offer_vision_title: 'Steun het project, licentie inbegrepen',
   offer_vision_text: 'Vandaag een tool, morgen een vereniging, een visie voor de toekomst: AI in dienst van het goede, met keuzes die mensen als gelijken maken.',
-  offer_vision_pro: 'Uw steun geeft u ook de Pro-licentie, naar verhouding van het bedrag.',
+  offer_vision_pro: 'Uw steun opent de Pro-licentie. Alleen het aantal tickets met voorrang hangt af van uw steun en de echte serverkosten: bij overbelasting gaan die eerst.',
   offer_vision_btn: 'Het project steunen',
   offer_tag: 'U bent aan de beurt!',
   offer_login_pro: 'Meld u aan voordat u betaalt om de Pro-licentie bij uw steun te krijgen.',
   offer_login_link: 'Aanmelden',
   offer_pro_on: 'De Pro-licentie wordt op uw account geactiveerd.',
+
+  // Accueil : ce que c'est aujourd'hui, ce que ce sera demain
+  home_vision_kicker: 'WeCall.You, het avontuur',
+  home_vision_title: 'Vandaag een tool. Morgen een vereniging. Daarna wat we samen beslissen.',
+  home_vision_today: 'Vandaag',
+  home_vision_today_text: 'Een gratis tool die uw klanten roept wanneer ze aan de beurt zijn.',
+  home_vision_tomorrow: 'Morgen',
+  home_vision_tomorrow_text: 'Een vereniging waarin elk lid stemt over de volgende tools.',
+  home_vision_after: 'En daarna',
+  home_vision_after_text: 'AI in dienst van het goede, met keuzes die mensen als gelijken maken.',
+  home_vision_cta: 'Doe mee aan het avontuur',
 };

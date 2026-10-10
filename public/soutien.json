@@ -2,7 +2,7 @@
   "updated": "2026-10",
   "goal_month": 50,
   "raised_month": 0,
-  "goal_total": 600,
+  "goal_total": 900,
   "raised_total": 0,
   "tax_deductible": false,
   "fee_percent": 1.5,
@@ -27,67 +27,61 @@
   },
   "roadmap": [
     {
-      "act_fr": "Acte 1 · Aujourd’hui",
-      "act_en": "Act 1 · Today",
+      "act_fr": "Niveau 0 · Aujourd’hui",
+      "act_en": "Level 0 · Today",
       "when_fr": "En cours",
       "when_en": "Under way",
-      "fr": "Chapitre 1 · Un outil, un fondateur, quelques euros",
-      "en": "Chapter 1 · One tool, one founder, a few euros",
-      "detail_fr": "WeCall.You tourne sur un petit serveur en France. Le fondateur avance les frais, environ 50 € par mois ; vos contributions et les licences les couvrent.",
-      "detail_en": "WeCall.You runs on a small server in France. The founder advances the costs, about €50 a month; your contributions and licences cover them."
+      "fr": "L’outil, porté par la micro-entreprise du fondateur",
+      "en": "The tool, run by the founder’s sole-trader business",
+      "detail_fr": "Le fondateur avance les frais, environ 50 € par mois. Soutenir ouvre la licence Pro ; le nombre de tickets prioritaires suit le soutien et le coût réel du serveur.",
+      "detail_en": "The founder advances the costs, about €50 a month. Supporting opens the Pro licence; the number of priority tickets follows the support and the server’s real cost."
     },
     {
-      "total": 600,
-      "challenge": true,
+      "total": 150,
+      "fr": "Premier palier : des serveurs à la demande",
+      "en": "First step: on-demand servers",
+      "detail_fr": "Plusieurs instances chez un hébergeur européen, dans la limite des dons. Les soutiens ont un accès prioritaire : en cas de surcharge, leurs tickets ne sont pas ou peu touchés.",
+      "detail_en": "Several instances at a European host, within the limit of donations. Supporters get priority access: when the server is overloaded, their tickets are little or not affected."
+    },
+    {
+      "act_fr": "Niveau 1 · L’association",
+      "act_en": "Level 1 · The association",
+      "total": 900,
       "approx": true,
-      "fr": "Étape 1 · Douze mois de frais d’avance, puis l’association",
-      "en": "Step 1 · Twelve months of costs ahead, then the association",
-      "detail_fr": "Dès que douze mois de frais sont réunis, WeCall.You passe en association. Un an couvert, c’est le temps d’un exercice complet et de sa déclaration annuelle, sans prendre de risque.",
-      "detail_en": "As soon as twelve months of costs are raised, WeCall.You becomes an association. A covered year is the time of a full financial year and its annual declaration, without taking any risk."
+      "fr": "Un an d’avance, puis l’association",
+      "en": "A year ahead, then the association",
+      "detail_fr": "Un an de frais (≈ 600 €) et de serveurs (≈ 300 €) réunis : l’association est créée et le projet lui est cédé (code, nom de domaine, comptes). Un exercice complet et sa déclaration annuelle, sans risque.",
+      "detail_en": "A year of costs (≈ €600) and servers (≈ €300) raised: the association is created and the project is handed over to it (code, domain name, accounts). A full financial year and its annual declaration, without risk."
     },
     {
+      "act_fr": "Niveau 2 · Le projet associatif",
+      "act_en": "Level 2 · The associative project",
       "when_fr": "Avec l’association",
       "when_en": "With the association",
-      "fr": "Étape 2 · Un hébergement qui ne dépend plus du fondateur",
-      "en": "Step 2 · Hosting that no longer depends on the founder",
-      "detail_fr": "Un hébergeur mécène offre les serveurs, ou l’association les paie elle-même. Dans les deux cas, le service tient même les jours d’affluence.",
-      "detail_en": "A sponsoring host provides the servers, or the association pays for them itself. Either way, the service holds even on the busiest days."
+      "fr": "Partenaires, vision, assemblées à distance",
+      "en": "Partners, vision, remote assemblies",
+      "detail_fr": "Des outils internes faits avec l’IA pour proposer, débattre et voter. Des bénévoles développent avec leur propre IA ou un abonnement fourni par l’association ; les membres votent et donnent les orientations.",
+      "detail_en": "Internal tools built with AI to propose, debate and vote. Volunteers develop with their own AI or a subscription provided by the association; members vote and set the direction."
     },
     {
-      "when_fr": "Avec l’association",
-      "when_en": "With the association",
-      "fr": "Étape 3 · Vous votez la suite",
-      "en": "Step 3 · You vote on what’s next",
-      "detail_fr": "Les membres votent l’évolution de WeCall.You et la vie de l’association, puis, selon l’engouement, d’autres solutions à offrir et à faire grandir. On vous appelle quand c’est votre tour, et on vous appelle à décider.",
-      "detail_en": "Members vote on how WeCall.You evolves and on the life of the association, then, depending on the enthusiasm, other solutions to offer and grow. We call you when it’s your turn, and we call on you to decide."
+      "act_fr": "Niveau 3 · Les outils votés",
+      "act_en": "Level 3 · The voted tools",
+      "when_fr": "Tous les 3 mois",
+      "when_en": "Every 3 months",
+      "fr": "Un nouvel outil, choisi par les membres",
+      "en": "A new tool, chosen by the members",
+      "detail_fr": "Tous les trois mois, les membres retiennent l’outil qui a le plus de sens. Il est lancé dès que les adhésions couvrent ses besoins, simples et peu coûteux, sur le même principe que les files d’attente.",
+      "detail_en": "Every three months, members pick the tool that makes the most sense. It launches as soon as memberships cover its needs, simple and low-cost, on the same principle as the queues."
     },
     {
-      "act_fr": "Acte 2 · Grandir ensemble",
-      "act_en": "Act 2 · Growing together",
-      "month": 100,
-      "approx": true,
-      "fr": "Chapitre 2 · Bénévoles et IA, main dans la main",
-      "en": "Chapter 2 · Volunteers and AI, hand in hand",
-      "detail_fr": "Plus d’IA pour développer vite, des bénévoles pour choisir, tester et accompagner. Les fonctions votées arrivent plus tôt.",
-      "detail_en": "More AI to build fast, volunteers to choose, test and help others. The voted features arrive sooner."
-    },
-    {
-      "when_fr": "Ensuite",
-      "when_en": "Next",
-      "fr": "Chapitre 3 · D’autres outils que la file d’attente",
-      "en": "Chapter 3 · Other tools than the queue",
-      "detail_fr": "Le même esprit pour d’autres services, choisis par les membres : toujours libres, gratuits et respectueux de vos données.",
-      "detail_en": "The same spirit for other services, chosen by the members: always free software, free of charge and respectful of your data."
-    },
-    {
-      "act_fr": "Acte 3 · Le rêve",
-      "act_en": "Act 3 · The dream",
+      "act_fr": "Le rêve",
+      "act_en": "The dream",
       "when_fr": "Le rêve",
       "when_en": "The dream",
-      "fr": "Chapitre 4 · Changer les choses, à petite échelle puis à grande",
-      "en": "Chapter 4 · Change things, on a small scale then a large one",
-      "detail_fr": "Des bénévoles, un jour peut-être des salariés, et des outils qui font gagner du temps et du confort à beaucoup de monde, sans jamais vendre leurs données.",
-      "detail_en": "Volunteers, maybe one day employees, and tools that save time and comfort for many people, without ever selling their data."
+      "fr": "Changer les choses, à petite échelle puis à grande",
+      "en": "Change things, on a small scale then a large one",
+      "detail_fr": "Des bénévoles, un jour peut-être des salariés, et l’IA au service du bien, avec des choix décidés par les humains, à égalité.",
+      "detail_en": "Volunteers, maybe one day employees, and AI serving the common good, with choices made by people, as equals."
     }
   ],
   "costs": [

@@ -749,7 +749,7 @@ export default {
   don_impact_yearly: '{amount} € par an = {percent} % des frais d’une année.',
 
   // Encart de soutien : deux offres (juste soutenir, ou une licence avec le soutien moral en prime)
-  don_goal_year: '{raised} € réunis sur {goal} € : 12 mois de frais d’avance',
+  don_goal_year: '{raised} € réunis sur {goal} € pour le prochain palier',
 
   // Encart de soutien : « Juste l’outil ? » (bouton qui fuit toujours) et « Soutenir le projet » (la vision, licence en prime)
   offer_tool_title: 'Juste l’outil ?',
@@ -761,10 +761,21 @@ export default {
   offer_flee_4: 'Ici, on soutient la vision →',
   offer_vision_title: 'Soutenir le projet, la licence en prime',
   offer_vision_text: 'Un outil aujourd’hui, une association demain, une vision pour l’avenir : l’IA au service du bien, avec des choix décidés par les humains, à égalité.',
-  offer_vision_pro: 'Votre soutien vous offre aussi la licence Pro, en proportion du montant.',
+  offer_vision_pro: 'Votre soutien ouvre la licence Pro. Seul le nombre de tickets prioritaires suit votre soutien et le coût réel du serveur : en cas de surcharge, ce sont eux qui passent en premier.',
   offer_vision_btn: 'Soutenir le projet',
   offer_tag: 'C’est votre tour !',
   offer_login_pro: 'Pour recevoir la licence Pro avec votre soutien, connectez-vous à votre compte avant de payer.',
   offer_login_link: 'Se connecter',
   offer_pro_on: 'La licence Pro sera activée sur votre compte.',
+
+  // Accueil : ce que c'est aujourd'hui, ce que ce sera demain
+  home_vision_kicker: 'WeCall.You, l’aventure',
+  home_vision_title: 'Aujourd’hui un outil. Demain une association. Après, ce que nous déciderons ensemble.',
+  home_vision_today: 'Aujourd’hui',
+  home_vision_today_text: 'Un outil gratuit qui appelle vos clients quand c’est leur tour.',
+  home_vision_tomorrow: 'Demain',
+  home_vision_tomorrow_text: 'Une association où chaque membre vote les prochains outils.',
+  home_vision_after: 'Et après',
+  home_vision_after_text: 'L’IA au service du bien, avec des choix décidés par les humains, à égalité.',
+  home_vision_cta: 'Rejoindre l’aventure',
 };

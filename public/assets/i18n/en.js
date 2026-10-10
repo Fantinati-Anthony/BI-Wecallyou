@@ -749,7 +749,7 @@ export default {
   don_impact_yearly: '€{amount} a year = {percent}% of a year’s costs.',
 
   // Encart de soutien : deux offres (juste soutenir, ou une licence avec le soutien moral en prime)
-  don_goal_year: '€{raised} raised of €{goal}: 12 months of costs ahead',
+  don_goal_year: '€{raised} raised of €{goal} for the next step',
 
   // Encart de soutien : « Juste l’outil ? » (bouton qui fuit toujours) et « Soutenir le projet » (la vision, licence en prime)
   offer_tool_title: 'Just the tool?',
@@ -761,10 +761,21 @@ export default {
   offer_flee_4: 'Here, we support the vision →',
   offer_vision_title: 'Support the project, licence included',
   offer_vision_text: 'A tool today, an association tomorrow, a vision for the future: AI serving the common good, with choices made by people, as equals.',
-  offer_vision_pro: 'Your support also gives you the Pro licence, in proportion to the amount.',
+  offer_vision_pro: 'Your support opens the Pro licence. Only the number of priority tickets follows your support and the server’s real cost: when it’s overloaded, they go first.',
   offer_vision_btn: 'Support the project',
   offer_tag: 'It’s your turn!',
   offer_login_pro: 'To receive the Pro licence with your support, sign in to your account before paying.',
   offer_login_link: 'Sign in',
   offer_pro_on: 'The Pro licence will be activated on your account.',
+
+  // Accueil : ce que c'est aujourd'hui, ce que ce sera demain
+  home_vision_kicker: 'WeCall.You, the adventure',
+  home_vision_title: 'Today a tool. Tomorrow an association. After that, whatever we decide together.',
+  home_vision_today: 'Today',
+  home_vision_today_text: 'A free tool that calls your customers when it’s their turn.',
+  home_vision_tomorrow: 'Tomorrow',
+  home_vision_tomorrow_text: 'An association where every member votes for the next tools.',
+  home_vision_after: 'And then',
+  home_vision_after_text: 'AI serving the common good, with choices made by people, as equals.',
+  home_vision_cta: 'Join the adventure',
 };

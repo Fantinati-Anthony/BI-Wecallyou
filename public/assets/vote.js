@@ -66,44 +66,59 @@ function draw() {
         ),
   );
 
-  // Le classement : les plus votées d'abord, à égalité dans l'ordre de la liste.
-  const ranked = open.map((idea, i) => ({ idea, i })).sort((a, b) => count(b.idea) - count(a.idea) || a.i - b.i).map((x) => x.idea);
+  // Une idée du classement, avec sa place, son coût et le bouton pour voter.
+  const ideaItem = (idea, rank) => {
+    const voted = mine.has(idea.id);
+    const button = h(
+      'button',
+      { type: 'button', class: 'btn vote-btn', 'aria-pressed': String(voted), disabled: Boolean(auth) && !voted && left === 0, 'data-idea': idea.id },
+      icon(voted ? 'check' : 'plus'),
+      voted ? say('Votée', 'Voted') : say('Voter', 'Vote'),
+    );
+    button.addEventListener('click', () => toggle(idea, !voted));
+    return h(
+      'li',
+      { class: `idea${voted ? ' mine' : ''}`, id: `idea-${idea.id}` },
+      h('span', { class: 'idea-rank' }, String(rank + 1)),
+      h(
+        'div',
+        { class: 'idea-body' },
+        h('div', { class: 'idea-head' }, h('strong', {}, said(idea)), tierBadge(idea)),
+        h('p', { class: 'small' }, said(idea, 'detail')),
+        h('p', { class: 'small muted idea-cost' }, costOf(idea)),
+      ),
+      h('div', { class: 'idea-vote' }, h('span', { class: 'idea-count' }, voices(count(idea))), button),
+    );
+  };
+  // Ce que coûte le trio de tête d'un chantier, en clair.
+  const topLine = (list) => {
+    const top = list.filter((i) => count(i) > 0).slice(0, 3);
+    const total = top.reduce((sum, i) => sum + i.days, 0);
+    if (!top.length) return say('Aucune voix pour l’instant : à vous de donner le ton.', 'No votes yet: it’s up to you to set the tone.');
+    return say(
+      `${top.length === 1 ? 'La première' : `Les ${top.length} premières`} : ≈ ${days(total)} de travail, soit ≈ ${euros(total * cfg.rates.dev_day)} avec un développeur, ou ≈ ${euros(total * cfg.rates.ai_day)} d’IA.`,
+      `${top.length === 1 ? 'The top one' : `The top ${top.length}`}: ≈ ${days(total)} of work, that is ≈ ${euros(total * cfg.rates.dev_day)} with a developer, or ≈ ${euros(total * cfg.rates.ai_day)} of AI.`,
+    );
+  };
+  // Un classement par chantier (la file d'attente, le projet communautaire, le prochain outil) :
+  // les plus votées d'abord, à égalité dans l'ordre de la liste.
+  const ranked = (list) => list.map((idea, i) => ({ idea, i })).sort((a, b) => count(b.idea) - count(a.idea) || a.i - b.i).map((x) => x.idea);
   render(
-    document.getElementById('ideas'),
-    ranked.map((idea, rank) => {
-      const voted = mine.has(idea.id);
-      const button = h(
-        'button',
-        { type: 'button', class: 'btn vote-btn', 'aria-pressed': String(voted), disabled: Boolean(auth) && !voted && left === 0, 'data-idea': idea.id },
-        icon(voted ? 'check' : 'plus'),
-        voted ? say('Votée', 'Voted') : say('Voter', 'Vote'),
-      );
-      button.addEventListener('click', () => toggle(idea, !voted));
+    document.getElementById('rankings'),
+    (cfg.projects ?? [{ id: 'file', fr: 'Le classement', en: 'The ranking' }]).map((project) => {
+      const list = ranked(open.filter((i) => (i.project ?? 'file') === project.id));
+      if (!list.length) return null;
       return h(
-        'li',
-        { class: `idea${voted ? ' mine' : ''}`, id: `idea-${idea.id}` },
-        h('span', { class: 'idea-rank' }, String(rank + 1)),
-        h(
-          'div',
-          { class: 'idea-body' },
-          h('div', { class: 'idea-head' }, h('strong', {}, said(idea)), tierBadge(idea)),
-          h('p', { class: 'small' }, said(idea, 'detail')),
-          h('p', { class: 'small muted idea-cost' }, costOf(idea)),
-        ),
-        h('div', { class: 'idea-vote' }, h('span', { class: 'idea-count' }, voices(count(idea))), button),
+        'section',
+        { class: 'card stack ranking', id: `projet-${project.id}` },
+        h('h2', {}, said(project)),
+        said(project, 'detail') && h('p', { class: 'muted' }, said(project, 'detail')),
+        project.id === 'outil' && said(cfg, 'next_choice') && h('p', { class: 'badge next-choice' }, icon('clock'), say(`Prochain choix : ${said(cfg, 'next_choice')}`, `Next choice: ${said(cfg, 'next_choice')}`)),
+        h('p', { class: 'small muted' }, topLine(list)),
+        h('ol', { class: 'ideas ideas-open' }, list.map(ideaItem)),
       );
     }),
   );
-
-  // Ce que coûte le trio de tête, en clair.
-  const top = ranked.filter((i) => count(i) > 0).slice(0, 3);
-  const topDays = top.reduce((sum, i) => sum + i.days, 0);
-  document.getElementById('top-sum').textContent = top.length
-    ? say(
-        `${top.length === 1 ? 'La première' : `Les ${top.length} premières`} : ≈ ${days(topDays)} de travail, soit ≈ ${euros(topDays * cfg.rates.dev_day)} avec un développeur, ou ≈ ${euros(topDays * cfg.rates.ai_day)} d’IA si je ${top.length === 1 ? 'la' : 'les'} code.`,
-        `${top.length === 1 ? 'The top one' : `The top ${top.length}`}: ≈ ${days(topDays)} of work, that is ≈ ${euros(topDays * cfg.rates.dev_day)} with a developer, or ≈ ${euros(topDays * cfg.rates.ai_day)} of AI if I code ${top.length === 1 ? 'it' : 'them'}.`,
-      )
-    : say('Aucune voix pour l’instant : à vous de donner le ton.', 'No votes yet: it’s up to you to set the tone.');
 
   // En cours, puis déjà livré.
   const listOf = (status, id, box) => {

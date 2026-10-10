@@ -749,7 +749,7 @@ export default {
   don_impact_yearly: '{amount} € all’anno = {percent} % delle spese di un anno.',
 
   // Encart de soutien : deux offres (juste soutenir, ou une licence avec le soutien moral en prime)
-  don_goal_year: '{raised} € raccolti su {goal} €: 12 mesi di spese in anticipo',
+  don_goal_year: '{raised} € raccolti su {goal} € per la prossima tappa',
 
   // Encart de soutien : « Juste l’outil ? » (bouton qui fuit toujours) et « Soutenir le projet » (la vision, licence en prime)
   offer_tool_title: 'Solo lo strumento?',
@@ -761,10 +761,21 @@ export default {
   offer_flee_4: 'Qui si sostiene la visione →',
   offer_vision_title: 'Sostenere il progetto, licenza compresa',
   offer_vision_text: 'Uno strumento oggi, un’associazione domani, una visione per il futuro: l’IA al servizio del bene, con scelte decise dalle persone, alla pari.',
-  offer_vision_pro: 'Il suo sostegno le offre anche la licenza Pro, in proporzione all’importo.',
+  offer_vision_pro: 'Il suo sostegno apre la licenza Pro. Solo il numero di biglietti prioritari segue il suo sostegno e il costo reale del server: in caso di sovraccarico, passano per primi.',
   offer_vision_btn: 'Sostenere il progetto',
   offer_tag: 'Tocca a lei!',
   offer_login_pro: 'Per ricevere la licenza Pro con il suo sostegno, acceda al suo account prima di pagare.',
   offer_login_link: 'Accedere',
   offer_pro_on: 'La licenza Pro sarà attivata sul suo account.',
+
+  // Accueil : ce que c'est aujourd'hui, ce que ce sera demain
+  home_vision_kicker: 'WeCall.You, l’avventura',
+  home_vision_title: 'Oggi uno strumento. Domani un’associazione. Poi, ciò che decideremo insieme.',
+  home_vision_today: 'Oggi',
+  home_vision_today_text: 'Uno strumento gratuito che chiama i suoi clienti quando tocca a loro.',
+  home_vision_tomorrow: 'Domani',
+  home_vision_tomorrow_text: 'Un’associazione in cui ogni membro vota i prossimi strumenti.',
+  home_vision_after: 'E dopo',
+  home_vision_after_text: 'L’IA al servizio del bene, con scelte decise dalle persone, alla pari.',
+  home_vision_cta: 'Unirsi all’avventura',
 };
