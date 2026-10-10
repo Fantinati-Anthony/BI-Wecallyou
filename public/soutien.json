@@ -18,7 +18,10 @@
       { "amount": 8, "url": "" },
       { "amount": 15, "url": "" }
     ],
-    "once": { "min": 1, "url": "" }
+    "once": {
+      "min": 1,
+      "url": ""
+    }
   },
   "roadmap": [
     {
@@ -94,22 +97,12 @@
       "detail_en": "Tickets, posters and labels printed and shipped within 24 to 48 hours depending on quantity and destination, with one goal: cheaper than a local print shop. To start, two ink-tank printers (A3 and A4) and thermal printers for rolls and sticker labels."
     },
     {
-      "once": 1500,
-      "approx": true,
-      "by_fr": "puis financé par les locations",
-      "by_en": "then funded by rentals",
-      "fr": "Chapitre 9 · Les packs événement",
-      "en": "Chapter 9 · Event packs",
-      "detail_fr": "Un tournoi, une fête de village, un salon ? Des packs clés en main, livrés prêts à servir : tickets, affiches, et un écran à brancher pour annoncer les numéros. Une première série de tablettes et de supports à louer.",
-      "detail_en": "A tournament, a village fair, a trade show? Ready-made packs, delivered ready to use: tickets, posters, and a screen to plug in to announce numbers. A first set of tablets and stands to rent."
-    },
-    {
       "month": 1100,
       "approx": true,
       "by_fr": "financé par les commandes",
       "by_en": "funded by orders",
-      "fr": "Chapitre 10 · Un premier emploi",
-      "en": "Chapter 10 · A first job",
+      "fr": "Chapitre 9 · Un premier emploi",
+      "en": "Chapter 9 · A first job",
       "detail_fr": "Une personne pour imprimer, préparer et expédier les commandes, à mi-temps pour commencer. Un vrai emploi créé par un outil gratuit.",
       "detail_en": "Someone to print, pack and ship orders, part-time to begin with. A real job created by a free tool."
     },
@@ -118,8 +111,8 @@
       "approx": true,
       "by_fr": "financé par les commandes",
       "by_en": "funded by orders",
-      "fr": "Chapitre 11 · Qualité et automatisation",
-      "en": "Chapter 11 · Quality and automation",
+      "fr": "Chapitre 10 · Qualité et automatisation",
+      "en": "Chapter 10 · Quality and automation",
       "detail_fr": "Contrôle à chaque étape et flux automatisés, de la commande à l’expédition, avec du matériel professionnel : les coûts d’impression baissent, la qualité monte.",
       "detail_en": "Checks at every step and automated flows, from order to shipping, with professional equipment: printing costs go down, quality goes up."
     },
@@ -128,15 +121,15 @@
       "act_en": "Act 3 · The dream",
       "when_fr": "Quand les ventes couvrent ≈ 2 000 € / mois",
       "when_en": "When sales cover ≈ €2,000 / month",
-      "fr": "Chapitre 12 · Tout gratuit, pour tout le monde",
-      "en": "Chapter 12 · Everything free, for everyone",
-      "detail_fr": "Quand la boutique, l’impression et les packs couvrent les frais du service, de la structure et de l’emploi, l’offre Pro devient gratuite pour tous. Les dons restent possibles, mais plus nécessaires.",
-      "detail_en": "When the shop, printing and packs cover the costs of the service, the company and the job, Pro becomes free for everyone. Donations stay possible, but no longer necessary."
+      "fr": "Chapitre 11 · Tout gratuit, pour tout le monde",
+      "en": "Chapter 11 · Everything free, for everyone",
+      "detail_fr": "Quand la boutique et l’impression couvrent les frais du service, de la structure et de l’emploi, l’offre Pro devient gratuite pour tous. Les dons restent possibles, mais plus nécessaires.",
+      "detail_en": "When the shop and printing cover the costs of the service, the company and the job, Pro becomes free for everyone. Donations stay possible, but no longer necessary."
     }
   ],
   "costs": [
-    { "fr": "Hébergement (o2switch Cloud, prix normal)", "en": "Hosting (o2switch Cloud, regular price)", "month": 16 },
-    { "fr": "Noms de domaine", "en": "Domain names", "month": 5 },
+    { "fr": "Hébergement (o2switch Cloud, prix normal)", "en": "Hosting (o2switch Cloud, regular price)", "month": 16, "server": true },
+    { "fr": "Noms de domaine", "en": "Domain names", "month": 5, "server": true },
     { "fr": "Développement (bénévole pour l’instant)", "en": "Development (volunteer for now)", "month": 0 }
   ],
   "once": [
@@ -150,5 +143,28 @@
     { "amount": 2, "url": "" },
     { "amount": 5, "url": "", "preferred": true },
     { "amount": 10, "url": "" }
-  ]
+  ],
+  "sim": {
+    "orders": 120,
+    "price": 18,
+    "sheetsA4": 10,
+    "postersA3": 1,
+    "rollTickets": 0,
+    "speedA4": 240,
+    "speedA3": 150,
+    "speedRoll": 1500,
+    "supervision": 0.1,
+    "minutesOrder": 12,
+    "minutesDay": 45,
+    "days": 21,
+    "hours": 76,
+    "wage": 1100,
+    "company": 150,
+    "dev": 500,
+    "costA4": 0.12,
+    "costA3": 0.3,
+    "costRoll": 0.01,
+    "packaging": 0.7,
+    "invest": 2500
+  }
 }

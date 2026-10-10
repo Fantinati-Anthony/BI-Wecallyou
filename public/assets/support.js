@@ -1,6 +1,7 @@
 // Page « Soutenir » : encart de dons + tableau transparent des frais (depuis /soutien.json).
 import { h, t, LANG, render, translatePage } from './common.js';
 import { supportCard, loadSupport } from './donate.js';
+import { simulator } from './simulator.js';
 
 translatePage();
 
@@ -68,6 +69,12 @@ if (cfg) {
     ].filter(Boolean).join(' ');
     grow(document.getElementById('ch-bar'), cfg.raised_month / challenge.month);
     document.getElementById('challenge').hidden = false;
+  }
+
+  // Faisons les comptes : l'atelier simulé, à partir des vrais chiffres du mois.
+  if (cfg.sim) {
+    document.getElementById('sim-slot').append(simulator(cfg));
+    document.getElementById('sim').hidden = false;
   }
 
   const total = cfg.costs.reduce((sum, c) => sum + c.month, 0);

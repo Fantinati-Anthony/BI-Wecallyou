@@ -944,6 +944,30 @@ dialog.catalog h2 { margin: 0; }
 .challenge-figures strong { font: 800 2.2rem/1 var(--font-display); letter-spacing: -0.03em; }
 .challenge-figures span { color: var(--muted); font-weight: 600; }
 .progress-big { height: 14px; }
+/* Faisons les comptes : curseurs, puis les résultats qui suivent */
+.sim { display: grid; gap: 14px; }
+.sim-controls { display: grid; gap: 12px; }
+.sim-more > summary { font-size: 0.95rem; }
+.sim-control { display: grid; gap: 4px; }
+.sim-label { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.sim-label label { margin: 0; font-size: 0.9rem; }
+.sim-label output { flex: none; font-weight: 700; font-variant-numeric: tabular-nums; }
+.sim input[type=range] { width: 100%; margin: 0; accent-color: var(--brand); }
+.sim-out { display: grid; gap: 12px; }
+.sim-block { padding: 14px 16px; border-radius: var(--r-ctl); background: var(--surface-2); }
+.sim-block h3 { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0 0 8px; font-size: 1.02rem; }
+.sim-block p { margin: 0 0 6px; }
+.sim-block .progress { margin: 8px 0; background: var(--surface); }
+.sim-block .cost-table td { border-color: color-mix(in srgb, var(--line) 70%, transparent); }
+.sim-block .total td { font-weight: 700; }
+.sim-block .gain td:last-child { color: var(--ok); }
+.sim-block .loss td:last-child { color: var(--warn); }
+.sim-figure strong { font: 800 2rem/1 var(--font-display); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.progress span.good { background: var(--ok); }
+.progress span.bad { background: var(--warn); }
+.ok-badge { background: var(--ok-soft); color: var(--ok); }
+.sim-dream.yes { background: var(--ok-soft); }
+.sim-dream .i { width: 20px; height: 20px; }
 
 /* ------------------------------------------------------------ écran public */
 
