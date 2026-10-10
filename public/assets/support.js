@@ -4,10 +4,11 @@
 import { h, t, LANG, render, translatePage } from './common.js';
 import { supportCard, loadSupport } from './donate.js';
 import { model, amounts, scenarioOf, targetOf, loadUsage } from './plan.js';
+import { loadCosts, calibrate, dollars, millions, cents } from './couts.js';
 
 translatePage();
 
-const [cfg, usage] = await Promise.all([loadSupport(), loadUsage()]);
+const [cfg, usage, costs] = await Promise.all([loadSupport(), loadUsage(), loadCosts()]);
 document.getElementById('card').append(await supportCard({ context: 'support' }));
 
 const fr = LANG === 'fr';
@@ -109,6 +110,7 @@ if (cfg) {
   );
   document.getElementById('updated').textContent = t('sup_updated', { date: cfg.updated });
   if (cfg.capacity) health(cfg.capacity, start, (scenario) => showPlan(amounts(cfg, scenario)));
+  if (cfg.ai) frugal(cfg, costs);
   document.getElementById('tax-fr').textContent = cfg.tax_deductible
     ? 'Oui : WeCall.You est porté par une association, un reçu fiscal vous est envoyé.'
     : 'Non. Pour l’instant, les contributions sont encaissées par la micro-entreprise du fondateur et déclarées comme recettes : elles ne donnent pas droit à une réduction d’impôt. Quand l’association existera, elle pourra peut-être délivrer des reçus fiscaux.';
@@ -252,4 +254,52 @@ function health(cap, start, onScenario) {
     ? `Estimation prudente, d’après le test de charge ${cap.measured_fr} : ${count(cap.waiting)} clients en attente dans ${count(cap.queues)} files, ${percent(cap.load)} de charge. Une page de client ouverte vérifie son ticket toutes les 5 s et sa place toutes les 30 s ; téléphone verrouillé, elle ne demande presque rien. Serveurs à la demande : tarifs publics de Scaleway relevés en ${checked}, hors taxes plus ${percent(cap.vat)} de TVA (conteneurs : ${euros(e.vcpu_100k)} les 100 000 secondes de processeur, ${euros(e.gb_100k)} les 100 000 Go-secondes de mémoire, ${count(e.free_vcpu_s)} s et ${count(e.free_gb_s)} Go-s offerts chaque mois ; base partagée : ${euros(e.db_vcpu_hour)} par heure et par processeur quand elle sert, ${euros(e.db_gb_month)} par Go et par mois). Les paliers réunissent ${plural(cap.months, 'mois', 'mois')} d’avance.`
     : `Cautious estimate, based on the load test ${cap.measured_en}: ${count(cap.waiting)} customers waiting in ${count(cap.queues)} queues, ${percent(cap.load)} load. An open customer page checks its ticket every 5 s and its place every 30 s; with the phone locked, it asks almost nothing. On-demand servers: Scaleway public prices checked in ${checked}, before tax plus ${percent(cap.vat)} VAT (containers: ${euros(e.vcpu_100k)} per 100,000 processor seconds, ${euros(e.gb_100k)} per 100,000 GB-seconds of memory, ${count(e.free_vcpu_s)} s and ${count(e.free_gb_s)} GB-s free each month; shared database: ${euros(e.db_vcpu_hour)} per hour and processor while in use, ${euros(e.db_gb_month)} per GB a month). The steps raise ${plural(cap.months, 'month', 'months')} ahead.`;
   document.getElementById('health').hidden = false;
+}
+
+/**
+ * Fait avec presque rien : ce que le projet a coûté, mesuré à la fin de chaque session de travail
+ * (couts.json) : le temps du fondateur, l'IA (part de l'abonnement, et tarif de l'API pour comparer),
+ * l'hébergement, les noms de domaine, et le coût réel des dernières évolutions.
+ */
+function frugal(cfg, costs) {
+  const calib = calibrate(costs);
+  if (!calib) return;
+  const ai = cfg.ai;
+  const yearly = (id) => (cfg.costs.find((c) => c.id === id)?.month ?? 0) * 12;
+  const minutes = Math.round((costs.hours % 1) * 60);
+  const time = fr ? `${Math.floor(costs.hours)} h ${String(minutes).padStart(2, '0')}` : `${Math.floor(costs.hours)} hr ${minutes} min`;
+  const tokens = Object.values(costs.tokens).reduce((sum, n) => sum + n, 0);
+  const evolutions = costs.evolutions.filter((e) => e.usd > 0);
+  const cheapest = evolutions.reduce((a, b) => (b.usd < a.usd ? b : a));
+  const dearest = evolutions.reduce((a, b) => (b.usd > a.usd ? b : a));
+  const checked = new Date(`${ai.checked}-01T12:00:00`).toLocaleDateString(fr ? 'fr' : 'en', { month: 'long', year: 'numeric' });
+  const perYear = fr ? 'par an' : 'a year';
+
+  document.getElementById('f-summary').textContent = fr
+    ? `En ${plural(costs.days, 'jour', 'jours')}, ${plural(evolutions.length, 'évolution', 'évolutions')} et ${count(costs.lines)} lignes de code : ${time} du fondateur et ${cents(costs.subscription)} d’intelligence artificielle. Le seul vrai besoin, ce sont les serveurs.`
+    : `In ${plural(costs.days, 'day', 'days')}, ${plural(evolutions.length, 'change', 'changes')} and ${count(costs.lines)} lines of code: ${time} of the founder’s time and ${cents(costs.subscription)} of artificial intelligence. The only real need is servers.`;
+  const row = (label, value) => h('tr', {}, h('td', {}, label), h('td', {}, value));
+  render(
+    document.getElementById('f-table'),
+    row(fr ? `Temps du fondateur (bénévole, ${plural(costs.messages, 'message', 'messages')})` : `The founder’s time (volunteer, ${plural(costs.messages, 'message', 'messages')})`, time),
+    row(`${fr ? 'Intelligence artificielle' : 'Artificial intelligence'} (${said(ai)})`, cents(costs.subscription)),
+    row(fr ? `Jetons d’IA utilisés (≈ ${dollars(costs.usd)} au tarif de l’API)` : `AI tokens used (≈ ${dollars(costs.usd)} at API prices)`, millions(tokens)),
+    row(fr ? 'Hébergement (o2switch)' : 'Hosting (o2switch)', `${euros(yearly('hosting'))} ${perYear}`),
+    row(fr ? 'Noms de domaine' : 'Domain names', `${euros(yearly('domains'))} ${perYear}`),
+  );
+  document.getElementById('f-evolution').textContent = fr
+    ? `Une évolution coûte de ${dollars(cheapest.usd)} (un réglage) à ${dollars(dearest.usd)} (un module entier) au tarif de l’API, ${dollars(calib.median)} en médiane, soit ${cents(calib.median * calib.eurPerUsd)} de l’abonnement réellement payé et environ ${calib.minutes} min du fondateur. L’IA fait le travail ; les humains proposent, choisissent et votent.`
+    : `A change costs from ${dollars(cheapest.usd)} (a tweak) to ${dollars(dearest.usd)} (a whole module) at API prices, ${dollars(calib.median)} in the median, that is ${cents(calib.median * calib.eurPerUsd)} of the subscription actually paid and about ${calib.minutes} min of the founder’s time. AI does the work; people propose, choose and vote.`;
+  render(
+    document.getElementById('f-last'),
+    evolutions.slice(-5).reverse().map((e) =>
+      h('li', {}, h('strong', {}, e.title), h('span', { class: 'small muted' }, ` ${new Date(`${e.date}T12:00:00`).toLocaleDateString(fr ? 'fr' : 'en', { day: 'numeric', month: 'long' })} · ${dollars(e.usd)} · ${millions(e.tokens)} ${fr ? 'de jetons' : 'tokens'}`)),
+    ),
+  );
+  const updated = new Date(costs.updated).toLocaleDateString(fr ? 'fr' : 'en', { day: 'numeric', month: 'long', year: 'numeric' });
+  const price = Object.values(ai.prices)[0];
+  document.getElementById('f-note').textContent = fr
+    ? `Mesuré automatiquement à la fin de chaque session de travail, dans les journaux de l’assistant de code (Claude Code) : seulement des totaux, jamais les conversations. Temps : pauses de plus de 10 minutes exclues. Abonnement : chaque jour est partagé entre les projets du fondateur selon leur usage du jour. Tarif de l’API : ${ai.model}, relevé en ${checked} (par million de jetons : ${dollars(price.input)} en entrée, ${dollars(price.output)} en sortie, ${dollars(price.cacheWrite)} mis en cache, ${dollars(price.cacheRead)} relus). Mis à jour le ${updated}.`
+    : `Measured automatically at the end of each work session, in the coding assistant’s logs (Claude Code): totals only, never the conversations. Time: breaks over 10 minutes excluded. Subscription: each day is shared between the founder’s projects according to that day’s use. API prices: ${ai.model}, checked in ${checked} (per million tokens: ${dollars(price.input)} input, ${dollars(price.output)} output, ${dollars(price.cacheWrite)} cached, ${dollars(price.cacheRead)} re-read). Updated ${updated}.`;
+  document.getElementById('frugal').hidden = false;
 }

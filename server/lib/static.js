@@ -67,7 +67,7 @@ export function createStatic(publicDir, etatDir = path.join(publicDir, 'etat')) 
     const ext = path.extname(file);
     const headers = { 'Content-Type': TYPES[ext] ?? 'application/octet-stream', ...SECURITY_HEADERS };
     if (pathname.startsWith('/etat/')) headers['Cache-Control'] = 'public, max-age=2';
-    else if (['.html', '.js', '.css'].includes(ext) || rel === 'soutien.json' || rel === 'papiers.json' || rel === 'idees.json') headers['Cache-Control'] = 'no-cache';
+    else if (['.html', '.js', '.css'].includes(ext) || rel === 'soutien.json' || rel === 'papiers.json' || rel === 'idees.json' || rel === 'couts.json') headers['Cache-Control'] = 'no-cache';
     else if (ext === '.woff2') headers['Cache-Control'] = 'public, max-age=31536000, immutable';
     else headers['Cache-Control'] = 'public, max-age=3600';
     res.writeHead(200, headers);

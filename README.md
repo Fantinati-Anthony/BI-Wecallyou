@@ -89,6 +89,7 @@ server/            API Node.js 24, AUCUNE dépendance npm
   setup.js         création de config.json (clés secrètes)
   purge.js         purge manuelle (le serveur purge seul toutes les 10 min)
   charge.js        test de charge (en local, ou en douceur sur le site)
+  couts.js         ce que le projet a coûté (temps du fondateur, jetons d’IA), mesuré dans les journaux de Claude Code
   lib/             api, stockage en fichiers, jetons, relais, temps réel (SSE), purge
   test/            tests (node --test)
 e2e/               parcours complet dans Chromium (Playwright)
@@ -173,6 +174,7 @@ node setup.js --local --domain=localhost:3000   # crée config.json (serveStatic
 node start.js                                    # http://localhost:3000
 npm test                                         # tests serveur, cryptographie, mise en page
 npm run charge                                   # test de charge en local (un processus, jusqu’à 1 600 clients en direct)
+npm run couts                                    # met à jour public/couts.json (et tout seul en fin de session Claude Code : .claude/settings.json)
 node charge.js --site https://wecall.you         # sur le site : 3 snacks × 50 clients en accéléré (--snacks, --clients, --minutes), rien n’est créé
 cd ../e2e && npm install && node run.mjs         # parcours complet dans Chromium
 node shots.mjs                                   # captures de l’accueil (public/assets/img)

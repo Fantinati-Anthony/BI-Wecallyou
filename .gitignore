@@ -13,3 +13,6 @@ public/api/
 server/tmp/
 server/public/
 server/*.log
+
+# Réglages personnels de Claude Code (les réglages du projet, eux, sont partagés)
+.claude/settings.local.json

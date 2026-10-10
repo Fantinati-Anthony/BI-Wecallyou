@@ -85,14 +85,22 @@
     }
   ],
   "costs": [
-    { "fr": "Hébergement (o2switch, France)", "en": "Hosting (o2switch, France)", "month": 2.5, "server": true },
-    { "fr": "Nom de domaine", "en": "Domain name", "month": 5, "server": true },
+    { "id": "hosting", "fr": "Hébergement (o2switch, France), 30 € par an", "en": "Hosting (o2switch, France), €30 a year", "month": 2.5, "server": true },
+    { "id": "domains", "fr": "Noms de domaine : wecall.you pour l’association, webeep.you pour l’outil (2 × 18 € par an)", "en": "Domain names: wecall.you for the association, webeep.you for the tool (2 × €18 a year)", "month": 3, "server": true },
     { "fr": "Ligne téléphonique", "en": "Phone line", "month": 2 },
     { "fr": "IA pour développer les fonctions votées", "en": "AI to build the voted features", "month": 20 },
     { "fr": "Compte bancaire de l’association (dès sa création)", "en": "The association’s bank account (once created)", "month": 10.8 },
     { "fr": "Courriers officiels et petites dépenses", "en": "Official mail and small expenses", "month": 10 },
     { "fr": "Temps du fondateur (bénévole)", "en": "The founder’s time (volunteer)", "month": 0 }
   ],
+  "ai": {
+    "subscription_month": 100,
+    "fr": "abonnement Claude (Anthropic) à 100 € par mois",
+    "en": "Claude (Anthropic) subscription at €100 a month",
+    "model": "Claude Opus 5.5",
+    "prices": { "claude-opus-5-5": { "input": 4, "output": 20, "cacheWrite": 8, "cacheRead": 0.2 } },
+    "checked": "2026-10"
+  },
   "capacity": {
     "measured_fr": "le 10 octobre 2026",
     "measured_en": "on 10 October 2026",

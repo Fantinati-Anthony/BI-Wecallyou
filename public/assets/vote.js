@@ -2,6 +2,7 @@
 // Voter demande un compte (trois voix par compte) ; lire le classement, non.
 import { h, LANG, api, render, translatePage, errorText, icon } from './common.js';
 import { session } from './account.js';
+import { loadCosts, calibrate, sizeOf, dollars, millions, cents } from './couts.js';
 
 translatePage();
 
@@ -17,18 +18,33 @@ const number = (n) => new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }
 const days = (n) => say(`${number(n)} jour${n > 1 ? 's' : ''}`, `${number(n)} day${n > 1 ? 's' : ''}`);
 const voices = (n) => say(`${n} voix`, `${n} vote${n === 1 ? '' : 's'}`);
 
-const cfg = await fetch('/idees.json').then((r) => r.json()).catch(() => null);
+const [cfg, costs] = await Promise.all([fetch('/idees.json').then((r) => r.json()).catch(() => null), loadCosts()]);
+// L'IA, mesurée sur les évolutions déjà livrées (couts.json) : des fourchettes par taille d'idée.
+const calib = calibrate(costs);
 const errorBox = document.getElementById('vote-error');
 const account = session.get();
 let auth = account?.token ? `Account ${account.token}` : null;
 let state = { counts: {}, mine: null, max: cfg?.votes_per_account ?? 3 };
 
-/** Ce que coûte une idée : jours, prix avec un développeur, IA si le fondateur la code. */
-const costOf = (idea) => [
-  `≈ ${days(idea.days)}`,
-  say(`≈ ${euros(idea.days * cfg.rates.dev_day)} avec un développeur`, `≈ ${euros(idea.days * cfg.rates.dev_day)} with a developer`),
-  say(`≈ ${euros(idea.days * cfg.rates.ai_day)} d’IA si je la code`, `≈ ${euros(idea.days * cfg.rates.ai_day)} of AI if I code it`),
-].join(' · ');
+/** L'IA d'une idée de cette taille (ou de ces idées) : fourchette de jetons et de dollars au tarif de l'API. */
+const aiRange = (ideas) =>
+  ideas.reduce(
+    (sum, idea) => {
+      const size = calib.size(sizeOf(idea.days));
+      return { usd: [sum.usd[0] + size.usd[0], sum.usd[1] + size.usd[1]], tokens: [sum.tokens[0] + size.tokens[0], sum.tokens[1] + size.tokens[1]] };
+    },
+    { usd: [0, 0], tokens: [0, 0] },
+  );
+
+/** Ce que coûte une idée : jours, prix avec un développeur, et l'IA mesurée sur les évolutions livrées. */
+const costOf = (idea) => {
+  const ai = calib && aiRange([idea]);
+  return [
+    `≈ ${days(idea.days)}`,
+    say(`≈ ${euros(idea.days * cfg.rates.dev_day)} avec un développeur`, `≈ ${euros(idea.days * cfg.rates.dev_day)} with a developer`),
+    ai && say(`IA : ${millions(ai.tokens[0])} à ${millions(ai.tokens[1])} de jetons (≈ ${dollars(ai.usd[0])} à ${dollars(ai.usd[1])} au tarif de l’API)`, `AI: ${millions(ai.tokens[0])} to ${millions(ai.tokens[1])} tokens (≈ ${dollars(ai.usd[0])} to ${dollars(ai.usd[1])} at API prices)`),
+  ].filter(Boolean).join(' · ');
+};
 
 const tierBadge = (idea) => h('span', { class: `badge${idea.tier === 'pro' ? ' pro-badge' : ' free-badge'}` }, idea.tier === 'pro' ? 'Pro' : say('Gratuit', 'Free'));
 
@@ -95,9 +111,10 @@ function draw() {
     const top = list.filter((i) => count(i) > 0).slice(0, 3);
     const total = top.reduce((sum, i) => sum + i.days, 0);
     if (!top.length) return say('Aucune voix pour l’instant : à vous de donner le ton.', 'No votes yet: it’s up to you to set the tone.');
+    const ai = calib && aiRange(top);
     return say(
-      `${top.length === 1 ? 'La première' : `Les ${top.length} premières`} : ≈ ${days(total)} de travail, soit ≈ ${euros(total * cfg.rates.dev_day)} avec un développeur, ou ≈ ${euros(total * cfg.rates.ai_day)} d’IA.`,
-      `${top.length === 1 ? 'The top one' : `The top ${top.length}`}: ≈ ${days(total)} of work, that is ≈ ${euros(total * cfg.rates.dev_day)} with a developer, or ≈ ${euros(total * cfg.rates.ai_day)} of AI.`,
+      `${top.length === 1 ? 'La première' : `Les ${top.length} premières`} : ≈ ${days(total)} de travail, soit ≈ ${euros(total * cfg.rates.dev_day)} avec un développeur${ai ? `, ou ${millions(ai.tokens[0])} à ${millions(ai.tokens[1])} de jetons d’IA (≈ ${dollars(ai.usd[0])} à ${dollars(ai.usd[1])} au tarif de l’API, ${cents(ai.usd[1] * calib.eurPerUsd)} au plus de mon abonnement)` : ''}.`,
+      `${top.length === 1 ? 'The top one' : `The top ${top.length}`}: ≈ ${days(total)} of work, that is ≈ ${euros(total * cfg.rates.dev_day)} with a developer${ai ? `, or ${millions(ai.tokens[0])} to ${millions(ai.tokens[1])} AI tokens (≈ ${dollars(ai.usd[0])} to ${dollars(ai.usd[1])} at API prices, at most ${cents(ai.usd[1] * calib.eurPerUsd)} of my subscription)` : ''}.`,
     );
   };
   // Un classement par chantier (la file d'attente, le projet communautaire, le prochain outil) :
@@ -150,9 +167,18 @@ if (cfg) {
   render(
     document.getElementById('rates-list'),
     h('li', {}, say(`Un jour de développeur indépendant : ≈ ${euros(cfg.rates.dev_day)}.`, `One day of a freelance developer: ≈ ${euros(cfg.rates.dev_day)}.`)),
-    h('li', {}, say(`Quand je la code moi-même avec un assistant IA : ≈ ${euros(cfg.rates.ai_day)} d’IA par jour de travail. Mon temps, lui, n’est pas compté.`, `When I code it myself with an AI assistant: ≈ ${euros(cfg.rates.ai_day)} of AI per day of work. My own time isn’t counted.`)),
+    calib &&
+      h(
+        'li',
+        {},
+        say(
+          `Quand je la code avec un assistant IA, mesuré sur les ${calib.count} évolutions déjà livrées : ${dollars(calib.median)} au tarif de l’API en médiane, soit ${cents(calib.median * calib.eurPerUsd)} de mon abonnement, et environ ${calib.minutes} min de mon temps par évolution. `,
+          `When I code it with an AI assistant, measured on the ${calib.count} changes already delivered: ${dollars(calib.median)} at API prices in the median, that is ${cents(calib.median * calib.eurPerUsd)} of my subscription, and about ${calib.minutes} min of my time per change. `,
+        ),
+        h('a', { href: '/soutenir#frugal' }, say('Le détail', 'The details')),
+      ),
     h('li', {}, say('Les durées sont estimées et arrondies au demi-jour : tests et traductions compris.', 'Durations are estimated and rounded to half a day: tests and translations included.')),
-    h('li', {}, h('a', { href: '/soutenir' }, say('Vos contributions accélèrent la liste : une fois les frais du mois couverts, chaque euro paie de l’IA pour développer plus vite les idées votées.', 'Your contributions speed up the list: once the month’s costs are covered, every euro pays for AI to build the voted ideas faster.'))),
+    h('li', {}, h('a', { href: '/soutenir' }, say('L’IA ne coûte presque rien : vos contributions paient surtout les serveurs, le seul vrai besoin du projet.', 'AI costs almost nothing: your contributions mostly pay for servers, the project’s only real need.'))),
   );
   const res = await api('/votes', { auth });
   if (res.ok) state = res;

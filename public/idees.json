@@ -3,7 +3,7 @@
   "votes_per_account": 3,
   "next_choice_fr": "fin décembre 2026",
   "next_choice_en": "end of December 2026",
-  "rates": { "dev_day": 400, "ai_day": 15 },
+  "rates": { "dev_day": 400 },
   "projects": [
     { "id": "file", "fr": "Le projet File d’attente", "en": "The Queue project", "detail_fr": "WeCall.You, le premier outil : des tickets papier qui appellent vos clients quand c’est leur tour. Ses améliorations se votent ici.", "detail_en": "WeCall.You, the first tool: paper tickets that call your customers when it’s their turn. Its improvements are voted on here." },
     { "id": "communaute", "fr": "Le projet communautaire", "en": "The community project", "detail_fr": "L’association et ses propres outils : membres, adhésions, assemblées et votes à distance, comptes ouverts. Préparés avec l’IA, développés avec les bénévoles, décidés par les membres.", "detail_en": "The association and its own tools: members, memberships, remote assemblies and votes, open accounts. Prepared with AI, built with volunteers, decided by members." },

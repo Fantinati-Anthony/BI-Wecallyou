@@ -558,6 +558,9 @@ try {
     assert.equal(await visitor.locator('#rankings .ranking').count(), 3); // file d'attente, communauté, prochain outil
     assert.match(await visitor.locator('#vote-status').textContent(), /il faut un compte/);
     assert.match(await visitor.locator('#idea-stats .idea-cost').textContent(), /avec un développeur/);
+    // L'IA, mesurée sur les évolutions déjà livrées (couts.json) : une fourchette de jetons et de dollars.
+    assert.match(await visitor.locator('#idea-stats .idea-cost').textContent(), /IA : [\d,\s]+ M à [\d,\s]+ M de jetons \(≈ [\d,]+ \$ à [\d,]+ \$ au tarif de l’API\)/);
+    assert.match(await visitor.locator('#rates-list').textContent(), /mesuré sur les \d+ évolutions déjà livrées/);
     await visitor.close();
     await p4.goto(`${BASE}/voter`);
     await waitText(p4.locator('#votes-left'), 'Il vous reste 3 voix sur 3.');
@@ -773,6 +776,11 @@ try {
     assert.match(await p.locator('#ch-title').textContent(), /serveurs à la demande/);
     assert.equal(await p.locator('#roadmap li.next').count(), 1);
     assert.match(await p.locator('#costs').textContent(), /2,50\s€/);
+    // Fait avec presque rien : ce que le projet a coûté, mesuré (couts.json).
+    await p.waitForSelector('#frugal:not([hidden])');
+    assert.match(await p.locator('#f-summary').textContent(), /^En \d+ jours?, \d+ évolutions? et [\d\s]+ lignes de code : \d+ h \d\d du fondateur et [\d,]+\s€ d’intelligence artificielle/);
+    assert.match(await p.locator('#f-table').textContent(), /30\s€ par an.*36\s€ par an/);
+    assert.equal(await p.locator('#f-last li').count(), 5);
     // Le service tient-il la route ? Le bulletin du mois (files et clients des parcours précédents) et le simulateur.
     await p.waitForSelector('#h-month:not([hidden])');
     assert.match(await p.locator('#h-month').textContent(), /^Ce mois-ci, \d+ files? (a|ont) accueilli \d+ clients?/);

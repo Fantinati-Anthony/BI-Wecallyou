@@ -958,6 +958,11 @@ dialog.catalog h2 { margin: 0; }
 .challenge-figures strong { font: 800 2.2rem/1 var(--font-display); letter-spacing: -0.03em; }
 .challenge-figures span { color: var(--muted); font-weight: 600; }
 .progress-big { height: 14px; }
+/* Fait avec presque rien : ce que le projet a coûté, mesuré (page Soutenir). */
+.frugal .lead { margin-top: 0; }
+.frugal-last { list-style: none; margin: 0 0 12px; padding: 0; }
+.frugal-last li { padding: 8px 0; border-top: 1px solid var(--line); }
+.frugal-last li span { display: block; margin-top: 2px; }
 /* Le service tient-il la route ? Le bulletin du mois et le simulateur (page Soutenir). */
 .health h3 { margin: 24px 0 10px; }
 .health-verdict { display: inline-block; margin: 0 0 10px; padding: 6px 14px; border-radius: var(--r-pill); background: var(--ok-soft); color: var(--ok); font-weight: 700; text-wrap: balance; }

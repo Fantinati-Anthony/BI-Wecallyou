@@ -1,0 +1,401 @@
+{
+ "updated": "2026-10-10T19:59:48.431Z",
+ "since": "2026-10-08",
+ "days": 3,
+ "hours": 13.8,
+ "messages": 92,
+ "replies": 1816,
+ "tokens": {
+  "input": 3634,
+  "output": 2762871,
+  "cacheWrite": 7146179,
+  "cacheRead": 830315050
+ },
+ "usd": 278.5,
+ "subscription": 1.77,
+ "evolutions": [
+  {
+   "commit": "63eed2c",
+   "date": "2026-10-09",
+   "title": "WeCallYou : tickets papier qui préviennent, serveur aveugle",
+   "usd": 21.89,
+   "tokens": 44917474
+  },
+  {
+   "commit": "4a6f839",
+   "date": "2026-10-09",
+   "title": "Installation o2switch : purge par cron, mises à jour, fichiers créés par cPanel ignorés",
+   "usd": 5.4,
+   "tokens": 3068171
+  },
+  {
+   "commit": "bc3f203",
+   "date": "2026-10-09",
+   "title": "Écran public diffusable, messages sur mesure, listes et groupes",
+   "usd": 7.05,
+   "tokens": 23748070
+  },
+  {
+   "commit": "be51c31",
+   "date": "2026-10-09",
+   "title": "Protection : le dossier server/ n'est jamais servi par le web, même si la racine du domaine est mal réglée",
+   "usd": 0.68,
+   "tokens": 2179701
+  },
+  {
+   "commit": "3e381b6",
+   "date": "2026-10-09",
+   "title": "Comptes chiffrés facultatifs, fiche de secours, statut Pro par les dons",
+   "usd": 7.35,
+   "tokens": 23725823
+  },
+  {
+   "commit": "dccce4d",
+   "date": "2026-10-09",
+   "title": "Offre Pro conforme, distincte du don : marque masquée, tickets 30 jours, stats 1 an",
+   "usd": 8.41,
+   "tokens": 31933828
+  },
+  {
+   "commit": "3e6f409",
+   "date": "2026-10-09",
+   "title": "README : rétablit les noms de fichiers et de réglages de la section Pro",
+   "usd": 0.44,
+   "tokens": 1858104
+  },
+  {
+   "commit": "b7a0ec8",
+   "date": "2026-10-09",
+   "title": "Studio d'impression : tout papier, mise en page adaptative, catalogue de papiers, couleurs Pro",
+   "usd": 14.55,
+   "tokens": 37231145
+  },
+  {
+   "commit": "e1dac64",
+   "date": "2026-10-09",
+   "title": "Refonte visuelle complète : nouveau système, accueil revu, icônes au lieu des emojis",
+   "usd": 10.83,
+   "tokens": 34392832
+  },
+  {
+   "commit": "59053f0",
+   "date": "2026-10-09",
+   "title": "Captures du README à jour avec la nouvelle interface ; un peu d'air entre les blocs des pages produit",
+   "usd": 0.68,
+   "tokens": 2912084
+  },
+  {
+   "commit": "f9b5bc9",
+   "date": "2026-10-09",
+   "title": "Scripts et styles toujours revalidés : une mise à jour ne mélange plus l'ancien et le nouveau code",
+   "usd": 0.69,
+   "tokens": 2365877
+  },
+  {
+   "commit": "ca504e8",
+   "date": "2026-10-09",
+   "title": "Offre Pro visible : comparatif Gratuit / Pro, lien dans toutes les pages, options Pro grisées dans le générateur",
+   "usd": 5.66,
+   "tokens": 20458701
+  },
+  {
+   "commit": "74efa67",
+   "date": "2026-10-09",
+   "title": "Mes lots : en-tête du lot ouvert, écran « Mes lots » ; plusieurs lots réunis = option Pro",
+   "usd": 4.22,
+   "tokens": 16007272
+  },
+  {
+   "commit": "65357b4",
+   "date": "2026-10-09",
+   "title": "Page « Créer mes tickets » à part, modèles de message par activité",
+   "usd": 5.07,
+   "tokens": 19379140
+  },
+  {
+   "commit": "d2db672",
+   "date": "2026-10-09",
+   "title": "Page clé et fiche de secours en couleurs avec le logo ; variables d'un appui ; nombre de notifications",
+   "usd": 4.73,
+   "tokens": 18266354
+  },
+  {
+   "commit": "143a5db",
+   "date": "2026-10-09",
+   "title": "Affiche à scanner : numéro attribué à l'arrivée, file d'arrivée, appeler le suivant ou tout le monde",
+   "usd": 7.33,
+   "tokens": 29004159
+  },
+  {
+   "commit": "8c9a352",
+   "date": "2026-10-09",
+   "title": "Tickets : 0 à 3 souches, alignement du logo et des textes, zones de découpe visibles",
+   "usd": 4.34,
+   "tokens": 17263293
+  },
+  {
+   "commit": "531f783",
+   "date": "2026-10-09",
+   "title": "Apache : la validation des certificats (/.well-known) n'est jamais redirigée",
+   "usd": 3.47,
+   "tokens": 11590149
+  },
+  {
+   "commit": "422ccc4",
+   "date": "2026-10-09",
+   "title": "Marque WeCall.You, écran public animé sur l'accueil, « Créer mes tickets » dans le menu",
+   "usd": 3.5,
+   "tokens": 8116948
+  },
+  {
+   "commit": "0d73b52",
+   "date": "2026-10-09",
+   "title": "Barre du haut : le menu suit la largeur de sa barre, plus de chevauchement avec le logo",
+   "usd": 0.55,
+   "tokens": 1518540
+  },
+  {
+   "commit": "0f9cf1a",
+   "date": "2026-10-09",
+   "title": "Logo et couleurs des tickets et de l'affiche : réservés à l'offre Pro",
+   "usd": 3.03,
+   "tokens": 9749624
+  },
+  {
+   "commit": "6a2c1bd",
+   "date": "2026-10-09",
+   "title": "Page clé : QR de l'écran d'affichage ; tickets gratuits aux couleurs WeCall.You",
+   "usd": 3.34,
+   "tokens": 11173696
+  },
+  {
+   "commit": "5322af5",
+   "date": "2026-10-09",
+   "title": "Activités partout, affiche à numéros aléatoires, générateur réorganisé",
+   "usd": 9.58,
+   "tokens": 29234207
+  },
+  {
+   "commit": "f0662c6",
+   "date": "2026-10-09",
+   "title": "Logo WeCall.You par défaut sur les tickets, l'affiche, la page clé et la fiche de secours",
+   "usd": 4.1,
+   "tokens": 12771118
+  },
+  {
+   "commit": "972e48f",
+   "date": "2026-10-09",
+   "title": "8 langues, générateur en onglets, recto-verso, textes d'affiche modifiables",
+   "usd": 21.03,
+   "tokens": 50697107
+  },
+  {
+   "commit": "8322243",
+   "date": "2026-10-09",
+   "title": "Notifications vérifiées, moyens de prévenir expliqués, SMS depuis le téléphone",
+   "usd": 4.67,
+   "tokens": 16806319
+  },
+  {
+   "commit": "cd15662",
+   "date": "2026-10-09",
+   "title": "Générateur compact et clair, aperçu écran et téléphone du client, appel téléphonique",
+   "usd": 10.04,
+   "tokens": 38844848
+  },
+  {
+   "commit": "ecc005f",
+   "date": "2026-10-09",
+   "title": "Numéros mélangés pour « les deux » et « affiche seule », tickets imprimés compris",
+   "usd": 3.66,
+   "tokens": 14345761
+  },
+  {
+   "commit": "5b62726",
+   "date": "2026-10-09",
+   "title": "Champs en capsule, aperçu Client et Tout réparé",
+   "usd": 7.1,
+   "tokens": 16926626
+  },
+  {
+   "commit": "a220d51",
+   "date": "2026-10-09",
+   "title": "« Lot » devient « file », aperçu en en-tête d'onglets, bouton sous l'aperçu",
+   "usd": 9.31,
+   "tokens": 16913829
+  },
+  {
+   "commit": "f0d257f",
+   "date": "2026-10-09",
+   "title": "Ajouter un ticket à la file par le gestionnaire, alerte QR, « Tout » en maçonnerie",
+   "usd": 6.1,
+   "tokens": 20408560
+  },
+  {
+   "commit": "c992826",
+   "date": "2026-10-09",
+   "title": "Soutenir : l'histoire du projet, le défi du mois et les chapitres de l'aventure",
+   "usd": 2.88,
+   "tokens": 10317578
+  },
+  {
+   "commit": "7631792",
+   "date": "2026-10-09",
+   "title": "Soutenir : le temps comme fil rouge, douze chapitres en trois actes, montants réalistes",
+   "usd": 1.92,
+   "tokens": 6253572
+  },
+  {
+   "commit": "3832cb8",
+   "date": "2026-10-10",
+   "title": "Soutenir : « Faisons les comptes », l'atelier d'impression simulé ; sans packs événement",
+   "usd": 3.33,
+   "tokens": 11921751
+  },
+  {
+   "commit": "0c08ec5",
+   "date": "2026-10-10",
+   "title": "« Votez pour la suite » : les idées chiffrées, trois voix par compte, classement en direct",
+   "usd": 5.05,
+   "tokens": 20047489
+  },
+  {
+   "commit": "0a887db",
+   "date": "2026-10-10",
+   "title": "Aperçu : « Exemple » seul dans la pastille, l'explication dans un « ? »",
+   "usd": 1.37,
+   "tokens": 5834662
+  },
+  {
+   "commit": "61203b1",
+   "date": "2026-10-10",
+   "title": "Soutenir : « Bien plus qu'une file d'attente », objectif ≈ 50 € par mois, soutien annuel",
+   "usd": 11.46,
+   "tokens": 23286491
+  },
+  {
+   "commit": "49a2f83",
+   "date": "2026-10-10",
+   "title": "Soutenir : deux offres (juste soutenir, ou une licence) et l'étape « 12 mois d'avance »",
+   "usd": 4.27,
+   "tokens": 15991083
+  },
+  {
+   "commit": "40dceda",
+   "date": "2026-10-10",
+   "title": "Soutenir : « Prendre une licence » fuit toujours, « Soutenir le projet » ouvre la vision",
+   "usd": 3.94,
+   "tokens": 15380576
+  },
+  {
+   "commit": "38b2b39",
+   "date": "2026-10-10",
+   "title": "Liste des idées (idees.json) jamais mise en cache, comme soutien.json",
+   "usd": 2.42,
+   "tokens": 8056185
+  },
+  {
+   "commit": "69b1857",
+   "date": "2026-10-10",
+   "title": "Vos précisions : licence ouverte et tickets prioritaires, charge o2switch, niveaux, accueil, vote",
+   "usd": 9.27,
+   "tokens": 37126966
+  },
+  {
+   "commit": "d6348a7",
+   "date": "2026-10-10",
+   "title": "Charge de la lune : lecture locale par uapi, sans jeton (« cpanel »: { \"local\": true })",
+   "usd": 1.19,
+   "tokens": 4551146
+  },
+  {
+   "commit": "25930b3",
+   "date": "2026-10-10",
+   "title": "Test : réponse réelle d'une lune o2switch pour la lecture de charge",
+   "usd": 0.48,
+   "tokens": 1836660
+  },
+  {
+   "commit": "f906a33",
+   "date": "2026-10-10",
+   "title": "config.json : le réglage « cpanel » est bien lu ; message clair si le fichier est mal écrit",
+   "usd": 1.07,
+   "tokens": 4626394
+  },
+  {
+   "commit": "5e9090f",
+   "date": "2026-10-10",
+   "title": "Charge de la lune : uapi cherché par son chemin complet (PATH de l'application cPanel)",
+   "usd": 1.44,
+   "tokens": 5646416
+  },
+  {
+   "commit": "5374407",
+   "date": "2026-10-10",
+   "title": "Test de charge : en local (un processus, jusqu'à 1 600 clients en direct) et en douceur sur le site, sans rien créer",
+   "usd": 3.56,
+   "tokens": 10746619
+  },
+  {
+   "commit": "94f0341",
+   "date": "2026-10-10",
+   "title": "Direct limité à la moitié des connexions du compte (lveep) : au-delà, les pages vérifient toutes les 5 s, le site répond toujours",
+   "usd": 0.82,
+   "tokens": 1323620
+  },
+  {
+   "commit": "bd9964c",
+   "date": "2026-10-10",
+   "title": "Test de charge réaliste sur le site (3 snacks × 50 clients, réglable) ; les tests n'écrivent plus dans public/etat",
+   "usd": 1.53,
+   "tokens": 2963193
+  },
+  {
+   "commit": "ce4978e",
+   "date": "2026-10-10",
+   "title": "Test de charge : vérification de sécurité par /info (plafond du direct) au lieu d'ouvrir des connexions",
+   "usd": 0.93,
+   "tokens": 2417975
+  },
+  {
+   "commit": "5da0b74",
+   "date": "2026-10-10",
+   "title": "Test de charge : connexions gardées ouvertes comme un téléphone",
+   "usd": 0.57,
+   "tokens": 1209185
+  },
+  {
+   "commit": "241e980",
+   "date": "2026-10-10",
+   "title": "Test de charge : codes d'erreur affichés, arrêt rapide en cas d'échecs, test identifié (User-Agent)",
+   "usd": 1.07,
+   "tokens": 2635092
+  },
+  {
+   "commit": "060fe95",
+   "date": "2026-10-10",
+   "title": "Sécurité : l'adresse du visiteur ne vient plus que de X-Real-IP, réécrit par le frontal d'o2switch",
+   "usd": 3.42,
+   "tokens": 4566342
+  },
+  {
+   "commit": "ecae669",
+   "date": "2026-10-10",
+   "title": "Soutenir : bulletin de santé du mois et simulateur des coûts serveur (actuel et évolutif)",
+   "usd": 6.22,
+   "tokens": 18774801
+  },
+  {
+   "commit": "ed7c37a",
+   "date": "2026-10-10",
+   "title": "Plan chiffré : montants des paliers calculés d'après l'affluence, simulateur à curseurs",
+   "usd": 4.69,
+   "tokens": 13935186
+  }
+ ],
+ "current": {
+  "usd": 6.83,
+  "tokens": 22969392
+ },
+ "lines": 26018
+}
