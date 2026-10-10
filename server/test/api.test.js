@@ -503,5 +503,5 @@ test('bulletin de santé : files actives, clients du mois, direct plein compté,
   assert.ok(view.tickets >= 1);
   assert.equal(view.host, null); // sans hébergeur cPanel, pas de mesure de charge
   assert.equal(view.load, null);
-  assert.deepEqual(Object.keys(view).filter((key) => key !== 'status').sort(), ['calls', 'full', 'host', 'limits', 'live', 'load', 'month', 'ok', 'priority', 'queues', 'tickets', 'wait']);
+  assert.deepEqual(Object.keys(view).filter((key) => key !== 'status').sort(), ['busyHours', 'calls', 'full', 'host', 'limits', 'live', 'load', 'month', 'ok', 'pages', 'pagesQueues', 'priority', 'queues', 'tickets', 'wait']);
 });

@@ -2,9 +2,11 @@
 // Les paiements passent par des liens Stripe (Payment Links) déclarés dans /soutien.json :
 // notre serveur ne voit ni carte, ni montant, ni donateur.
 // Soutenir le projet donne aussi la licence Pro : si un compte est connecté, le lien porte son
-// identifiant et le serveur active le Pro en proportion du montant (sans compte, c'est un soutien pur).
+// identifiant et le serveur ouvre le Pro pour la période payée ; seuls les tickets prioritaires suivent
+// le montant (sans compte, c'est un soutien pur). L'objectif affiché est le prochain palier (plan.js).
 import { h, t, api, local, icon } from './common.js';
 import { session } from './account.js';
+import { amounts, scenarioOf, targetOf, loadUsage } from './plan.js';
 
 let configPromise = null;
 
@@ -64,9 +66,10 @@ export async function supportCard({ context, count = 0, brand = 'WeCall.You' }) 
   // Transparence : l'objectif (12 mois de frais d'avance, sinon le mois) et ce qui est déjà réuni
   // (mis à jour à la main dans soutien.json).
   const yearly = cfg.goal_total != null;
-  // Le prochain palier du plan (150 €, puis ≈ 900 €…), sinon le dernier.
-  const next = (cfg.roadmap ?? []).find((s) => s.total && s.total > (cfg.raised_total ?? 0));
-  const target = yearly ? (next?.total ?? cfg.goal_total) : goal;
+  // Le prochain palier du plan, aux montants calculés d'après l'affluence réelle (plan.js).
+  const plan = cfg.capacity ? amounts(cfg, scenarioOf(await loadUsage())) : null;
+  const next = (cfg.roadmap ?? []).find((s) => (s.total || s.plan) && targetOf(s, plan) > (cfg.raised_total ?? 0));
+  const target = yearly ? (next ? targetOf(next, plan) : cfg.goal_total) : goal;
   const raised = yearly ? (cfg.raised_total ?? 0) : cfg.raised_month;
   const bar = h('span');
   card.append(

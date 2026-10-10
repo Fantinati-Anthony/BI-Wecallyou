@@ -44,6 +44,18 @@ test('santé : charge, minutes à la limite, priorité, direct plein, cumulés s
     assert.equal(month.peak, 0.8);
     assert.equal(month.live, 32);
     assert.equal(month.limits, 2);
+    assert.equal(month.busy, 0); // aucune page de client ouverte jusqu'ici
+
+    // Affluence : une page ouverte relit son ticket toutes les 30 s (deux fois par minute).
+    for (let i = 0; i < 60; i++) again.read(i < 40 ? 7 : 9); // 30 pages dans 2 files
+    await again.minute();
+    again.read(7); // une seule page, une seule lecture dans la minute
+    await again.minute();
+    await again.minute(); // personne
+    month = await again.month();
+    assert.equal(month.pages, 30);
+    assert.equal(month.pagesQueues, 2);
+    assert.equal(month.busy, 2); // deux minutes d'affluence
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }

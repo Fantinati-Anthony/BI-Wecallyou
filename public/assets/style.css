@@ -962,11 +962,23 @@ dialog.catalog h2 { margin: 0; }
 .health h3 { margin: 24px 0 10px; }
 .health-verdict { display: inline-block; margin: 0 0 10px; padding: 6px 14px; border-radius: var(--r-pill); background: var(--ok-soft); color: var(--ok); font-weight: 700; text-wrap: balance; }
 .health-verdict.warn { background: var(--warn-soft); color: var(--warn); }
+.health-verdict.soon { background: color-mix(in srgb, var(--brand) 14%, var(--surface)); color: var(--brand-text); }
 .health-verdict a { color: inherit; }
-.sim-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 0 10px; }
+.sim-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 0 10px; }
+/* Curseur : le libellé et la valeur sur une ligne, le curseur dessous, dans une capsule. */
+.sim-slider {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 2px 10px;
+  margin: 0 0 10px; padding: 10px 13px 8px; border: 1px solid var(--line); border-radius: var(--r-ctl); background: var(--surface);
+  font-size: 0.92rem; font-weight: 600; cursor: pointer;
+}
+.sim-slider:focus-within { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
+.sim-slider output { font: 800 1.15rem/1 var(--font-display); font-variant-numeric: tabular-nums; color: var(--brand-text); }
+.sim-slider input[type='range'] { grid-column: 1 / -1; width: 100%; margin: 6px 0 2px; accent-color: var(--brand); cursor: pointer; }
+.sim-reset { min-height: 0; padding: 3px 12px; font-size: 0.85rem; }
+.sim-result .cost-table tr.chosen td { font-weight: 700; }
 .sim-total { margin: 6px 0 2px; font-variant-numeric: tabular-nums; }
 .sim-total strong { font: 800 1.6rem/1.1 var(--font-display); letter-spacing: -0.02em; }
-.sim-gauge.tight span { background: color-mix(in srgb, var(--brand) 55%, var(--warn)); }
+.sim-gauge.soon span { background: color-mix(in srgb, var(--brand) 55%, var(--warn)); }
 .sim-gauge.over span { background: var(--warn); }
 .sim-verdict { font-weight: 600; }
 .sim-verdict.over { color: var(--warn); }

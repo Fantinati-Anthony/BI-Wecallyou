@@ -768,22 +768,37 @@ try {
     p.on('pageerror', (err) => errors.push(err.message));
     await p.goto(`${BASE}/soutenir`);
     await p.waitForSelector('#challenge:not([hidden]) #ch-raised');
-    assert.match(await p.locator('#ch-goal').textContent(), /sur 150\s€ pour ce palier/); // espace fine insécable avant €
+    // Montant du premier palier : calculé d'après l'affluence (un an de serveurs à la demande).
+    assert.match(await p.locator('#ch-goal').textContent(), /sur \d[\d\s]*\s€ pour ce palier/); // espace fine insécable avant €
     assert.match(await p.locator('#ch-title').textContent(), /serveurs à la demande/);
     assert.equal(await p.locator('#roadmap li.next').count(), 1);
     assert.match(await p.locator('#costs').textContent(), /2,50\s€/);
     // Le service tient-il la route ? Le bulletin du mois (files et clients des parcours précédents) et le simulateur.
     await p.waitForSelector('#h-month:not([hidden])');
     assert.match(await p.locator('#h-month').textContent(), /^Ce mois-ci, \d+ files? (a|ont) accueilli \d+ clients?/);
-    assert.match(await p.locator('#h-verdict').textContent(), /tient la route|besoin de vous/);
-    assert.match(await p.locator('#h-capacity').textContent(), /environ 1\s700 clients en attente/);
-    assert.match(await p.locator('#sim-result').textContent(), /150 clients en attente/); // 3 files de 50, par défaut
-    assert.match(await p.locator('.sim-verdict').textContent(), /Le serveur actuel suffit/);
-    await p.fill('#sim-queues', '200');
-    await p.fill('#sim-clients', '100');
+    assert.match(await p.locator('#h-verdict').textContent(), /tient la route|besoin de vous|se prépare/);
+    assert.match(await p.locator('#h-capacity').textContent(), /environ 1\s700 clients en attente.*prévue vers 1\s300/);
+    assert.match(await p.locator('#sim-start').textContent(), /^Point de départ : (l’affluence réelle|un exemple)/);
+    // Les curseurs font bouger le simulateur, et les montants du plan (chapitres, prochain palier).
+    const slide = (id, value) => p.locator(id).evaluate((el, v) => {
+      el.value = v;
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+    }, String(value));
+    await slide('#sim-queues', 3);
+    await slide('#sim-clients', 50);
+    await slide('#sim-hours', 4);
+    assert.equal(await p.locator('#sim-clients-out').textContent(), '50');
+    assert.match(await p.locator('#sim-result').textContent(), /150 clients en attente/);
+    assert.match(await p.locator('.sim-verdict').textContent(), /La lune suffit/);
+    const goalBefore = await p.locator('#ch-goal').textContent();
+    await slide('#sim-queues', 100);
+    await slide('#sim-clients', 200);
+    await slide('#sim-hours', 12);
     assert.match(await p.locator('#sim-result').textContent(), /20\s000 clients en attente/);
-    assert.match(await p.locator('.sim-verdict').textContent(), /il faut le serveur évolutif/);
+    assert.match(await p.locator('.sim-verdict').textContent(), /Au-delà de la lune/);
     assert.match(await p.locator('#sim-result').textContent(), /≈ \d[\d\s]*(,\d+)?\s€ \/ mois/);
+    assert.notEqual(await p.locator('#ch-goal').textContent(), goalBefore); // le palier suit l'affluence simulée
+    assert.match(await p.locator('#roadmap').textContent(), /pour un an de serveurs à la demande/);
     assert.match(await p.locator('.story:not([hidden]) .motto').textContent(), /Un outil aujourd’hui, une association demain/);
     // « Prendre une licence » fuit toujours la souris et désigne le vrai bouton ; il ne s'ouvre jamais.
     const runaway = p.locator('#runaway-btn');

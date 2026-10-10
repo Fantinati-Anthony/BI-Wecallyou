@@ -186,6 +186,11 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
       priority: host?.priority ?? 0, // demandes des files prioritaires passées devant
       full: host?.full ?? 0, // pages envoyées vers la vérification toutes les 5 s
       live: host?.live ?? 0, // le plus de pages en direct à la fois
+      // Affluence réelle : le plus de clients attendant page ouverte à la fois, dans combien de files,
+      // et les heures d'affluence par jour (minutes où au moins un client attendait).
+      pages: host?.pages ?? 0,
+      pagesQueues: host?.pagesQueues ?? 0,
+      busyHours: host ? Math.round((host.busy / 60 / new Date().getUTCDate()) * 10) / 10 : 0,
       load: hostLoad?.view() ?? null, // en ce moment
     };
     healthCache = { at: Date.now(), view };
@@ -657,6 +662,7 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
     ['GET', /^\/t\/([A-Za-z2-7]{26})$/, async (req, [token]) => {
       const ticket = ticketOf(token);
       const lot = (await store.lot(ticket.lot)) ?? fail(404, 'invalid');
+      if (ticket.role === Role.CLIENT) health?.read(lot.id); // affluence réelle (bulletin du mois)
       const callInfo = await store.callInfo(lot.id, ticket.n);
       const called = callInfo !== null;
       // Premier scan du client : le ticket s'active (et commence sa durée de vie).

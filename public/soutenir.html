@@ -79,9 +79,9 @@
       <h2 data-lang="fr">Les chapitres de l’aventure</h2>
       <h2 data-lang="en" hidden>The chapters of the adventure</h2>
       <ol class="roadmap" id="roadmap"></ol>
-      <p class="small muted" data-lang="fr">Montants mensuels estimés et arrondis. Les chapitres sans montant viendront quand l’association et ses membres le décideront.</p>
+      <p class="small muted" data-lang="fr">Montants estimés et arrondis. Ceux des paliers suivent l’affluence réelle du service, et le simulateur plus bas. Les chapitres sans montant viendront quand l’association et ses membres le décideront.</p>
       <p data-lang="fr"><a class="btn btn-soft btn-block" href="/voter"><span data-icon="list-checks"></span>Votez pour les prochaines fonctions</a></p>
-      <p class="small muted" data-lang="en" hidden>Estimated, rounded monthly amounts. The chapters without an amount will come when the association and its members decide.</p>
+      <p class="small muted" data-lang="en" hidden>Estimated, rounded amounts. The steps’ amounts follow the service’s real demand, and the simulator further down. The chapters without an amount will come when the association and its members decide.</p>
       <p data-lang="en" hidden><a class="btn btn-soft btn-block" href="/voter"><span data-icon="list-checks"></span>Vote for the next features</a></p>
     </section>
 
@@ -101,19 +101,23 @@
       <p class="small muted" id="h-capacity"></p>
       <h3 data-lang="fr">Simulez une journée chargée</h3>
       <h3 data-lang="en" hidden>Simulate a busy day</h3>
+      <p class="small" id="sim-start"></p>
       <div class="sim-fields">
-        <div class="cap num">
-          <label for="sim-queues"><span data-lang="fr">Files ouvertes en même temps</span><span data-lang="en" hidden>Queues open at the same time</span></label>
-          <input id="sim-queues" type="number" min="1" max="500" value="3" inputmode="numeric">
-        </div>
-        <div class="cap num">
-          <label for="sim-clients"><span data-lang="fr">Clients en attente par file</span><span data-lang="en" hidden>Customers waiting per queue</span></label>
-          <input id="sim-clients" type="number" min="1" max="500" value="50" inputmode="numeric">
-        </div>
-        <div class="cap num">
-          <label for="sim-hours"><span data-lang="fr">Heures d’affluence par jour</span><span data-lang="en" hidden>Busy hours per day</span></label>
-          <input id="sim-hours" type="number" min="1" max="24" value="4" inputmode="numeric">
-        </div>
+        <label class="sim-slider" for="sim-queues">
+          <span><span data-lang="fr">Files ouvertes en même temps</span><span data-lang="en" hidden>Queues open at the same time</span></span>
+          <output id="sim-queues-out" for="sim-queues"></output>
+          <input id="sim-queues" type="range" min="1" max="100" step="1">
+        </label>
+        <label class="sim-slider" for="sim-clients">
+          <span><span data-lang="fr">Clients en attente par file</span><span data-lang="en" hidden>Customers waiting per queue</span></span>
+          <output id="sim-clients-out" for="sim-clients"></output>
+          <input id="sim-clients" type="range" min="1" max="200" step="1">
+        </label>
+        <label class="sim-slider" for="sim-hours">
+          <span><span data-lang="fr">Heures d’affluence par jour</span><span data-lang="en" hidden>Busy hours per day</span></span>
+          <output id="sim-hours-out" for="sim-hours"></output>
+          <input id="sim-hours" type="range" min="1" max="24" step="1">
+        </label>
       </div>
       <div class="sim-result" id="sim-result" aria-live="polite"></div>
       <p class="small muted" id="sim-note"></p>

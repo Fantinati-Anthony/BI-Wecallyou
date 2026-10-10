@@ -1,18 +1,23 @@
 // Bulletin de santé du service, mois par mois, en chiffres anonymes (aucune adresse, aucun ticket,
 // aucun compte) : charge de l'hébergement (la plus haute et la moyenne, mesurées une fois par
 // minute), minutes où une limite a été touchée, demandes passées en priorité, pages envoyées vers la
-// vérification toutes les 5 s faute de place en direct, et le plus de pages en direct à la fois.
+// vérification toutes les 5 s faute de place en direct, le plus de pages en direct à la fois, et
+// l'affluence réelle : une page de client ouverte relit son ticket toutes les 30 s, donc les
+// lectures d'une minute divisées par deux donnent les clients qui attendent page ouverte ; les
+// minutes où au moins un client attend font les heures d'affluence.
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
 const month = (ms = Date.now()) => new Date(ms).toISOString().slice(0, 7);
-const ADDED = ['samples', 'sum', 'limits', 'priority', 'full'];
-const HIGHEST = ['peak', 'live'];
+const ADDED = ['samples', 'sum', 'limits', 'priority', 'full', 'busy'];
+const HIGHEST = ['peak', 'live', 'pages', 'pagesQueues'];
 const empty = () => Object.fromEntries([...ADDED, ...HIGHEST].map((key) => [key, 0]));
 
 export class Health {
   #pending = empty();
   #limited = false; // une limite touchée depuis la dernière minute
+  #reads = 0; // lectures de tickets depuis la dernière minute
+  #reading = new Set(); // files de ces lectures (en mémoire seulement, pour les compter)
   #writing = Promise.resolve();
 
   constructor(dir) {
@@ -47,6 +52,12 @@ export class Health {
     this.#limited = true;
   }
 
+  /** Une page de client a relu son ticket (toutes les 30 s tant qu'elle est ouverte). */
+  read(lot) {
+    this.#reads++;
+    this.#reading.add(lot);
+  }
+
   /** Pages ouvertes en direct en ce moment. */
   live(count) {
     this.#pending.live = Math.max(this.#pending.live, count);
@@ -56,6 +67,14 @@ export class Health {
   async minute() {
     if (this.#limited) this.#pending.limits++;
     this.#limited = false;
+    const pages = Math.round(this.#reads / 2);
+    if (pages > 0) this.#pending.busy++;
+    if (pages > this.#pending.pages) {
+      this.#pending.pages = pages;
+      this.#pending.pagesQueues = this.#reading.size;
+    }
+    this.#reads = 0;
+    this.#reading.clear();
     await this.flush();
   }
 

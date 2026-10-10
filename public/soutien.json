@@ -33,25 +33,25 @@
       "when_en": "Under way",
       "fr": "L’outil, porté par la micro-entreprise du fondateur",
       "en": "The tool, run by the founder’s sole-trader business",
-      "detail_fr": "Le fondateur avance les frais, environ 50 € par mois. Soutenir ouvre la licence Pro ; le nombre de tickets prioritaires suit le soutien et le coût réel du serveur.",
-      "detail_en": "The founder advances the costs, about €50 a month. Supporting opens the Pro licence; the number of priority tickets follows the support and the server’s real cost."
+      "detail_fr": "Le fondateur avance les frais, environ {month} par mois. Soutenir ouvre la licence Pro ; le nombre de tickets prioritaires suit le soutien et le coût réel du serveur.",
+      "detail_en": "The founder advances the costs, about {month} a month. Supporting opens the Pro licence; the number of priority tickets follows the support and the server’s real cost."
     },
     {
-      "total": 150,
+      "plan": "switch",
       "fr": "Premier palier : des serveurs à la demande",
       "en": "First step: on-demand servers",
-      "detail_fr": "Plusieurs instances chez un hébergeur européen, dans la limite des dons. Les soutiens ont un accès prioritaire : en cas de surcharge, leurs tickets ne sont pas ou peu touchés.",
-      "detail_en": "Several instances at a European host, within the limit of donations. Supporters get priority access: when the server is overloaded, their tickets are little or not affected."
+      "detail_fr": "Dès que la lune approche de sa limite (vers {switch} clients en attente en même temps), le service passe sur des serveurs à la demande chez Scaleway, en France : des instances qui s’ajoutent et s’éteignent toutes seules selon l’affluence, pilotées par leur API, pour un coût proportionnel à l’usage. Ce palier réunit un an d’avance ; les soutiens gardent l’accès prioritaire.",
+      "detail_en": "As soon as the current server nears its limit (around {switch} customers waiting at the same time), the service moves to on-demand servers at Scaleway, in France: instances that add and switch themselves off according to demand, driven by their API, for a cost in proportion to use. This step raises a year ahead; supporters keep priority access."
     },
     {
       "act_fr": "Niveau 1 · L’association",
       "act_en": "Level 1 · The association",
-      "total": 900,
+      "plan": "year",
       "approx": true,
       "fr": "Un an d’avance, puis l’association",
       "en": "A year ahead, then the association",
-      "detail_fr": "Un an de frais (≈ 600 €) et de serveurs (≈ 300 €) réunis : l’association est créée et le projet lui est cédé (code, nom de domaine, comptes). Un exercice complet et sa déclaration annuelle, sans risque.",
-      "detail_en": "A year of costs (≈ €600) and servers (≈ €300) raised: the association is created and the project is handed over to it (code, domain name, accounts). A full financial year and its annual declaration, without risk."
+      "detail_fr": "Un an de frais (≈ {costs}) et de serveurs (≈ {servers}) réunis : l’association est créée et le projet lui est cédé (code, nom de domaine, comptes). Un exercice complet et sa déclaration annuelle, sans risque.",
+      "detail_en": "A year of costs (≈ {costs}) and servers (≈ {servers}) raised: the association is created and the project is handed over to it (code, domain name, accounts). A full financial year and its annual declaration, without risk."
     },
     {
       "act_fr": "Niveau 2 · Le projet associatif",
@@ -104,6 +104,9 @@
     "live": 32,
     "connections": 80,
     "month": 2.5,
+    "switch": 0.6,
+    "months": 12,
+    "vat": 0.2,
     "elastic": {
       "fr": "Scaleway (France), conteneurs à la demande",
       "en": "Scaleway (France), on-demand containers",
@@ -112,6 +115,10 @@
       "free_vcpu_s": 200000,
       "free_gb_s": 400000,
       "gb": 2,
+      "db_vcpu_hour": 0.13572,
+      "db_gb_month": 0.2,
+      "db_gb": 1,
+      "db_instances_per_vcpu": 4,
       "checked": "2026-10"
     }
   },
