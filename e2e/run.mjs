@@ -19,7 +19,7 @@ const tmp = mkdtempSync(path.join(tmpdir(), 'wcy-e2e-'));
 const PORT = 3999;
 const BASE = `http://localhost:${PORT}`;
 
-const { server, store } = await createServer({
+const { server, store, health } = await createServer({
   domain: `localhost:${PORT}`,
   brand: 'WeCall.You',
   contact: 'mailto:contact@wecall.you',
@@ -33,6 +33,10 @@ const { server, store } = await createServer({
   stripeWebhookSecret: 'whsec_e2e',
 });
 await new Promise((resolve) => server.listen(PORT, resolve));
+// Une mesure de charge d'aujourd'hui, comme celles de la lune (bulletin et courbe de la page Soutenir).
+health.load(0.43);
+health.load(0.12);
+await health.minute();
 
 const browser = await chromium.launch();
 const shot = (page, name) => page.screenshot({ path: path.join(out, `${name}.png`), fullPage: true });
@@ -826,6 +830,13 @@ try {
     assert.match(await p.locator('#h-verdict').textContent(), /tient la route|besoin de vous|se prépare/);
     assert.match(await p.locator('#h-capacity').textContent(), /environ 1\s700 clients en attente.*prévue vers 1\s300/);
     assert.match(await p.locator('#sim-start').textContent(), /^Point de départ : (l’affluence réelle|un exemple)/);
+    // La courbe de charge depuis le lancement : la mesure du jour, les seuils, les périodes.
+    await p.waitForSelector('#h-chart svg circle.dot');
+    assert.equal(await p.locator('#h-chart .th').count(), 2); // bascule et priorité
+    assert.match(await p.locator('#h-chart-note').textContent(), /au plus 43\s%/);
+    await p.getByRole('button', { name: '7 j', exact: true }).click();
+    assert.equal(await p.getByRole('button', { name: '7 j', exact: true }).getAttribute('aria-pressed'), 'true');
+    assert.ok((await p.locator('#h-chart circle.dot').count()) >= 1);
     // Les curseurs font bouger le simulateur, et les montants du plan (chapitres, prochain palier).
     const slide = (id, value) => p.locator(id).evaluate((el, v) => {
       el.value = v;

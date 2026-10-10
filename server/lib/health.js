@@ -12,6 +12,10 @@ const month = (ms = Date.now()) => new Date(ms).toISOString().slice(0, 7);
 const ADDED = ['samples', 'sum', 'limits', 'priority', 'full', 'busy'];
 const HIGHEST = ['peak', 'live', 'pages', 'pagesQueues'];
 const empty = () => Object.fromEntries([...ADDED, ...HIGHEST].map((key) => [key, 0]));
+// Par jour (pour la courbe) : charge et affluence seulement.
+const DAY_ADDED = ['samples', 'sum', 'busy'];
+const DAY_HIGHEST = ['peak', 'pages'];
+const emptyDay = () => Object.fromEntries([...DAY_ADDED, ...DAY_HIGHEST].map((key) => [key, 0]));
 
 export class Health {
   #pending = empty();
@@ -87,10 +91,32 @@ export class Health {
       const stats = await this.#read(month());
       for (const key of ADDED) stats[key] += delta[key];
       for (const key of HIGHEST) stats[key] = Math.max(stats[key], delta[key]);
+      // Le même compte, jour par jour : la courbe de charge depuis le lancement.
+      const today = new Date().toISOString().slice(0, 10);
+      const d = { ...emptyDay(), ...stats.days?.[today] };
+      for (const key of DAY_ADDED) d[key] += delta[key];
+      for (const key of DAY_HIGHEST) d[key] = Math.max(d[key], delta[key]);
+      stats.days = { ...stats.days, [today]: d };
       await fs.mkdir(this.dir, { recursive: true, mode: 0o700 });
       await fs.writeFile(this.file(), JSON.stringify(stats), { mode: 0o600 });
     });
     return this.#writing;
+  }
+
+  /** Les derniers jours (au plus `days`), du plus ancien au plus récent : charge la plus haute et moyenne, affluence. */
+  async history(days = 365) {
+    await this.flush();
+    const since = new Date(Date.now() - (days - 1) * 86_400_000).toISOString().slice(0, 10);
+    const months = new Set();
+    for (let t = Date.parse(`${since.slice(0, 7)}-01T00:00:00Z`); t <= Date.now(); t += 28 * 86_400_000) months.add(month(t));
+    months.add(month());
+    const out = [];
+    for (const name of [...months].sort()) {
+      for (const [day, d] of Object.entries((await this.#read(name)).days ?? {})) {
+        if (day >= since && d.samples) out.push({ day, peak: Math.round(d.peak * 100) / 100, average: Math.round((d.sum / d.samples) * 100) / 100, pages: d.pages, busy: d.busy });
+      }
+    }
+    return out.sort((a, b) => a.day.localeCompare(b.day));
   }
 
   /** Le mois en cours, avec ce qui n'est pas encore écrit. */

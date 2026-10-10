@@ -974,6 +974,19 @@ dialog.catalog h2 { margin: 0; }
 .frugal-last li span { display: block; margin-top: 2px; }
 /* Le service tient-il la route ? Le bulletin du mois et le simulateur (page Soutenir). */
 .health h3 { margin: 24px 0 10px; }
+/* Courbe de charge, jour après jour (page Soutenir). */
+.chart-range { margin: 0 0 8px; flex-wrap: wrap; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart .grid { stroke: var(--line); stroke-width: 1; }
+.chart .axis, .chart .th-label { fill: var(--muted); font-size: 11px; }
+.chart .peak { fill: none; stroke: var(--brand); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.chart .average { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 3 3; }
+.chart .dot { fill: var(--brand); }
+.chart .th { stroke-width: 1.2; stroke-dasharray: 6 4; }
+.chart .th-switch { stroke: color-mix(in srgb, var(--brand) 55%, var(--warn)); }
+.chart .th-priority { stroke: var(--warn); }
+.chart .launch { stroke: var(--ok); stroke-width: 1.2; stroke-dasharray: 2 3; }
+.chart .launch-label { fill: var(--ok); font-size: 11px; font-weight: 700; }
 .health-verdict { display: inline-block; margin: 0 0 10px; padding: 6px 14px; border-radius: var(--r-pill); background: var(--ok-soft); color: var(--ok); font-weight: 700; text-wrap: balance; }
 .health-verdict.warn { background: var(--warn-soft); color: var(--warn); }
 .health-verdict.soon { background: color-mix(in srgb, var(--brand) 14%, var(--surface)); color: var(--brand-text); }

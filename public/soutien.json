@@ -102,6 +102,7 @@
     "checked": "2026-10"
   },
   "capacity": {
+    "launched": "2026-10-09",
     "measured_fr": "le 10 octobre 2026",
     "measured_en": "on 10 October 2026",
     "waiting": 1000,

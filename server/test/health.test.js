@@ -56,6 +56,10 @@ test('santé : charge, minutes à la limite, priorité, direct plein, cumulés s
     assert.equal(month.pages, 30);
     assert.equal(month.pagesQueues, 2);
     assert.equal(month.busy, 2); // deux minutes d'affluence
+    // Jour par jour, pour la courbe : aujourd'hui, charge la plus haute 80 %, moyenne des 4 mesures (1,7 / 4).
+    const days = await again.history(7);
+    assert.equal(days.length, 1);
+    assert.deepEqual(days[0], { day: new Date().toISOString().slice(0, 10), peak: 0.8, average: 0.43, pages: 30, busy: 2 });
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }

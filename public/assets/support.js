@@ -254,6 +254,7 @@ function health(cap, start, onScenario) {
     ? `Estimation prudente, d’après le test de charge ${cap.measured_fr} : ${count(cap.waiting)} clients en attente dans ${count(cap.queues)} files, ${percent(cap.load)} de charge. Une page de client ouverte vérifie son ticket toutes les 5 s et sa place toutes les 30 s ; téléphone verrouillé, elle ne demande presque rien. Serveurs à la demande : tarifs publics de Scaleway relevés en ${checked}, hors taxes plus ${percent(cap.vat)} de TVA (conteneurs : ${euros(e.vcpu_100k)} les 100 000 secondes de processeur, ${euros(e.gb_100k)} les 100 000 Go-secondes de mémoire, ${count(e.free_vcpu_s)} s et ${count(e.free_gb_s)} Go-s offerts chaque mois ; base partagée : ${euros(e.db_vcpu_hour)} par heure et par processeur quand elle sert, ${euros(e.db_gb_month)} par Go et par mois). Les paliers réunissent ${plural(cap.months, 'mois', 'mois')} d’avance.`
     : `Cautious estimate, based on the load test ${cap.measured_en}: ${count(cap.waiting)} customers waiting in ${count(cap.queues)} queues, ${percent(cap.load)} load. An open customer page checks its ticket every 5 s and its place every 30 s; with the phone locked, it asks almost nothing. On-demand servers: Scaleway public prices checked in ${checked}, before tax plus ${percent(cap.vat)} VAT (containers: ${euros(e.vcpu_100k)} per 100,000 processor seconds, ${euros(e.gb_100k)} per 100,000 GB-seconds of memory, ${count(e.free_vcpu_s)} s and ${count(e.free_gb_s)} GB-s free each month; shared database: ${euros(e.db_vcpu_hour)} per hour and processor while in use, ${euros(e.db_gb_month)} per GB a month). The steps raise ${plural(cap.months, 'month', 'months')} ahead.`;
   document.getElementById('health').hidden = false;
+  if (cap.launched) loadChart(cap, usage?.history ?? []); // une fois la section visible : à sa vraie largeur
 }
 
 /**
@@ -316,4 +317,108 @@ function frugal(cfg, costs) {
     ? `Mesuré automatiquement à la fin de chaque session de travail, dans les journaux de l’assistant de code (Claude Code) : seulement des totaux, jamais les conversations. Temps : pauses de plus de 10 minutes exclues. Abonnement : chaque jour est partagé entre les projets du fondateur selon leur usage du jour. Tarif de l’API : ${ai.model}, relevé en ${checked} (par million de jetons : ${dollars(price.input)} en entrée, ${dollars(price.output)} en sortie, ${dollars(price.cacheWrite)} mis en cache, ${dollars(price.cacheRead)} relus). Mis à jour le ${updated}.`
     : `Measured automatically at the end of each work session, in the coding assistant’s logs (Claude Code): totals only, never the conversations. Time: breaks over 10 minutes excluded. Subscription: each day is shared between the founder’s projects according to that day’s use. API prices: ${ai.model}, checked in ${checked} (per million tokens: ${dollars(price.input)} input, ${dollars(price.output)} output, ${dollars(price.cacheWrite)} cached, ${dollars(price.cacheRead)} re-read). Updated ${updated}.`;
   document.getElementById('frugal').hidden = false;
+}
+
+/**
+ * La charge de la lune, jour après jour, depuis le lancement : la plus haute du jour (trait plein),
+ * la moyenne (pointillés), les seuils de bascule et de priorité, et le jour du lancement.
+ */
+function loadChart(cap, history) {
+  const DAY = 86_400_000;
+  const dayOf = (ms) => new Date(ms).toISOString().slice(0, 10);
+  const short = (day) => new Date(`${day}T12:00:00Z`).toLocaleDateString(fr ? 'fr' : 'en', { day: 'numeric', month: 'short' });
+  const svg = (tag, attrs = {}, ...children) => {
+    const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+    for (const child of children) el.append(child);
+    return el;
+  };
+  const byDay = new Map(history.map((d) => [d.day, d]));
+  const launched = Date.parse(`${cap.launched}T12:00:00Z`);
+  // Dessinée à la largeur réelle de la carte : les textes gardent leur taille sur téléphone.
+  const box = document.getElementById('h-chart');
+  let W = 640;
+  let H = 240;
+  const L = 40;
+  const R = 10;
+  const T = 12;
+  const B = 26;
+  const draw = (range) => {
+    W = Math.max(280, Math.round(box.clientWidth || 640));
+    H = W < 480 ? 200 : 240;
+    const start = range ? Date.now() - (range - 1) * DAY : launched;
+    const days = [];
+    for (let t = Date.parse(`${dayOf(start)}T12:00:00Z`); dayOf(t) <= dayOf(Date.now()); t += DAY) days.push(dayOf(t));
+    const x = (i) => L + (days.length === 1 ? (W - L - R) / 2 : (i * (W - L - R)) / (days.length - 1));
+    const y = (ratio) => T + (H - T - B) * (1 - Math.min(1, ratio));
+    const line = (ratio, cls) => svg('line', { x1: L, x2: W - R, y1: y(ratio), y2: y(ratio), class: cls });
+    const parts = [];
+    for (const ratio of [0, 0.25, 0.5, 0.75, 1]) {
+      parts.push(line(ratio, 'grid'), svg('text', { x: L - 6, y: y(ratio) + 4, 'text-anchor': 'end', class: 'axis' }, percent(ratio)));
+    }
+    // Seuils : la bascule vers les serveurs à la demande se prépare, puis les soutiens passent devant.
+    for (const [ratio, cls, label] of [[cap.switch, 'th th-switch', fr ? 'bascule' : 'move'], [0.75, 'th th-priority', fr ? 'priorité' : 'priority']]) {
+      parts.push(line(ratio, cls), svg('text', { x: W - R, y: y(ratio) - 4, 'text-anchor': 'end', class: 'th-label' }, `${label} ${percent(ratio)}`));
+    }
+    const launchIndex = days.indexOf(cap.launched);
+    if (launchIndex >= 0) {
+      parts.push(svg('line', { x1: x(launchIndex), x2: x(launchIndex), y1: T, y2: H - B, class: 'launch' }), svg('text', { x: x(launchIndex) + 4, y: T + 10, class: 'launch-label' }, fr ? 'Lancement' : 'Launch'));
+    }
+    // Les courbes : un trou les jours sans mesure.
+    for (const [key, cls] of [['average', 'average'], ['peak', 'peak']]) {
+      let d = '';
+      let drawing = false;
+      days.forEach((day, i) => {
+        const point = byDay.get(day);
+        if (!point) return void (drawing = false);
+        d += `${drawing ? 'L' : 'M'}${x(i).toFixed(1)},${y(point[key]).toFixed(1)}`;
+        drawing = true;
+      });
+      if (d) parts.push(svg('path', { d, class: cls }));
+    }
+    days.forEach((day, i) => {
+      const point = byDay.get(day);
+      if (!point) return;
+      const text = fr
+        ? `${short(day)} : charge la plus haute ${percent(point.peak)}, moyenne ${percent(point.average)}${point.pages ? `, ${plural(point.pages, 'client', 'clients')} au plus page ouverte` : ''}`
+        : `${short(day)}: highest load ${percent(point.peak)}, average ${percent(point.average)}${point.pages ? `, at most ${plural(point.pages, 'customer', 'customers')} with the page open` : ''}`;
+      parts.push(svg('circle', { cx: x(i), cy: y(point.peak), r: days.length > 60 ? 2 : 3.5, class: 'dot' }, svg('title', {}, text)));
+    });
+    parts.push(svg('text', { x: L, y: H - 6, class: 'axis' }, short(days[0])), svg('text', { x: W - R, y: H - 6, 'text-anchor': 'end', class: 'axis' }, short(days.at(-1))));
+    const shown = days.filter((day) => byDay.has(day));
+    const top = shown.reduce((best, day) => Math.max(best, byDay.get(day).peak), 0);
+    render(
+      document.getElementById('h-chart'),
+      svg('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': fr ? `Charge de la lune du ${short(days[0])} au ${short(days.at(-1))} : au plus ${percent(top)}.` : `Server load from ${short(days[0])} to ${short(days.at(-1))}: at most ${percent(top)}.` }, ...parts),
+    );
+    document.getElementById('h-chart-note').textContent = shown.length
+      ? fr
+        ? `Trait plein : la charge la plus haute du jour ; pointillés : la moyenne. Au-dessus de ${percent(cap.switch)}, la bascule vers les serveurs à la demande se prépare ; au-delà de 75 %, les soutiens passent devant. Sur cette période : au plus ${percent(top)}.`
+        : `Solid line: the day’s highest load; dotted: the average. Above ${percent(cap.switch)}, the move to on-demand servers is prepared; beyond 75%, supporters go first. Over this period: at most ${percent(top)}.`
+      : fr
+        ? 'Les mesures commencent : la courbe se remplit jour après jour.'
+        : 'Measurements are starting: the curve fills in day by day.';
+  };
+  // Depuis le lancement tant qu'il est récent, sinon les 30 derniers jours.
+  const ranges = [[7, fr ? '7 j' : '7 d'], [30, fr ? '30 j' : '30 d'], [90, fr ? '90 j' : '90 d'], [0, fr ? 'Tout' : 'All']];
+  let current = Date.now() - launched <= 90 * DAY ? 0 : 30;
+  const buttons = ranges.map(([range, label]) =>
+    h('button', {
+      type: 'button',
+      'aria-pressed': String(range === current),
+      onclick: () => {
+        current = range;
+        for (const [i, b] of buttons.entries()) b.setAttribute('aria-pressed', String(ranges[i][0] === current));
+        draw(current);
+      },
+    }, label),
+  );
+  render(document.getElementById('chart-range'), buttons);
+  draw(current);
+  // Téléphone tourné, fenêtre redimensionnée : la courbe suit.
+  let width = box.clientWidth;
+  addEventListener('resize', () => {
+    if (box.clientWidth !== width) draw(current);
+    width = box.clientWidth;
+  });
 }

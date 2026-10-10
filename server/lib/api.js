@@ -193,6 +193,7 @@ export function createApi({ config, store, accounts, plans, tokens, events, gate
       pagesQueues: host?.pagesQueues ?? 0,
       busyHours: host ? Math.round((host.busy / 60 / new Date().getUTCDate()) * 10) / 10 : 0,
       load: hostLoad?.view() ?? null, // en ce moment
+      history: health ? await health.history(365) : [], // jour par jour, depuis le lancement (un an au plus)
     };
     healthCache = { at: Date.now(), view };
     return view;

@@ -1,19 +1,19 @@
 {
- "updated": "2026-10-10T20:43:35.084Z",
+ "updated": "2026-10-10T20:48:58.927Z",
  "since": "2026-10-08",
  "days": 3,
- "hours": 14.3,
+ "hours": 14.4,
  "messages": 94,
- "replies": 1896,
+ "replies": 1914,
  "tokens": {
-  "input": 3794,
-  "output": 2865502,
-  "cacheWrite": 7294646,
-  "cacheRead": 882054115
+  "input": 3830,
+  "output": 2886448,
+  "cacheWrite": 7323812,
+  "cacheRead": 895192865
  },
- "usd": 292.09,
- "subscription": 1.89,
- "month": 1.89,
+ "usd": 295.37,
+ "subscription": 1.92,
+ "month": 1.92,
  "evolutions": [
   {
    "commit": "63eed2c",
@@ -406,11 +406,18 @@
    "title": "Coûts : ce qui a été payé et la valeur du travail de l'IA, clairement séparés ; ligne IA mesurée",
    "usd": 2.79,
    "tokens": 9992980
+  },
+  {
+   "commit": "c99b417",
+   "date": "2026-10-10",
+   "title": "Files à l'essai, ouvertes 24 h, fermées : des statistiques sur les seuls tickets réels",
+   "usd": 10.54,
+   "tokens": 40860541
   }
  ],
  "current": {
-  "usd": 10.54,
-  "tokens": 40860541
+  "usd": 3.28,
+  "tokens": 13188898
  },
- "lines": 27150
+ "lines": 27323
 }
