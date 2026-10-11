@@ -1,7 +1,7 @@
 // Appel d'un ticket ou d'un groupe depuis le téléphone du commerçant (scan de la souche ou numéro) :
 // le serveur rend des blocs chiffrés, ce téléphone les déchiffre, envoie les notifications
 // via le relais aveugle et propose un bouton pour chaque SMS, WhatsApp ou e-mail.
-import { h, t, tl, api, isIOS, isPhone, fmtTime, lots, icon, LANGS, loadLang } from './common.js';
+import { h, t, tl, api, isIOS, isPhone, fmtTime, lots, icon, LANGS, FALLBACK_LANG, loadLang } from './common.js';
 import { b64u, authTokenOf, openLot, openFromClient, buildPush } from './crypto.js';
 import { fill, builtins, groupOf } from './message.js';
 
@@ -54,7 +54,7 @@ async function readSubs(access, call) {
       continue;
     }
     // Langue du client (enregistrée avec son inscription) : ses textes sont chargés au besoin.
-    const lang = Object.hasOwn(LANGS, data.l) ? data.l : 'en';
+    const lang = Object.hasOwn(LANGS, data.l) ? data.l : FALLBACK_LANG;
     await loadLang(lang);
     if (data.c === 'push' && typeof data.v?.endpoint === 'string') pushes.push({ sub, data, lang, call });
     else if (VALID[data.c]?.(String(data.v))) manual.push({ sub, data, lang, call });

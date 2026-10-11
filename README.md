@@ -30,7 +30,7 @@ Snacks, food trucks, boulangeries, buvettes, tournois sportifs, vestiaires, cord
 - **Compte facultatif, chiffré** : un identifiant et un mot de passe (pas d’e-mail) pour retrouver tous ses lots sur n’importe quel téléphone. Mot de passe oublié → **fiche de secours** imprimable et téléchargeable (identifiant + clé de secours + QR).
 - **Deux offres bien séparées** : le **don**, sans aucune contrepartie, et **WeCall.You Pro**, un petit abonnement avec options : logo et couleurs du commerce (tickets imprimés, affiche, écran public, page du client), marque masquée, plusieurs lots réunis (« Mes lots », un compte), tickets actifs jusqu’à 30 jours (pressing, SAV, réparations), statistiques sur un an et export CSV, priorité en cas d’affluence. La mise en page des tickets imprimés (papier, grille, souches) reste gratuite. Prix conseillé selon l’usage (tickets actifs sur 30 jours) ; payer moins raccourcit le Pro en proportion, personne n’est bloqué. Tout le reste reste gratuit, et tout le code reste libre (`"allPro": true` dans `config.json` débloque tout sur une installation indépendante).
 
-- **8 langues** : français, anglais, allemand, espagnol, italien, polonais, roumain, néerlandais. Menu drapeau dans l’en-tête ; langue choisie à l’inscription, gardée chiffrée dans le compte. Les tickets s’impriment dans une seule langue (celle choisie), chaque client reçoit ses messages dans la sienne. Un fichier par langue (`public/assets/i18n/<langue>.js`), chargé à la demande ; une clé absente est prise en anglais ; les tests vérifient que toutes les langues ont les mêmes clés et les mêmes variables.
+- **Langues : en pause, français seul.** WeCall.You s’adresse d’abord à la France (accès membre réservé aux adresses de facturation en France) ; le multilingue reviendra si l’association s’ouvre à d’autres pays. Les traductions (anglais, allemand, espagnol, italien, polonais, roumain, néerlandais) restent dans `public/assets/i18n/<langue>.js`, telles qu’au 11 octobre 2026. Pour les rouvrir : remettre leurs langues dans `LANGS` (`public/assets/common.js`), puis traduire les clés ajoutées depuis ; les tests vérifient que toutes les langues proposées ont les mêmes clés et les mêmes variables. Avec plusieurs langues : menu drapeau dans l’en-tête, langue choisie à l’inscription et gardée chiffrée dans le compte, tickets imprimés dans une seule langue, chaque client reçoit ses messages dans la sienne ; une clé absente est prise dans la langue de secours (l’anglais).
 
 ## Sécurité et vie privée
 
@@ -45,7 +45,7 @@ Le principe : **le serveur ne sait rien d’utile**.
 | Journal d’un ticket (scanné, appelé…) | Serveur, sans donnée personnelle | Le commerçant ; effacé en fin de vie du ticket |
 | Statistiques | Serveur, compteurs par jour | Le commerçant ; 90 jours |
 | Compte (facultatif) | Serveur : empreinte de l’identifiant, coffre chiffré | Le titulaire, avec son mot de passe ou sa fiche de secours |
-| Paiements | Stripe | Stripe ; le serveur ne reçoit que « payé, compte n° … » (webhook signé) |
+| Paiements | Stripe | Stripe ; le serveur ne reçoit que « payé, compte n° … » et le pays de facturation, qu’il ne garde pas (webhook signé) |
 
 **Cryptographie** (WebCrypto, dans les navigateurs) :
 
@@ -148,6 +148,7 @@ Le **don** et le **Pro** sont deux offres distinctes : les liens de don n’acti
 
    Collez leurs adresses dans `public/soutien.json` (`pro.monthly[].url`, `pro.once.url`), et leurs identifiants (`plink_…`) dans `server/config.json`, champ `stripeProLinks` : seuls ces liens activent le Pro.
 2. *Développeurs* > *Webhooks* > *Ajouter un endpoint* : `https://votre-domaine/api/stripe/webhook`, événements `checkout.session.completed` et `invoice.paid`. Copiez le secret `whsec_…` dans `server/config.json` (`stripeWebhookSecret`), puis redémarrez.
+3. Le Pro, comme demain l’accès membre, est **réservé aux adresses de facturation en France**. Pour chaque lien Pro, activez *Collecter l’adresse de facturation des clients* (obligatoire). Le serveur n’ouvre le Pro que si le pays est la France ; sinon il ne lie rien au compte (résultat `not_fr`) et ce paiement est à rembourser depuis Stripe. Si votre compte le permet, une règle Radar sur le pays de facturation bloque ces paiements en amont.
 
 La page `/pro` ajoute l’identifiant du compte connecté au lien (`client_reference_id`). Règles : durée du Pro = montant payé ÷ prix conseillé pour l’usage du compte (un mois par tranche, 12 mois au plus pour un paiement unique) ; un abonnement prolonge le Pro jusqu’à la fin de chaque période payée (+ 3 jours de marge) ; à l’arrêt, les tickets de longue durée en cours ont encore 30 jours, puis les options se désactivent sans rien effacer. Chaque événement n’est traité qu’une fois, et seule une signature valide est acceptée.
 

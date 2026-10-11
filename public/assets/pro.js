@@ -63,6 +63,7 @@ function payment(usage) {
     ),
     h('p', { class: 'small muted' }, t('pro_once_hint')),
     h('p', { class: 'small' }, t('pro_rule')),
+    h('p', { class: 'small' }, t('member_fr_only')),
     h('p', { class: 'small muted' }, t('pro_cancel'), ' ', t('pro_no_sla'), ' ', h('a', { href: '/mentions#cgv' }, t('pro_terms'))),
   );
 }

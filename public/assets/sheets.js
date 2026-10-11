@@ -1,6 +1,6 @@
 // Pages imprimables : page 1 « clé du lot » + pages de tickets, sur tout papier (A4, Letter,
 // format libre, rouleau d'imprimante à tickets, étiquettes…). La mise en page vient de layout.js.
-import { h, tl, qrSvg, ticketUrl, inkOn, icon } from './common.js';
+import { h, tl, qrSvg, ticketUrl, inkOn, icon, LANGS } from './common.js';
 import { secretToText } from './crypto.js';
 import { normalizeDesign, fitDesign, headSize, pageOf, fitBack } from './layout.js';
 
@@ -225,14 +225,14 @@ function backContent(ctx, steps) {
 
 /**
  * Textes de l'affiche et du verso des tickets : ceux que le commerçant a retouchés, sinon ceux
- * d'origine dans la langue d'impression. Sous-titre par défaut : le titre en anglais (vide s'il l'a effacé).
+ * d'origine dans la langue d'impression. Sous-titre par défaut : le titre en anglais quand l'anglais est proposé (vide s'il l'a effacé).
  */
 export function posterTexts(lang, design = {}) {
   const custom = normalizeDesign(design).posterText;
   const pick = (key, text) => custom[key] || tl(lang, text);
   return {
     title: pick('title', 'poster_title'),
-    sub: custom.sub ?? (lang === 'en' ? '' : tl('en', 'poster_title')),
+    sub: custom.sub ?? (lang === 'en' || !Object.hasOwn(LANGS, 'en') ? '' : tl('en', 'poster_title')),
     cta: pick('cta', 'poster_cta'),
     steps: [1, 2, 3].map((i) => ({ title: pick(`s${i}t`, `poster_s${i}_t`), text: pick(`s${i}`, `poster_s${i}`) })),
   };

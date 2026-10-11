@@ -5,7 +5,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { PAPERS, STUBS, LIMITS, QR_MIN_MM, QR_MIN_THERMAL_MM, DEFAULT_DESIGN, PRO_DESIGN, normalizeDesign, withoutPro, pageOf, gridOf, fitDesign, gridLimits, fitGrid, presetGrids } from '../../public/assets/layout.js';
 
-const LANGS = ['fr', 'en', 'de', 'es', 'it', 'pl', 'ro', 'nl'];
+// Les langues proposées, lues dans common.js : le multilingue est en pause, seul le français est vérifié (voir le README).
+const LANGS = [...readFileSync(new URL('../../public/assets/common.js', import.meta.url), 'utf8').match(/export const LANGS = \{([^}]*)\}/)[1].matchAll(/(\w+):/g)].map((m) => m[1]);
 
 const content = (extra = {}) => ({
   head: 'name',
@@ -160,7 +161,7 @@ test('sans Pro : couleurs d’origine et pas de logo, le reste de la mise en pag
   assert.equal(kept.logo, logo); // en Pro, rien n'est retiré
 });
 
-test('traductions : les 8 langues ont les mêmes clés, les mêmes variables et aucun tiret long', async () => {
+test('traductions : les langues proposées ont les mêmes clés, les mêmes variables et aucun tiret long', async () => {
   const load = async (lang) => (await import(`../../public/assets/i18n/${lang}.js`)).default;
   const fr = await load('fr');
   // Les noms de variables des modèles de message ({nom}, {name}…) changent selon la langue ; les autres, jamais.

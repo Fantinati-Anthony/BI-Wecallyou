@@ -197,7 +197,7 @@ try {
   await c.goto(`${BASE}/${five.c}`);
   await c.waitForSelector('.choice');
   await shot(c, '05-client-choix');
-  await c.getByRole('button', { name: /Text message/ }).click();
+  await c.getByRole('button', { name: /^SMS/ }).click();
   await c.fill('#contact', '+33 6 12 34 56 78');
   await c.click('button[type=submit]');
   await c.waitForSelector('.banner-ok');
@@ -257,11 +257,11 @@ try {
   assert.match(decodeURIComponent(href), /Snack Tony.*005.*\n.*@snacktony https:\/\/instagram\.com\/snacktony/s);
   assert.match(await smsButton.textContent(), /••78/);
   await shot(m, '08-appel-souche');
-  step('souche scannée : bouton SMS prêt (message en anglais, la langue du client)');
+  step('souche scannée : bouton SMS prêt (en français, même pour un téléphone en anglais : multilingue en pause)');
 
   await c.waitForSelector('.ready', { timeout: 15_000 });
   await shot(c, '09-client-cest-a-vous');
-  step('la page du client affiche « It’s your turn » en temps réel');
+  step('la page du client affiche « C’est à vous » en temps réel');
 
   /* ------------------------------------------------- suivi, stats, affichage */
   await smsButton.click({ noWaitAfter: true }).catch(() => {});
@@ -308,7 +308,7 @@ try {
   // Un spectateur attend devant l'écran avec le ticket 007, page ouverte.
   const watcher = await client.newPage();
   await watcher.goto(`${BASE}/${tickets[6].c}`);
-  await watcher.getByRole('button', { name: /wait to be called/ }).click();
+  await watcher.getByRole('button', { name: /attendre qu’on m’appelle/ }).click();
 
   const composerSelects = m.locator('.composer select');
   await composerSelects.nth(0).selectOption('Terrain 3');
@@ -364,7 +364,7 @@ try {
   await second.waitForSelector('.ticket-head .number');
   const secondNumber = await second.locator('.ticket-head .number').textContent();
   assert.ok(/^\d{3}$/.test(secondNumber) && secondNumber !== firstNumber, secondNumber);
-  await walkIn.getByRole('button', { name: /wait to be called/ }).click();
+  await walkIn.getByRole('button', { name: /attendre qu’on m’appelle/ }).click();
   await m.getByRole('button', { name: 'Appels' }).click();
   await m.waitForSelector(`#arrivals li:has-text("${firstNumber}")`);
   // Dans l'ordre d'arrivée, quel que soit le numéro tiré.
@@ -483,9 +483,9 @@ try {
   assert.equal(await p4.locator('.compare tbody th[scope="row"]').count() >= 10, true); // comparatif sur la page Pro
   await shot(p4, '18-page-pro');
 
-  // Abonnement Pro (Stripe, simulé et signé) : 3 € pour un conseillé à 1 € = 3 mois de Pro.
+  // Abonnement Pro (Stripe, simulé et signé), adresse de facturation en France : 3 € pour un conseillé à 1 € = 3 mois de Pro.
   const accountId = await m.evaluate(() => JSON.parse(localStorage.getItem('wcy:account')).id);
-  const event = JSON.stringify({ id: 'evt_e2e', type: 'checkout.session.completed', data: { object: { client_reference_id: accountId, mode: 'payment', amount_total: 300, customer: null } } });
+  const event = JSON.stringify({ id: 'evt_e2e', type: 'checkout.session.completed', data: { object: { client_reference_id: accountId, mode: 'payment', amount_total: 300, customer: null, customer_details: { address: { country: 'FR' } } } } });
   const ts = Math.floor(Date.now() / 1000);
   const signature = createHmac('sha256', 'whsec_e2e').update(`${ts}.${event}`).digest('hex');
   const hook = await fetch(`${BASE}/api/stripe/webhook`, { method: 'POST', headers: { 'Stripe-Signature': `t=${ts},v1=${signature}` }, body: event });
@@ -509,7 +509,7 @@ try {
   const brandless = await client.newPage();
   await brandless.goto(`${BASE}/${tickets[11].c}`);
   await brandless.waitForSelector('.choice');
-  assert.equal((await brandless.locator('footer').textContent()).trim(), 'Privacy');
+  assert.equal((await brandless.locator('footer').textContent()).trim(), 'Confidentialité');
   step('options Pro : tickets 30 jours, marque masquée (seul le lien Confidentialité reste)');
 
   // Couleurs Pro : l'écran public et la page du client prennent les couleurs du commerce.
@@ -677,12 +677,12 @@ try {
   await m.emulateMedia({ media: 'screen' });
   step('rouleau 80 mm : un ticket par page, souche détachable, noir seul');
 
-  // Page clé : tient sur sa feuille en français et en anglais, gratuit ou Pro, avec mot de passe et nom très long.
+  // Page clé : tient sur sa feuille, gratuit ou Pro, avec mot de passe et nom très long (en français : multilingue en pause).
   await m.emulateMedia({ media: 'print' });
   const keyOverflow = await m.evaluate(async () => {
     const { keySheet } = await import('/assets/sheets.js');
     const bad = [];
-    for (const lang of ['fr', 'en'])
+    for (const lang of ['fr'])
       for (const pro of [false, true])
         for (const name of ['Snack', 'Association sportive du Grand Stade — buvette et restauration']) {
           const sheet = keySheet({ lang, domain: 'wecall.you', brand: 'WeCall.You', lot: 1301721212, name, secret: new Uint8Array(16), from: 1, to: 999999, monthlyCost: 21, password: true, pro, screen: 'A'.repeat(23) });
@@ -694,7 +694,7 @@ try {
   });
   await m.emulateMedia({ media: 'screen' });
   assert.deepEqual(keyOverflow, []);
-  step('page clé : tient sur la feuille (FR/EN, gratuit/Pro, mot de passe, nom long)');
+  step('page clé : tient sur la feuille (gratuit/Pro, mot de passe, nom long)');
 
   // Aucun débordement : chaque élément reste dans sa case, quels que soient papier, grille et souche.
   const overflow = await m.evaluate(async () => {
@@ -741,33 +741,32 @@ try {
   assert.deepEqual(overflow.problems, []);
   step(`mise en page : aucun débordement sur ${overflow.checked} combinaisons (papier, grille, souche, nom long, 6 chiffres)`);
 
-  // Langue : le drapeau de l'en-tête passe tout en allemand, tickets compris (une seule langue) ;
+  // Langue : multilingue en pause, tout reste en français même pour un navigateur allemand, sans menu drapeau ;
   // recto-verso : chaque page a son dos, avec le mode d'emploi au dos de chaque ticket, sans débordement.
   {
-    const ctx = await browser.newContext({ locale: 'fr-FR', viewport: { width: 1280, height: 900 } });
+    const ctx = await browser.newContext({ locale: 'de-DE', viewport: { width: 1280, height: 900 } });
     const p = await ctx.newPage();
     p.on('pageerror', (err) => errors.push(err.message));
     await p.goto(`${BASE}/creer`);
-    await p.click('.lang-btn');
-    await p.click('.lang-menu a[lang="de"]');
-    await p.waitForSelector('html[lang="de"]');
-    await waitText(p.locator('#tab-info [data-i18n="tab_info"]'), 'Angaben');
-    await p.fill('#name', 'Stadion-Imbiss');
+    await p.waitForSelector('html[lang="fr"]');
+    await waitText(p.locator('#tab-info [data-i18n="tab_info"]'), 'Informations');
+    assert.equal(await p.locator('.lang-btn').count(), 0);
+    await p.fill('#name', 'Snack du Stade');
     await p.click('#tab-look');
     await p.check('#d-verso');
     await p.locator('.pv-frame .sheet-tickets .p-scan').first().waitFor({ state: 'attached' });
     const scan = await p.locator('.pv-frame .p-scan').first().textContent();
-    assert.ok(scan && !/Scannez/.test(scan), scan); // ticket en allemand
+    assert.ok(scan && /Scannez/.test(scan), scan); // ticket en français
     assert.equal(await p.locator('.pv-frame .p-sub').count(), 0); // une seule langue
     await p.locator('.studio-preview [data-tab="back"]').click();
     await p.waitForSelector('.pv-frame .sheet-back .back-steps li', { state: 'attached' });
     assert.equal(await p.locator('.pv-frame .sheet-back .back-steps').first().locator('.b-num').count(), 3);
     const overflow = await p.locator('.pv-frame .sheet-back .part.back-steps').evaluateAll((parts) => parts.filter((part) => part.scrollHeight > part.clientHeight + 1 || part.scrollWidth > part.clientWidth + 1).length);
     assert.equal(overflow, 0);
-    await shot(p, '28-verso-allemand');
+    await shot(p, '28-verso');
     await ctx.close();
   }
-  step('langue : menu drapeau (allemand) ; recto-verso : dos en miroir avec le mode d’emploi, sans débordement');
+  step('langue : français seul, même pour un navigateur allemand, sans menu drapeau ; recto-verso : dos en miroir avec le mode d’emploi, sans débordement');
 
   // « Les deux » (tickets + affiche) : numéros mélangés dès les tickets imprimés, plus de « premier numéro ».
   {

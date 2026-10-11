@@ -1,4 +1,4 @@
-// Textes de l'interface : français (langue d'origine). Une clé absente d'une langue est prise en anglais.
+// Textes de l'interface : français (langue d'origine). Une clé absente d'une langue est prise dans la langue de secours.
 // Les messages envoyés aux clients (SMS, WhatsApp, e-mail, notification) sont rédigés dans la
 // langue du client, enregistrée avec son inscription.
 export default {
@@ -548,6 +548,7 @@ export default {
   pro_intro: 'Un abonnement à petit prix, distinct du don, pour ceux qui veulent aller plus loin. Tout le reste reste gratuit pour tous, sans limite.',
   pro_usage: 'Votre usage sur 30 jours : {active} tickets actifs (scannés). Un ticket imprimé ne coûte rien.',
   pro_suggested: 'Prix conseillé pour votre usage : {price} € / mois.',
+  member_fr_only: 'Le Pro et l’accès membre sont réservés aux adresses de facturation en France ; un paiement depuis un autre pays est remboursé.',
   pro_rule: 'Payer moins que le prix conseillé raccourcit le Pro en proportion (par exemple 1 € pour un conseillé de 3 € = 10 jours). Personne n’est bloqué.',
   pro_monthly: 'Abonnement mensuel',
   pro_once: 'Une fois, prix libre (1 € minimum)',

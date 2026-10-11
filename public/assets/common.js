@@ -3,9 +3,16 @@ import { icon } from './icons.js';
 
 export { icon };
 
-/** Langues proposées, avec leur nom dans la langue elle-même. */
-export const LANGS = { fr: 'Français', en: 'English', de: 'Deutsch', es: 'Español', it: 'Italiano', pl: 'Polski', ro: 'Română', nl: 'Nederlands' };
-/** Langue choisie sur ce téléphone (menu de l'en-tête, ou compte) ; sinon celle du téléphone, sinon l'anglais. */
+/**
+ * Langues proposées, avec leur nom dans la langue elle-même. Le multilingue est en pause : WeCall.You
+ * s'adresse d'abord à la France (accès membre réservé aux adresses de facturation en France). Les
+ * traductions restent dans i18n/ ; pour les rouvrir, remettre ici en: 'English', de: 'Deutsch',
+ * es: 'Español', it: 'Italiano', pl: 'Polski', ro: 'Română', nl: 'Nederlands' (voir le README).
+ */
+export const LANGS = { fr: 'Français' };
+/** Langue de secours : l'anglais quand il est proposé, sinon le français. */
+export const FALLBACK_LANG = Object.hasOwn(LANGS, 'en') ? 'en' : 'fr';
+/** Langue choisie sur ce téléphone (menu de l'en-tête, ou compte) ; sinon celle du téléphone, sinon la langue de secours. */
 export const LANG_KEY = 'wcy:lang';
 const chosen = (() => {
   try {
@@ -15,24 +22,24 @@ const chosen = (() => {
   }
 })();
 const fromPhone = (navigator.languages?.length ? navigator.languages : [navigator.language ?? 'en']).map((l) => String(l).slice(0, 2).toLowerCase()).find((l) => Object.hasOwn(LANGS, l));
-export const LANG = Object.hasOwn(LANGS, chosen ?? '') ? chosen : (fromPhone ?? 'en');
+export const LANG = Object.hasOwn(LANGS, chosen ?? '') ? chosen : (fromPhone ?? FALLBACK_LANG);
 document.documentElement.lang = LANG;
 
-// Textes : un fichier par langue (public/assets/i18n/), chargé à la demande ; l'anglais sert de secours.
+// Textes : un fichier par langue (public/assets/i18n/), chargé à la demande, avec la langue de secours.
 const TEXTS = {};
 export async function loadLang(lang) {
   if (!Object.hasOwn(LANGS, lang) || TEXTS[lang]) return;
   try {
     TEXTS[lang] = (await import(`./i18n/${lang}.js`)).default;
   } catch {
-    TEXTS[lang] = {}; // fichier absent ou illisible : l'anglais prend le relais
+    TEXTS[lang] = {}; // fichier absent ou illisible : la langue de secours prend le relais
   }
 }
-await Promise.all([loadLang('en'), loadLang(LANG)]);
+await Promise.all([loadLang(FALLBACK_LANG), loadLang(LANG)]);
 
 /** Texte traduit, avec remplacement des {variables}. */
 export function tl(lang, key, vars = {}) {
-  let s = TEXTS[lang]?.[key] ?? TEXTS.en?.[key] ?? key;
+  let s = TEXTS[lang]?.[key] ?? TEXTS[FALLBACK_LANG]?.[key] ?? key;
   for (const [k, v] of Object.entries(vars)) s = s.replaceAll(`{${k}}`, String(v));
   return s;
 }
@@ -98,14 +105,15 @@ export function render(container, ...children) {
 export function translatePage(vars = {}) {
   for (const el of document.querySelectorAll('[data-i18n]')) el.textContent = t(el.dataset.i18n, vars);
   for (const el of document.querySelectorAll('[data-i18n-placeholder]')) el.placeholder = t(el.dataset.i18nPlaceholder, vars);
-  // Textes longs écrits en français et en anglais (mentions légales…) : l'anglais pour les autres langues.
+  // Textes longs écrits en français et en anglais (mentions légales…) : la langue de secours pour les autres langues.
   const written = new Set([...document.querySelectorAll('[data-lang]')].map((el) => el.dataset.lang));
-  const shown = written.has(LANG) ? LANG : 'en';
+  const shown = written.has(LANG) ? LANG : FALLBACK_LANG;
   for (const el of document.querySelectorAll('[data-lang]')) el.hidden = el.dataset.lang !== shown;
   for (const el of document.querySelectorAll('[data-icon]')) el.replaceChildren(icon(el.dataset.icon));
   for (const el of document.querySelectorAll('[data-tip]')) el.replaceChildren(helpTip(t(el.dataset.tip, vars)));
   const nav = document.querySelector('.topnav');
-  if (nav && !nav.querySelector('.lang-pick')) nav.prepend(langMenu());
+  // Le menu des langues, seulement s'il y a un choix.
+  if (nav && Object.keys(LANGS).length > 1 && !nav.querySelector('.lang-pick')) nav.prepend(langMenu());
 }
 
 /* ------------------------------------------------------------------ langues */

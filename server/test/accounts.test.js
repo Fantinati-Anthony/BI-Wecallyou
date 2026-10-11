@@ -145,7 +145,7 @@ test('soutien sans compte : rien à activer ; avec un compte : licence ouverte, 
 
   // Don pur (lien sans compte) : rien n'est activé. Signature fausse : refusée.
   assert.equal((await stripe({ id: 'evt_don', type: 'checkout.session.completed', data: { object: { mode: 'payment', amount_total: 2000 } } })).result, 'no_account');
-  const pro = { id: 'evt_1', type: 'checkout.session.completed', data: { object: { client_reference_id: id, mode: 'payment', amount_total: 300, customer: null } } };
+  const pro = { id: 'evt_1', type: 'checkout.session.completed', data: { object: { client_reference_id: id, mode: 'payment', amount_total: 300, customer: null, customer_details: { address: { country: 'FR' } } } } };
   assert.equal((await stripe(pro, 'whsec_autre')).status, 400);
 
   // Soutien ponctuel : la licence s'ouvre un an ; les 3 €, répartis sur douze mois (0,25 €/mois),
@@ -182,7 +182,7 @@ test('soutien sans compte : rien à activer ; avec un compte : licence ouverte, 
   assert.deepEqual((await settings({})).themeSetting, theme); // réglages enregistrés sans toucher aux couleurs
 
   // Abonnement mensuel : le 1er paiement lie le client Stripe, chaque facture prolonge.
-  await stripe({ id: 'evt_2', type: 'checkout.session.completed', data: { object: { client_reference_id: id, mode: 'subscription', amount_total: 100, customer: 'cus_ABC' } } });
+  await stripe({ id: 'evt_2', type: 'checkout.session.completed', data: { object: { client_reference_id: id, mode: 'subscription', amount_total: 100, customer: 'cus_ABC', customer_details: { address: { country: 'FR' } } } } });
   const periodEnd = Math.floor(Date.now() / 1000) + 200 * 86_400;
   const invoice = { id: 'evt_3', type: 'invoice.paid', data: { object: { customer: 'cus_ABC', amount_paid: 100, lines: { data: [{ period: { end: periodEnd } }] } } } };
   assert.equal((await stripe(invoice)).result, 'pro');
@@ -223,7 +223,7 @@ test('soutien : la licence s’ouvre pour toute la durée payée ; liens Pro dis
   const other = { type: 'checkout.session.completed', data: { object: { client_reference_id: 'A', payment_link: 'plink_don', amount_total: 900 } } };
   assert.equal(await applyEvent(other, store, pricing, now), 'not_pro');
   // 1 € une fois : la licence s'ouvre un an, le montant est réparti sur douze mois.
-  const small = { type: 'checkout.session.completed', data: { object: { client_reference_id: 'A', payment_link: 'plink_pro', mode: 'payment', amount_total: 100 } } };
+  const small = { type: 'checkout.session.completed', data: { object: { client_reference_id: 'A', payment_link: 'plink_pro', mode: 'payment', amount_total: 100, customer_details: { address: { country: 'FR' } } } } };
   await applyEvent(small, store, pricing, now);
   const days = (fake.get('A').premiumUntil - now) / 86_400_000;
   assert.ok(days > 360 && days < 375, `${days} jours`); // douze « mois » de licence de 31 jours

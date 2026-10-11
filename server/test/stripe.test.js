@@ -1,5 +1,5 @@
 // Soutien et licence Pro : la licence s'ouvre pour toute la durée payée ; le montant, ramené au mois,
-// fixe les tickets prioritaires (une facture annuelle compte pour douze mois).
+// fixe les tickets prioritaires (une facture annuelle compte pour douze mois). Réservé aux adresses en France.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { applyEvent } from '../lib/stripe.js';
@@ -22,4 +22,20 @@ test('soutien annuel : licence ouverte toute l’année, montant ramené au mois
   // Sans début de période (ancien format) : un mois.
   await applyEvent({ type: 'invoice.paid', data: { object: { customer: 'cus_an', amount_paid: 500, lines: { data: [{ period: { end: year.end } }] } } } }, accounts, { proLinks: [] }, now);
   assert.equal(seen.euros, 5);
+});
+
+test('accès membre : seulement pour une adresse de facturation en France', async () => {
+  const seen = [];
+  const accounts = {
+    get: async () => ({ premiumUntil: 0 }),
+    linkCustomer: async () => seen.push('lié'),
+    extendPro: async () => seen.push('ouvert'),
+    setSupport: async () => {},
+    accountOfCustomer: async () => null,
+  };
+  const pay = (address) => ({ type: 'checkout.session.completed', data: { object: { client_reference_id: 'A', mode: 'subscription', amount_total: 300, customer: 'cus_be', customer_details: { address } } } });
+  for (const address of [{ country: 'BE' }, {}, undefined]) assert.equal(await applyEvent(pay(address), accounts, { proLinks: [] }), 'not_fr');
+  assert.deepEqual(seen, []); // ni Pro, ni client lié : ses renouvellements ne s'appliquent pas non plus
+  assert.equal(await applyEvent(pay({ country: 'FR', postal_code: '75011' }), accounts, { proLinks: [] }), 'pro');
+  assert.deepEqual(seen, ['lié', 'ouvert']);
 });

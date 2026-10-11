@@ -95,7 +95,7 @@ function signupForm() {
   const pw = field('sp', 'acc_password', { type: 'password', autocomplete: 'new-password' }, 'acc_password_hint');
   const pw2 = field('sp2', 'acc_password2', { type: 'password', autocomplete: 'new-password' });
   const activity = activityField(local.get(ACTIVITY_KEY));
-  // Langue de l'interface et des tickets imprimés.
+  // Langue de l'interface et des tickets imprimés ; le choix n'apparaît que s'il y a plusieurs langues.
   const lang = h('select', { id: 's-lang', class: 'select' }, Object.entries(LANGS).map(([code, name]) => h('option', { value: code, selected: code === LANG }, name)));
   const error = errorBox();
   const button = h('button', { class: 'btn btn-big btn-block', type: 'submit' }, t('acc_signup_btn'));
@@ -105,7 +105,7 @@ function signupForm() {
     ident.element,
     pw.element,
     pw2.element,
-    h('div', { class: 'field' }, h('label', { for: 's-lang' }, t('acc_lang')), lang, h('p', { class: 'small muted' }, t('acc_lang_hint'))),
+    Object.keys(LANGS).length > 1 && h('div', { class: 'field' }, h('label', { for: 's-lang' }, t('acc_lang')), lang, h('p', { class: 'small muted' }, t('acc_lang_hint'))),
     h('div', { class: 'field' }, h('label', {}, t('acc_activity')), activity.element, h('p', { class: 'small muted' }, t('acc_activity_hint'))),
     error,
     button,

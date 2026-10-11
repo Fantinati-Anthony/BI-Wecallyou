@@ -263,7 +263,7 @@ function visionOffer(onChoose) {
     { class: 'offer offer-vision' },
     h('h4', {}, t('offer_vision_title')),
     h('p', { class: 'vision-quote' }, t('offer_vision_text')),
-    h('p', { class: 'small muted' }, t('offer_vision_pro')),
+    h('p', { class: 'small muted' }, t('offer_vision_pro'), ' ', t('member_fr_only')),
     h('div', { class: 'licence-wrap' }, h('span', { class: 'licence-halo', 'aria-hidden': 'true' }), button),
   );
   return { element, button };

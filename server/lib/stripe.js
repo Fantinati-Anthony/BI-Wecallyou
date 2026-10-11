@@ -2,7 +2,8 @@
 // identifiant : client_reference_id). Sans compte, c'est un soutien pur : rien à activer.
 // La licence s'ouvre pour toute la durée payée ; le montant, ramené au mois, fixe seulement combien
 // de tickets passent en priorité quand le serveur sature (table des coûts de soutien.json).
-// Stripe prévient le serveur (webhook signé). Le serveur ne voit ni carte, ni nom, ni adresse.
+// Stripe prévient le serveur (webhook signé). Le serveur ne garde ni carte, ni nom, ni adresse ; il lit
+// seulement le pays de facturation : l'accès membre (le Pro) est réservé aux adresses en France.
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { PRO_MONTH } from './accounts.js';
 
@@ -30,6 +31,7 @@ const euros = (cents) => Math.max(0, Number(cents) || 0) / 100;
  *  - abonnement (mensuel ou annuel) : chaque facture payée ouvre la licence jusqu'à la fin de sa
  *    période ; le montant est ramené au mois (une facture annuelle compte pour douze mois).
  *  `pricing` : { proLinks: [plink_…] } (vide = tout lien portant un compte).
+ *  Le Pro ne s'ouvre que pour une adresse de facturation en France ; sinon, rien n'est lié au compte.
  */
 export async function applyEvent(event, accounts, pricing, now = Date.now()) {
   const object = event?.data?.object ?? {};
@@ -37,6 +39,7 @@ export async function applyEvent(event, accounts, pricing, now = Date.now()) {
     const id = object.client_reference_id;
     if (!id || !(await accounts.get(id))) return 'no_account'; // un soutien sans compte : rien à activer
     if (pricing.proLinks?.length && !pricing.proLinks.includes(object.payment_link)) return 'not_pro';
+    if (object.customer_details?.address?.country !== 'FR') return 'not_fr'; // rien n'est ouvert ni lié : remboursé à la main
     if (typeof object.customer === 'string') await accounts.linkCustomer(object.customer, id);
     if (object.mode === 'subscription') {
       // La facture qui suit fixe la vraie période ; d'ici là, un mois au montant payé.
